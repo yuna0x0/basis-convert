@@ -203,7 +203,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (PlannedJiggleRig rig in Rigs)
             {
-                if (rig.Include)
+                if (rig.Include && IsIncluded(rig.Source))
                 {
                     yield return rig;
                 }
@@ -219,7 +219,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (PlannedConstraint constraint in Constraints)
             {
-                if (constraint.Include)
+                if (constraint.Include && IsIncluded(constraint.Source))
                 {
                     yield return constraint;
                 }
@@ -235,7 +235,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (PlannedVixxyControl control in VixxyControls)
             {
-                if (control.Include)
+                if (control.Include && IsIncluded(control.Source))
                 {
                     yield return control;
                 }
@@ -243,7 +243,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
         }
 
         public bool DescriptorSelected =>
-            Options.Descriptor && Descriptor != null && Descriptor.Include;
+            Options.Descriptor && Descriptor != null && Descriptor.Include
+            && IsIncluded(Descriptor.Source);
+
+        /// <summary>
+        /// Whether what was read from a prefab is being written. An item with no source recorded
+        /// belongs to the avatar itself.
+        /// </summary>
+        public static bool IsIncluded(ConversionSource source) => source == null || source.Include;
 
         public int SelectedRigCount => Tally(SelectedRigs());
         public int SelectedConstraintCount => Tally(SelectedConstraints());
@@ -289,6 +296,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
             {
                 foreach (PlannedJiggleCollider collider in Colliders)
                 {
+                    if (selectedOnly && !IsIncluded(collider.Source))
+                    {
+                        continue;
+                    }
+
                     foreach (ConversionDiagnostic diagnostic in collider.Plan.Diagnostics)
                     {
                         yield return diagnostic;

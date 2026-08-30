@@ -31,6 +31,7 @@ namespace yuna0x0.Basis.Convert.UI
 
         private Vector2 _scroll;
         private bool _showOptions = true;
+        private bool _showSources = true;
         private bool _showRigs = true;
         private bool _showConstraints;
         private bool _showToggles;
@@ -153,6 +154,7 @@ namespace yuna0x0.Basis.Convert.UI
             using (EditorGUI.ChangeCheckScope changed = new EditorGUI.ChangeCheckScope())
             {
                 DrawOptions();
+                DrawSources();
                 DrawRig();
                 DrawDiagnostics();
                 DrawRigs();
@@ -340,8 +342,8 @@ namespace yuna0x0.Basis.Convert.UI
             using (new EditorGUI.IndentLevelScope())
             {
                 EditorGUILayout.LabelField(
-                    "Advanced adds a checkbox per rig, constraint and toggle, and the two "
-                    + "tuning weights.", EditorStyles.wordWrappedMiniLabel);
+                    "Advanced adds a checkbox per prefab, rig, constraint and toggle, and the "
+                    + "two tuning weights.", EditorStyles.wordWrappedMiniLabel);
 
                 // Colliders only appear under Advanced, so say so here rather than let the
                 // setting act on a conversion from somewhere the reader cannot see it.
@@ -352,6 +354,110 @@ namespace yuna0x0.Basis.Convert.UI
                         + "without them.", EditorStyles.wordWrappedMiniLabel);
                 }
             }
+        }
+
+        /// <summary>
+        /// The prefabs found under the chosen object, one per row, so a prop parented onto an
+        /// avatar can be left out of a conversion of it. Only shown when there is more than one,
+        /// since a bare avatar has nothing to choose between.
+        /// </summary>
+        private void DrawSources()
+        {
+            if (!_advanced || _plan.Sources.Count < 2)
+            {
+                return;
+            }
+
+            EditorGUILayout.Space();
+            _showSources = EditorGUILayout.Foldout(_showSources,
+                $"Prefabs ({Tally(IncludedSources(), _plan.Sources.Count, "selected")})", true);
+            if (!_showSources)
+            {
+                return;
+            }
+
+            using (new EditorGUI.IndentLevelScope())
+            {
+                DrawSelectAll(include =>
+                {
+                    foreach (ConversionSource source in _plan.Sources)
+                    {
+                        source.Include = include;
+                    }
+                });
+
+                foreach (ConversionSource source in _plan.Sources)
+                {
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        source.Include = EditorGUILayout.Toggle(source.Include,
+                            GUILayout.Width(24f));
+
+                        if (GUILayout.Button(source.Name, EditorStyles.linkLabel,
+                                GUILayout.MinWidth(120f)))
+                        {
+                            EditorGUIUtility.PingObject(source.Root);
+                        }
+
+                        EditorGUILayout.LabelField(Describe(source), EditorStyles.miniLabel);
+                    }
+                }
+            }
+        }
+
+        private int IncludedSources()
+        {
+            int included = 0;
+            foreach (ConversionSource source in _plan.Sources)
+            {
+                if (source.Include)
+                {
+                    included++;
+                }
+            }
+
+            return included;
+        }
+
+        /// <summary>What one prefab contributes, so leaving it out is an informed choice.</summary>
+        private string Describe(ConversionSource source)
+        {
+            int rigs = 0;
+            int constraints = 0;
+
+            foreach (PlannedJiggleRig rig in _plan.Rigs)
+            {
+                if (rig.Source == source)
+                {
+                    rigs++;
+                }
+            }
+
+            foreach (PlannedConstraint constraint in _plan.Constraints)
+            {
+                if (constraint.Source == source)
+                {
+                    constraints++;
+                }
+            }
+
+            List<string> parts = new List<string>();
+            if (rigs > 0)
+            {
+                parts.Add($"{rigs} rigs");
+            }
+
+            if (constraints > 0)
+            {
+                parts.Add($"{constraints} constraints");
+            }
+
+            if (_plan.Descriptor != null && _plan.Descriptor.Source == source)
+            {
+                parts.Add("avatar descriptor");
+            }
+
+            return parts.Count > 0 ? string.Join(", ", parts) : "nothing convertible";
         }
 
         /// <summary>

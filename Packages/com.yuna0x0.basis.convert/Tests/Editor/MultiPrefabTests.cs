@@ -133,6 +133,39 @@ namespace yuna0x0.Basis.Convert.Tests
         }
 
         [Test]
+        public void APrefabUnderTheRootCanBeLeftOut()
+        {
+            GameObject assembled = Assembled();
+            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(assembled);
+
+            plan.Sources[1].Include = false;
+
+            Assert.That(plan.SelectedRigCount, Is.EqualTo(1),
+                "A prop parented onto an avatar is not converted with it once unticked.");
+            Assert.That(plan.Rigs.Count, Is.EqualTo(2),
+                "What was found does not change with what will be written.");
+
+            ConversionResult result = AvatarConverter.Apply(plan, assembled);
+
+            Assert.That(result.RigsWritten, Is.EqualTo(1));
+
+            Transform nested = assembled.transform.GetChild(assembled.transform.childCount - 1);
+            Assert.That(nested.GetComponentsInChildren<JiggleRig>(true), Is.Empty);
+        }
+
+        [Test]
+        public void TheReportNamesThePrefabsLeftOut()
+        {
+            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(Assembled());
+            plan.Sources[1].Include = false;
+
+            string report = Reporting.ConversionReport.Write(plan);
+
+            Assert.That(report, Does.Contain("Prefabs left out:"));
+            Assert.That(report, Does.Contain("(left out)"));
+        }
+
+        [Test]
         public void ReadingOneAssetDirectlyStillWorks()
         {
             AvatarConversionPlan plan = AvatarConversionPlanner.Plan(FixturePath);

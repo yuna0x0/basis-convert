@@ -24,9 +24,11 @@ result editable.
   Vixxy cannot hold are reported, not half built.
 - **Rig check.** Reports the humanoid rig against what Basis's full-body IK needs, and offers to
   clear the Jaw mapping the Basis setup guide asks to be removed.
-- **Whole avatars, not single prefabs.** Clothing, hair and accessories are prefabs of their own
-  with their own physics. A conversion reads every prefab the hierarchy is built from and places
-  what it finds where that prefab sits, so an assembled avatar converts in one pass.
+- **Whole avatars, not single prefabs.** A conversion covers the object you pick and its
+  children. Clothing, hair and accessories are prefabs of their own with their own physics, so
+  each is read from its own file and what it holds is placed where that prefab sits, and an
+  assembled avatar converts in one pass. Any of them can be unticked, and nothing is ever
+  written to a prefab asset.
 - **Convert as much or as little as you want.** Checkboxes for each of those kinds, and, under
   Advanced, one per rig, constraint and toggle. The scan always reads the whole avatar, so the
   counts and the diagnostics do not change with what is ticked; what you leave out is reported

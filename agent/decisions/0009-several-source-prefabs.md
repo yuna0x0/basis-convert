@@ -30,6 +30,16 @@ dependency between the user and a conversion, and would not help an avatar assem
 Modular Avatar, which is most of the reference library. Reading several prefabs costs one
 discovery pass and a source reference per item.
 
+## Scope and control
+
+A conversion is rooted at the object you pick and covers that object and its children, the way
+editor converters usually work. Nothing outside it is read, and nothing is ever written to a
+prefab asset: components go onto the hierarchy that was picked, under one undo.
+
+Every prefab found under that root can be unticked, so a prop parented onto an avatar is not
+converted with it. The prefab list sits with the other per-item lists under Advanced, and what
+is left out is named in the report, per [decision 0008](0008-conversion-options.md).
+
 ## Consequences
 
 - Component data is read from prefab files, so a change made to a clothing prefab **instance**

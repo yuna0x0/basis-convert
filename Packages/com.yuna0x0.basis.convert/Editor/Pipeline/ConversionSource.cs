@@ -30,6 +30,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         public bool IsPrimary => PathInHierarchy.Length == 0;
 
+        /// <summary>
+        /// Whether the conversion writes what was read from this prefab. Cleared from the
+        /// window, for a prop parented onto an avatar that was not meant to be converted with
+        /// it.
+        /// </summary>
+        public bool Include = true;
+
         public static ConversionSource ForAsset(string assetPath)
         {
             GameObject root = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);

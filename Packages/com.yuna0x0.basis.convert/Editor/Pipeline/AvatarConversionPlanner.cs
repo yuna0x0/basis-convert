@@ -623,6 +623,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 if (resolved)
                 {
+                    // Menus belong to the avatar, whose prefab is the first source.
+                    planned.Source = plan.Sources.Count > 0 ? plan.Sources[0] : null;
                     plan.VixxyControls.Add(planned);
                 }
             }

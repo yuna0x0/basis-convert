@@ -78,7 +78,8 @@ namespace yuna0x0.Basis.Convert.Reporting
                 text.AppendLine($"- Read from {plan.Sources.Count} prefabs:");
                 foreach (ConversionSource source in plan.Sources)
                 {
-                    text.AppendLine($"  - {source.Name} ({source.AssetPath})");
+                    text.AppendLine($"  - {source.Name} ({source.AssetPath})"
+                        + Suffix(source.Include));
                 }
             }
 
@@ -147,7 +148,8 @@ namespace yuna0x0.Basis.Convert.Reporting
                 {
                     text.AppendLine($"- {constraint.Describe()}, "
                         + $"{constraint.Plan.Sources.Count} sources"
-                        + Suffix(plan.Options.Constraints && constraint.Include));
+                        + Suffix(plan.Options.Constraints && constraint.Include
+                            && AvatarConversionPlan.IsIncluded(constraint.Source)));
                 }
 
                 text.AppendLine();
@@ -177,7 +179,8 @@ namespace yuna0x0.Basis.Convert.Reporting
                     + $"[{rig.Plan.Preset}]"
                     + $"{(rig.Plan.ExcludeRoot ? ", motionless root" : string.Empty)}"
                     + $"{(colliders && rig.Colliders.Count > 0 ? $", {rig.Colliders.Count} colliders" : string.Empty)}"
-                    + Suffix(plan.Options.Physics && rig.Include));
+                    + Suffix(plan.Options.Physics && rig.Include
+                        && AvatarConversionPlan.IsIncluded(rig.Source)));
             }
 
             return text.ToString();
@@ -193,6 +196,20 @@ namespace yuna0x0.Basis.Convert.Reporting
             if (!string.IsNullOrEmpty(categories))
             {
                 text.AppendLine($"- Left out by choice: {categories}");
+            }
+
+            List<string> excludedSources = new List<string>();
+            foreach (ConversionSource source in plan.Sources)
+            {
+                if (!source.Include)
+                {
+                    excludedSources.Add(source.Name);
+                }
+            }
+
+            if (excludedSources.Count > 0)
+            {
+                text.AppendLine("- Prefabs left out: " + string.Join(", ", excludedSources));
             }
 
             int individually = 0;
