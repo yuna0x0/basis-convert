@@ -37,6 +37,13 @@ Most of the code is deliberately free of scene and AssetDatabase access so it ca
 without an editor open. Keep it that way: readers take text, mappers take plain data, and only
 the writers touch Unity objects.
 
+Fixtures live in `Tests/Editor/Fixtures`. `SampleAvatar` is an avatar the package ships: a
+prefab carrying a descriptor, a PhysBone and a constraint as the missing scripts they arrive as,
+plus an expression menu, parameters, an animator and its clips. Prefer extending it over reaching
+for a real avatar, so the suite means something on a machine that has no purchased assets. Its
+animator half is generated through `Tools/Watari/Development/Regenerate Test Fixtures`, because
+hand-writing a state machine produces files that look right and do not load.
+
 Some tests need a real VRChat avatar imported into the Basis project. Those assets cannot be
 distributed, so the tests skip themselves when the fixture is absent rather than failing. If you
 are working on the readers, point the fixture path at an avatar you own.
