@@ -28,7 +28,7 @@ jobs:
 
       # Installs pnpm and Node, and runs the install. The pnpm version comes from
       # packageManager and the runtime from devEngines.runtime, both in docs/package.json.
-      - uses: pnpm/setup@v2
+      - uses: pnpm/setup@v2.1.0
         with:
           working-directory: docs
           cache: true
