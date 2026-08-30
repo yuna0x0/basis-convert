@@ -1,0 +1,24 @@
+{
+    "name": "yuna0x0.Basis.Convert.Editor.Tests",
+    "rootNamespace": "yuna0x0.Basis.Convert.Tests",
+    "references": [
+        "yuna0x0.Basis.Convert.Editor",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

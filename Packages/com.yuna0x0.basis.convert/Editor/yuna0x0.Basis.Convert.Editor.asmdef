@@ -1,0 +1,21 @@
+{
+    "name": "yuna0x0.Basis.Convert.Editor",
+    "rootNamespace": "yuna0x0.Basis.Convert",
+    "references": [
+        "BasisSDK",
+        "BasisSDKEditor",
+        "BasisDebug",
+        "com.gator-dragon-games.jigglephysics"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

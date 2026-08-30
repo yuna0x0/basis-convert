@@ -1,0 +1,49 @@
+# Unity generated
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# IDE / build
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Test and coverage output
+test-results.xml
+[Cc]ode[Cc]overage/
+
+# OS
+.DS_Store
+._*
+Thumbs.db
+
+# Never commit third party or purchased assets, or anything extracted from them.
+# Script guids and field names are facts about a file format and may be recorded in
+# agent/research; the files themselves are not ours to redistribute.
+*.unitypackage
+/Vendor/
+/ThirdParty/
+
+# Docusaurus (added at M2)
+/docs/node_modules/
+/docs/build/
+/docs/.docusaurus/

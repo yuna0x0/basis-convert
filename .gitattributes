@@ -1,0 +1,21 @@
+* text=auto eol=lf
+
+*.cs      text diff=csharp
+*.asmdef  text
+*.json    text
+*.md      text
+*.meta    text
+*.uss     text
+*.uxml    text
+
+# Unity binary assets. Kept out of the repo by policy, but if one ever lands,
+# treat it as binary rather than letting git mangle it.
+*.unity        -text
+*.prefab       -text
+*.asset        -text
+*.anim         -text
+*.controller   -text
+*.fbx          -text filter=lfs diff=lfs merge=lfs
+*.png          -text filter=lfs diff=lfs merge=lfs
+*.psd          -text filter=lfs diff=lfs merge=lfs
+*.tga          -text filter=lfs diff=lfs merge=lfs
