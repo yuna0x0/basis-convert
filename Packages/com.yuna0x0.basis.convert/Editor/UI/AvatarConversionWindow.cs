@@ -17,13 +17,13 @@ namespace yuna0x0.Basis.Convert.UI
     /// Nothing is written until Convert is pressed, and what it writes is one undo step.
     /// </para>
     /// </summary>
-    public sealed class PhysBoneConversionWindow : EditorWindow
+    public sealed class AvatarConversionWindow : EditorWindow
     {
         private GameObject _target;
         private string _sourceAssetPath;
         private string _blocker;
 
-        private AvatarJigglePlan _plan;
+        private AvatarConversionPlan _plan;
         private ConversionResult _result;
         private List<DiagnosticGroup> _groups;
 
@@ -38,22 +38,22 @@ namespace yuna0x0.Basis.Convert.UI
         /// </summary>
         private readonly JiggleMappingProfile _profile = JiggleMappingProfile.Default;
 
-        [MenuItem(ProductInfo.ToolsMenu + "Convert VRChat PhysBones")]
+        [MenuItem(ProductInfo.ToolsMenu + "Convert VRChat Avatar")]
         public static void Open()
         {
-            PhysBoneConversionWindow window = GetWindow<PhysBoneConversionWindow>();
-            window.titleContent = new GUIContent("PhysBones to Jiggle");
+            AvatarConversionWindow window = GetWindow<AvatarConversionWindow>();
+            window.titleContent = new GUIContent("Basis Convert");
             window.minSize = new Vector2(420f, 360f);
             window.Show();
         }
 
-        [MenuItem(ProductInfo.GameObjectMenu + "Convert VRChat PhysBones", false, 30)]
+        [MenuItem(ProductInfo.GameObjectMenu + "Convert VRChat Avatar", false, 30)]
         private static void OpenFromHierarchy(MenuCommand command)
         {
             Open();
             if (command.context is GameObject selected)
             {
-                GetWindow<PhysBoneConversionWindow>().SetTarget(selected);
+                GetWindow<AvatarConversionWindow>().SetTarget(selected);
             }
         }
 
@@ -73,8 +73,7 @@ namespace yuna0x0.Basis.Convert.UI
 
         private void OnGUI()
         {
-            EditorGUILayout.LabelField("VRChat PhysBones to Basis Jiggle Physics",
-                EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("VRChat avatar to Basis", EditorStyles.boldLabel);
             EditorGUILayout.LabelField(
                 "Reads the avatar's prefab directly, so the VRChat SDK is not needed.",
                 EditorStyles.wordWrappedMiniLabel);
@@ -122,11 +121,13 @@ namespace yuna0x0.Basis.Convert.UI
             int dropped = CountOf(DiagnosticSeverity.Dropped);
             int approximated = CountOf(DiagnosticSeverity.Approximated);
 
-            string summary = $"{_plan.PhysBonesFound} PhysBones and {_plan.CollidersFound} "
-                + $"colliders found. {_plan.Rigs.Count} jiggle rigs would be created.";
+            string summary = $"Found {_plan.PhysBonesFound} PhysBones, {_plan.CollidersFound} "
+                + $"colliders and {_plan.ConstraintsFound} constraints.\n"
+                + $"Would create {_plan.Rigs.Count} jiggle rigs and "
+                + $"{_plan.Constraints.Count} Basis constraints.";
 
             EditorGUILayout.HelpBox(summary,
-                _plan.Rigs.Count > 0 ? MessageType.Info : MessageType.Warning);
+                _plan.TotalPlanned > 0 ? MessageType.Info : MessageType.Warning);
 
             if (_plan.Unresolved > 0)
             {
@@ -161,11 +162,11 @@ namespace yuna0x0.Basis.Convert.UI
             if (_result != null)
             {
                 EditorGUILayout.HelpBox(
-                    $"Converted: {_result.RigsWritten} written"
-                    + (_result.RigsSkipped > 0 ? $", {_result.RigsSkipped} skipped" : string.Empty)
+                    $"Converted: {_result.TotalWritten} written"
+                    + (_result.TotalSkipped > 0 ? $", {_result.TotalSkipped} skipped" : string.Empty)
                     + ". Use the Basis Avatar component's Test in Editor button to see them "
                     + "move; plain Play mode does not calibrate the avatar.",
-                    _result.RigsSkipped > 0 ? MessageType.Warning : MessageType.Info);
+                    _result.TotalSkipped > 0 ? MessageType.Warning : MessageType.Info);
             }
         }
 
@@ -337,9 +338,9 @@ namespace yuna0x0.Basis.Convert.UI
                     Rescan();
                 }
 
-                using (new EditorGUI.DisabledScope(_plan.Rigs.Count == 0))
+                using (new EditorGUI.DisabledScope(_plan.TotalPlanned == 0))
                 {
-                    if (GUILayout.Button($"Convert {_plan.Rigs.Count} rigs"))
+                    if (GUILayout.Button($"Convert {_plan.TotalPlanned} components"))
                     {
                         Convert();
                     }
@@ -384,13 +385,13 @@ namespace yuna0x0.Basis.Convert.UI
                 return;
             }
 
-            _plan = AvatarJigglePlanner.Plan(_sourceAssetPath, _profile);
+            _plan = AvatarConversionPlanner.Plan(_sourceAssetPath, _profile);
             _groups = ConversionReport.Group(_plan);
 
-            if (_plan.PhysBonesFound == 0)
+            if (_plan.PhysBonesFound == 0 && _plan.ConstraintsFound == 0)
             {
-                _blocker = "No VRChat PhysBones were found in this avatar's prefab. If its "
-                    + "components were already stripped, or the avatar came from somewhere "
+                _blocker = "No convertible VRChat components were found in this avatar's "
+                    + "prefab. If they were already stripped, or the avatar came from somewhere "
                     + "other than VRChat, there is nothing here to convert yet.";
             }
         }
@@ -435,7 +436,7 @@ namespace yuna0x0.Basis.Convert.UI
                 Selection.activeGameObject = destination;
             }
 
-            _result = AvatarJiggleConverter.Apply(_plan, destination,
+            _result = AvatarConverter.Apply(_plan, destination,
                 $"{ProductInfo.Name}: PhysBones to Jiggle");
 
             _groups = ConversionReport.Group(_plan);

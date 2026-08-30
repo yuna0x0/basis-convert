@@ -34,11 +34,32 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public Transform SourceTransform;
     }
 
+    /// <summary>One Basis constraint the conversion intends to produce, and where it will go.</summary>
+    public sealed class PlannedConstraint
+    {
+        public BasisConstraintPlan Plan;
+
+        /// <summary>
+        /// The transform the component will sit on, which is the transform the constraint drives.
+        /// </summary>
+        public Transform SourceHost;
+
+        public List<Transform> SourceTransforms = new List<Transform>();
+        public Transform SourceWorldUpObject;
+
+        public string Describe()
+        {
+            return SourceHost != null
+                ? $"{SourceHost.name} ({Plan.Kind})"
+                : $"(unresolved {Plan.Kind})";
+        }
+    }
+
     /// <summary>
     /// The result of reading and mapping an avatar, before anything is written. This is what a
     /// dry run shows.
     /// </summary>
-    public sealed class AvatarJigglePlan
+    public sealed class AvatarConversionPlan
     {
         public string SourceAssetPath;
 
@@ -54,14 +75,19 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// </summary>
         public List<PlannedJiggleCollider> Colliders = new List<PlannedJiggleCollider>();
 
+        public List<PlannedConstraint> Constraints = new List<PlannedConstraint>();
+
         /// <summary>Diagnostics about the avatar as a whole, rather than one component.</summary>
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
 
         public int PhysBonesFound;
         public int CollidersFound;
+        public int ConstraintsFound;
 
         /// <summary>Components identified in the file but not tied to a live transform.</summary>
         public int Unresolved;
+
+        public int TotalPlanned => Rigs.Count + Constraints.Count;
 
         public IEnumerable<ConversionDiagnostic> AllDiagnostics()
         {
@@ -82,6 +108,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
             foreach (PlannedJiggleCollider collider in Colliders)
             {
                 foreach (ConversionDiagnostic diagnostic in collider.Plan.Diagnostics)
+                {
+                    yield return diagnostic;
+                }
+            }
+
+            foreach (PlannedConstraint constraint in Constraints)
+            {
+                foreach (ConversionDiagnostic diagnostic in constraint.Plan.Diagnostics)
                 {
                     yield return diagnostic;
                 }

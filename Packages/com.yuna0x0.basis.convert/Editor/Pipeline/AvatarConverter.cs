@@ -11,8 +11,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
     {
         public int RigsWritten;
         public int RigsSkipped;
+        public int ConstraintsWritten;
+        public int ConstraintsSkipped;
         public List<JiggleRig> Written = new List<JiggleRig>();
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
+
+        public int TotalWritten => RigsWritten + ConstraintsWritten;
+        public int TotalSkipped => RigsSkipped + ConstraintsSkipped;
     }
 
     /// <summary>
@@ -24,10 +29,10 @@ namespace yuna0x0.Basis.Convert.Pipeline
     /// in the source. Names are not used, since avatars repeat bone names.
     /// </para>
     /// </summary>
-    public static class AvatarJiggleConverter
+    public static class AvatarConverter
     {
         public static ConversionResult Apply(
-            AvatarJigglePlan plan, GameObject targetRoot, string undoName = "Convert PhysBones")
+            AvatarConversionPlan plan, GameObject targetRoot, string undoName = "Convert PhysBones")
         {
             ConversionResult result = new ConversionResult();
 
@@ -89,6 +94,41 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 result.Written.Add(JiggleRigWriter.Write(resolved, undoName));
                 result.RigsWritten++;
+            }
+
+            foreach (PlannedConstraint planned in plan.Constraints)
+            {
+                if (!TryTranslate(source, target, planned.SourceHost, out Transform host))
+                {
+                    result.ConstraintsSkipped++;
+                    result.Diagnostics.Add(DiagnosticSeverity.Warning, "apply.unresolved",
+                        $"The constraint for {planned.Describe()} has no counterpart in the "
+                        + "target hierarchy and was skipped.");
+                    continue;
+                }
+
+                ResolvedBasisConstraint resolved = new ResolvedBasisConstraint
+                {
+                    Plan = planned.Plan,
+                    Host = host.gameObject,
+                };
+
+                foreach (Transform sourceTransform in planned.SourceTransforms)
+                {
+                    resolved.Sources.Add(
+                        TryTranslate(source, target, sourceTransform, out Transform translated)
+                            ? translated
+                            : null);
+                }
+
+                if (TryTranslate(source, target, planned.SourceWorldUpObject,
+                        out Transform worldUp))
+                {
+                    resolved.WorldUpObject = worldUp;
+                }
+
+                BasisConstraintWriter.Write(resolved, undoName);
+                result.ConstraintsWritten++;
             }
 
             Undo.CollapseUndoOperations(group);

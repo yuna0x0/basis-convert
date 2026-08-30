@@ -11,10 +11,11 @@ result editable.
 ## What it does today
 
 Converts VRChat PhysBones and their colliders into Basis Jiggle Physics rigs, carrying over
-per-bone falloff curves, collider shapes, ignored transforms and grab settings.
+per-bone falloff curves, collider shapes, ignored transforms and grab settings. Converts all six
+VRChat constraint types into their Basis equivalents.
 
-Early, and the package name may still change. Constraints, avatar descriptors, legacy Dynamic
-Bone and Magica Cloth, and toggle systems come next. Props and worlds are in scope later, and so
+Early, and the package name may still change. Avatar descriptors, legacy Dynamic Bone and Magica
+Cloth, and toggle systems come next. Props and worlds are in scope later, and so
 are source platforms other than VRChat, which is why reading, mapping and writing are separate
 stages.
 
@@ -23,11 +24,11 @@ stages.
 1. Import your avatar into a Basis project. Its VRChat components will show as missing scripts,
    which is expected and is what this reads.
 2. Drag the avatar into a scene.
-3. Open **Tools > Basis Convert > Convert VRChat PhysBones**, or right-click the avatar in the
+3. Open **Tools > Basis Convert > Convert VRChat Avatar**, or right-click the avatar in the
    hierarchy and pick the same entry.
 4. Read the summary. Nothing is written until you press Convert, and the report lists everything
    that will be approximated or dropped.
-5. Convert, then tune the resulting Jiggle Rigs by hand. One undo reverts the whole conversion.
+5. Convert, then tune the resulting components by hand. One undo reverts the whole conversion.
 
 To check the result, use the `Basis Avatar` component's **Test in Editor** button. Jiggle physics
 only starts once an avatar is calibrated, so plain Play mode will not show it moving.

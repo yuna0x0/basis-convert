@@ -35,11 +35,12 @@ Chain splitting turned out to be unnecessary, see `../decisions/0006`.
 
 ## After that
 
-- **Constraints.** VRChat's constraint components onto the 14 Basis types. Basis already ships
-  `BasisConstraintConversion` for the Unity and Animation Rigging ones, so only the VRChat-native
-  ones need us. Three hazards: VRChat constraints can drive a transform other than their own,
-  their source list is 16 fixed slots plus an overflow list where only `totalLength` entries are
-  real, and `SolveInLocalSpace` / `FreezeToWorld` have no equivalent anywhere.
+- **Constraints. Done.** All six VRChat types map onto their Basis equivalents. The three
+  hazards were real and are handled: a constraint driving another transform is relocated onto
+  that transform, only the first `totalLength` of the 16 inline source slots are read, and
+  `SolveInLocalSpace` / `FreezeToWorld` are reported as dropped. Basis's own
+  `BasisConstraintConversion` still covers Unity and Animation Rigging constraints, which this
+  does not duplicate.
 - **Avatar descriptor.** Viseme, blink and eye settings onto `BasisAvatar`. The viseme ordering
   is identical, so it is positional. NDMF's `CommonAvatarInfo` already covers part of this.
 - **Legacy physics.** Dynamic Bone, whose fields map onto jiggle almost directly, and Magica

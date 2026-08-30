@@ -9,9 +9,9 @@ namespace yuna0x0.Basis.Convert.Tests
 {
     public class ConversionReportTests
     {
-        private static AvatarJigglePlan PlanWith(params ConversionDiagnostic[] diagnostics)
+        private static AvatarConversionPlan PlanWith(params ConversionDiagnostic[] diagnostics)
         {
-            AvatarJigglePlan plan = new AvatarJigglePlan { SourceAssetPath = "Assets/Test.prefab" };
+            AvatarConversionPlan plan = new AvatarConversionPlan { SourceAssetPath = "Assets/Test.prefab" };
             plan.Diagnostics.AddRange(diagnostics);
             return plan;
         }
@@ -21,7 +21,7 @@ namespace yuna0x0.Basis.Convert.Tests
         {
             // A single avatar produced 61 identical "Is Animated" warnings. Listed one by one
             // that is unreadable; as a count it is useful.
-            AvatarJigglePlan plan = PlanWith(
+            AvatarConversionPlan plan = PlanWith(
                 new ConversionDiagnostic(DiagnosticSeverity.Warning, "a.code", "first"),
                 new ConversionDiagnostic(DiagnosticSeverity.Warning, "a.code", "second"),
                 new ConversionDiagnostic(DiagnosticSeverity.Dropped, "b.code", "third"));
@@ -39,7 +39,7 @@ namespace yuna0x0.Basis.Convert.Tests
         [Test]
         public void GroupsAreOrderedMostSeriousFirst()
         {
-            AvatarJigglePlan plan = PlanWith(
+            AvatarConversionPlan plan = PlanWith(
                 new ConversionDiagnostic(DiagnosticSeverity.Mapped, "d.mapped", string.Empty),
                 new ConversionDiagnostic(DiagnosticSeverity.Warning, "a.warning", string.Empty),
                 new ConversionDiagnostic(DiagnosticSeverity.Approximated, "c.approx", string.Empty),
@@ -56,7 +56,7 @@ namespace yuna0x0.Basis.Convert.Tests
         [Test]
         public void TheReportStatesWhatWasFoundAndWhatWasNotCarriedOver()
         {
-            AvatarJigglePlan plan = PlanWith(
+            AvatarConversionPlan plan = PlanWith(
                 new ConversionDiagnostic(
                     DiagnosticSeverity.Dropped, "physbone.maxSquish.dropped", "Squish went."),
                 new ConversionDiagnostic(
@@ -82,7 +82,7 @@ namespace yuna0x0.Basis.Convert.Tests
                 Assert.Ignore($"Fixture not present at {fixturePath}.");
             }
 
-            AvatarJigglePlan plan = AvatarJigglePlanner.Plan(fixturePath);
+            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(fixturePath);
             string report = ConversionReport.Write(plan);
 
             TestContext.WriteLine(report.Length > 4000 ? report.Substring(0, 4000) : report);

@@ -8,6 +8,10 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- VRChat constraints convert to their Basis equivalents, covering all six types. A constraint
+  that drove a transform other than its own object is moved onto the transform it drives, since
+  Basis constraints always drive their own.
+
 - Reader for Unity YAML that recovers component data from assets whose scripts are missing,
   which is the case for every VRChat component in a Basis project.
 - Script identity table covering the VRChat SDK, Dynamic Bone and Magica Cloth, keyed on the

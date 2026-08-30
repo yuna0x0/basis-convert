@@ -25,9 +25,9 @@ reader, a new content type is a new mapper and writer, and neither disturbs the 
 
 Early: names, APIs and the package id are all still subject to change.
 
-Working: VRChat PhysBones and their colliders convert to Basis Jiggle Physics rigs, from
-**Tools > Basis Convert > Convert VRChat PhysBones**. Nothing is written until you confirm, and
-one undo reverts a whole conversion.
+Working: VRChat PhysBones, their colliders and all six VRChat constraint types convert to their
+Basis equivalents, from **Tools > Basis Convert > Convert VRChat Avatar**. Nothing is written
+until you confirm, and one undo reverts a whole conversion.
 
 ## Contributing
 

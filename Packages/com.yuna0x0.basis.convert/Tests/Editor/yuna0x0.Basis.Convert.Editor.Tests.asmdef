@@ -3,6 +3,7 @@
     "rootNamespace": "yuna0x0.Basis.Convert.Tests",
     "references": [
         "yuna0x0.Basis.Convert.Editor",
+        "BasisSDK",
         "com.gator-dragon-games.jigglephysics",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

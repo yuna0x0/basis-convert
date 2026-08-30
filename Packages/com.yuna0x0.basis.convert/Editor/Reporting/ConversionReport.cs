@@ -26,7 +26,7 @@ namespace yuna0x0.Basis.Convert.Reporting
     /// </summary>
     public static class ConversionReport
     {
-        public static List<DiagnosticGroup> Group(AvatarJigglePlan plan)
+        public static List<DiagnosticGroup> Group(AvatarConversionPlan plan)
         {
             Dictionary<string, DiagnosticGroup> groups = new Dictionary<string, DiagnosticGroup>();
 
@@ -58,11 +58,11 @@ namespace yuna0x0.Basis.Convert.Reporting
             return ordered;
         }
 
-        public static string Write(AvatarJigglePlan plan, ConversionResult result = null)
+        public static string Write(AvatarConversionPlan plan, ConversionResult result = null)
         {
             StringBuilder text = new StringBuilder();
 
-            text.AppendLine($"# {ProductInfo.Name}: PhysBones to Jiggle Physics");
+            text.AppendLine($"# {ProductInfo.Name}: VRChat avatar to Basis");
             text.AppendLine();
             text.AppendLine($"Source: {plan.SourceAssetPath}");
             text.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm}");
@@ -72,7 +72,9 @@ namespace yuna0x0.Basis.Convert.Reporting
             text.AppendLine();
             text.AppendLine($"- PhysBones found: {plan.PhysBonesFound}");
             text.AppendLine($"- Colliders found: {plan.CollidersFound}");
+            text.AppendLine($"- Constraints found: {plan.ConstraintsFound}");
             text.AppendLine($"- Jiggle rigs planned: {plan.Rigs.Count}");
+            text.AppendLine($"- Basis constraints planned: {plan.Constraints.Count}");
 
             if (plan.Unresolved > 0)
             {
@@ -81,10 +83,10 @@ namespace yuna0x0.Basis.Convert.Reporting
 
             if (result != null)
             {
-                text.AppendLine($"- Written: {result.RigsWritten}");
-                if (result.RigsSkipped > 0)
+                text.AppendLine($"- Written: {result.TotalWritten}");
+                if (result.TotalSkipped > 0)
                 {
-                    text.AppendLine($"- Skipped while writing: {result.RigsSkipped}");
+                    text.AppendLine($"- Skipped while writing: {result.TotalSkipped}");
                 }
             }
 
@@ -113,6 +115,19 @@ namespace yuna0x0.Basis.Convert.Reporting
                 foreach (DiagnosticGroup group in section)
                 {
                     text.AppendLine($"- **{group.Code}** ({group.Count}): {group.Example}");
+                }
+
+                text.AppendLine();
+            }
+
+            if (plan.Constraints.Count > 0)
+            {
+                text.AppendLine("## Constraints");
+                text.AppendLine();
+                foreach (PlannedConstraint constraint in plan.Constraints)
+                {
+                    text.AppendLine($"- {constraint.Describe()}, "
+                        + $"{constraint.Plan.Sources.Count} sources");
                 }
 
                 text.AppendLine();

@@ -12,14 +12,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
     /// Reads an avatar prefab, maps what it finds, and reports what a conversion would produce.
     /// Changes nothing.
     /// </summary>
-    public static class AvatarJigglePlanner
+    public static class AvatarConversionPlanner
     {
-        public static AvatarJigglePlan Plan(string prefabAssetPath,
+        public static AvatarConversionPlan Plan(string prefabAssetPath,
             JiggleMappingProfile profile = null)
         {
             profile ??= JiggleMappingProfile.Default;
 
-            AvatarJigglePlan plan = new AvatarJigglePlan { SourceAssetPath = prefabAssetPath };
+            AvatarConversionPlan plan = new AvatarConversionPlan { SourceAssetPath = prefabAssetPath };
 
             if (string.IsNullOrEmpty(prefabAssetPath)
                 || !System.IO.File.Exists(prefabAssetPath))
@@ -60,6 +60,19 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
+                if (VrcConstraintDocumentReader.TryGetKind(kind, out VrcConstraintKind constraintKind))
+                {
+                    plan.ConstraintsFound++;
+                    PlannedConstraint constraint =
+                        PlanConstraint(document, constraintKind, resolver, plan);
+                    if (constraint != null)
+                    {
+                        plan.Constraints.Add(constraint);
+                    }
+
+                    continue;
+                }
+
                 if (kind != SourceComponentKind.VrcPhysBone)
                 {
                     continue;
@@ -96,7 +109,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// </summary>
         private static Dictionary<long, PlannedJiggleCollider> MapColliders(
             List<UnityYamlDocument> documents, PrefabObjectResolver resolver,
-            AvatarJigglePlan plan)
+            AvatarConversionPlan plan)
         {
             Dictionary<long, PlannedJiggleCollider> colliders =
                 new Dictionary<long, PlannedJiggleCollider>();
@@ -142,12 +155,59 @@ namespace yuna0x0.Basis.Convert.Pipeline
             return colliders;
         }
 
+        private static PlannedConstraint PlanConstraint(
+            UnityYamlDocument document, VrcConstraintKind kind, PrefabObjectResolver resolver,
+            AvatarConversionPlan plan)
+        {
+            VrcConstraintData source = VrcConstraintDocumentReader.Read(document, kind);
+            BasisConstraintPlan constraintPlan = VrcConstraintToBasisMapper.Map(source);
+
+            if (!resolver.TryResolveTransform(constraintPlan.HostFileId, out Transform host))
+            {
+                plan.Unresolved++;
+                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "constraint.unresolved",
+                    $"A {kind} constraint at &{document.FileId} could not be tied to a transform "
+                    + "and was skipped.");
+                return null;
+            }
+
+            PlannedConstraint planned = new PlannedConstraint
+            {
+                Plan = constraintPlan,
+                SourceHost = host,
+            };
+
+            foreach (BasisConstraintSourcePlan entry in constraintPlan.Sources)
+            {
+                if (resolver.TryResolveTransform(entry.TransformFileId, out Transform sourceTransform))
+                {
+                    planned.SourceTransforms.Add(sourceTransform);
+                }
+                else
+                {
+                    planned.SourceTransforms.Add(null);
+                    constraintPlan.Diagnostics.Add(DiagnosticSeverity.Warning,
+                        "constraint.source.unresolved",
+                        "A constraint source could not be resolved and was dropped.");
+                }
+            }
+
+            if (constraintPlan.WorldUpTransformFileId != 0L
+                && resolver.TryResolveTransform(
+                    constraintPlan.WorldUpTransformFileId, out Transform worldUp))
+            {
+                planned.SourceWorldUpObject = worldUp;
+            }
+
+            return planned;
+        }
+
         private static PlannedJiggleRig PlanOne(
             UnityYamlDocument document,
             PrefabObjectResolver resolver,
             IReadOnlyDictionary<long, PlannedJiggleCollider> colliders,
             JiggleMappingProfile profile,
-            AvatarJigglePlan plan)
+            AvatarConversionPlan plan)
         {
             PhysBoneData source = PhysBoneDocumentReader.ReadPhysBone(document);
 

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using Basis.Scripts.BasisSdk.Constraints;
 using GatorDragonGames.JigglePhysics;
 using NUnit.Framework;
 using UnityEditor;
@@ -43,9 +44,11 @@ namespace yuna0x0.Basis.Convert.Tests
         {
             RequireFixture();
 
-            AvatarJigglePlan plan = AvatarJigglePlanner.Plan(FixturePath);
+            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(FixturePath);
 
             TestContext.WriteLine($"physbones found: {plan.PhysBonesFound}");
+            TestContext.WriteLine($"constraints found: {plan.ConstraintsFound}");
+            TestContext.WriteLine($"constraints planned: {plan.Constraints.Count}");
             TestContext.WriteLine($"colliders found: {plan.CollidersFound}");
             TestContext.WriteLine($"rigs planned:    {plan.Rigs.Count}");
             TestContext.WriteLine($"unresolved:      {plan.Unresolved}");
@@ -86,6 +89,22 @@ namespace yuna0x0.Basis.Convert.Tests
             Assert.That(snapped, Is.LessThanOrEqualTo(plan.CollidersFound),
                 "Collider diagnostics are duplicated across the rigs referencing them.");
 
+            Assert.That(plan.ConstraintsFound, Is.EqualTo(28));
+            Assert.That(plan.Constraints.Count, Is.EqualTo(28),
+                "Every constraint should be planned, not just the PhysBones.");
+
+            foreach (PlannedConstraint constraint in plan.Constraints)
+            {
+                Assert.That(constraint.SourceHost, Is.Not.Null);
+                Assert.That(constraint.Plan.Sources.Count, Is.GreaterThan(0),
+                    $"{constraint.Describe()} has no sources, so it would do nothing.");
+                foreach (Transform sourceTransform in constraint.SourceTransforms)
+                {
+                    Assert.That(sourceTransform, Is.Not.Null,
+                        $"{constraint.Describe()} has an unresolved source.");
+                }
+            }
+
             foreach (PlannedJiggleRig rig in plan.Rigs)
             {
                 Assert.That(rig.SourceRootBone, Is.Not.Null);
@@ -99,9 +118,11 @@ namespace yuna0x0.Basis.Convert.Tests
         {
             RequireFixture();
 
-            AvatarJigglePlan plan = AvatarJigglePlanner.Plan(FixturePath);
+            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(FixturePath);
 
             Assert.That(plan.SourceRoot.GetComponentsInChildren<JiggleRig>(true),
+                Is.Empty, "A dry run must not write anything.");
+            Assert.That(plan.SourceRoot.GetComponentsInChildren<BasisConstraintBase>(true),
                 Is.Empty, "A dry run must not write anything.");
         }
 
@@ -110,17 +131,35 @@ namespace yuna0x0.Basis.Convert.Tests
         {
             RequireFixture();
 
-            AvatarJigglePlan plan = AvatarJigglePlanner.Plan(FixturePath);
+            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(FixturePath);
             _instance = (GameObject)PrefabUtility.InstantiatePrefab(
                 AssetDatabase.LoadAssetAtPath<GameObject>(FixturePath));
             Assert.That(_instance, Is.Not.Null);
 
-            ConversionResult result = AvatarJiggleConverter.Apply(plan, _instance);
+            ConversionResult result = AvatarConverter.Apply(plan, _instance);
 
             TestContext.WriteLine($"written: {result.RigsWritten}, skipped: {result.RigsSkipped}");
 
-            Assert.That(result.RigsSkipped, Is.Zero);
+            Assert.That(result.TotalSkipped, Is.Zero);
             Assert.That(result.RigsWritten, Is.EqualTo(plan.Rigs.Count));
+            Assert.That(result.ConstraintsWritten, Is.EqualTo(plan.Constraints.Count));
+
+            BasisConstraintBase[] constraints =
+                _instance.GetComponentsInChildren<BasisConstraintBase>(true);
+            Assert.That(constraints.Length, Is.EqualTo(plan.Constraints.Count));
+
+            foreach (BasisConstraintBase constraint in constraints)
+            {
+                Assert.That(constraint.sourceCount, Is.GreaterThan(0),
+                    $"{constraint.name} was written with no sources.");
+
+                foreach (BasisConstraintSourceEntry entry in constraint.Sources)
+                {
+                    Assert.That(entry.sourceTransform, Is.Not.Null);
+                    Assert.That(entry.sourceTransform.IsChildOf(_instance.transform), Is.True,
+                        "A constraint source points outside the converted instance.");
+                }
+            }
 
             JiggleRig[] rigs = _instance.GetComponentsInChildren<JiggleRig>(true);
             Assert.That(rigs.Length, Is.EqualTo(plan.Rigs.Count));
@@ -159,20 +198,23 @@ namespace yuna0x0.Basis.Convert.Tests
         {
             RequireFixture();
 
-            AvatarJigglePlan plan = AvatarJigglePlanner.Plan(FixturePath);
+            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(FixturePath);
             _instance = (GameObject)PrefabUtility.InstantiatePrefab(
                 AssetDatabase.LoadAssetAtPath<GameObject>(FixturePath));
 
             Undo.IncrementCurrentGroup();
             int group = Undo.GetCurrentGroup();
 
-            AvatarJiggleConverter.Apply(plan, _instance);
+            AvatarConverter.Apply(plan, _instance);
             Assert.That(_instance.GetComponentsInChildren<JiggleRig>(true), Is.Not.Empty);
+            Assert.That(_instance.GetComponentsInChildren<BasisConstraintBase>(true), Is.Not.Empty);
 
             Undo.RevertAllDownToGroup(group);
 
             Assert.That(_instance.GetComponentsInChildren<JiggleRig>(true), Is.Empty,
                 "One undo should remove every rig the conversion added.");
+            Assert.That(_instance.GetComponentsInChildren<BasisConstraintBase>(true), Is.Empty,
+                "One undo should remove every constraint the conversion added.");
         }
     }
 }
