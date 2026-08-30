@@ -8,6 +8,10 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- The report now names the systems that do not convert at all: expression menus, expression
+  parameters, custom animation layers and VRChat contacts. None of them have a Basis equivalent,
+  and a report that stayed silent about them read as though nothing was lost.
+
 - Rig readiness check: reports whether the humanoid mapping is complete, whether a Jaw bone is
   mapped that the Basis setup guide asks to be cleared, whether the eye bones are mapped, and
   which arm bones have a twist child Basis will pick up. Offers to clear the Jaw mapping.

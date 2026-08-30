@@ -74,7 +74,8 @@ the original. Everything else maps directly.
   shipped source. The IK itself lives in `com.basis.eeriemovement`.
 - **Toggles and animation.** Expression menus and FX layers onto HVR Vixxy, ambient motion onto
   `BasisAuthoredMotion`. The least mechanical part by far; expect assisted authoring rather than
-  automatic conversion.
+  automatic conversion. Their presence is already reported, so a conversion no longer implies
+  they came across; what is missing is doing anything about them.
 - **Modular Avatar.** Works on Basis but has no Basis-specific integration. `MergeArmature` and
   `BoneProxy` mean the authored hierarchy is not the built hierarchy, which is the strongest
   argument for eventually offering a build-time path alongside the destructive one.

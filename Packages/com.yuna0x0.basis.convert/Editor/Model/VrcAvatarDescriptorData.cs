@@ -21,6 +21,28 @@ namespace yuna0x0.Basis.Convert.Model
         Blendshapes = 2,
     }
 
+    /// <summary>Which playable layer a controller was assigned to.</summary>
+    public enum VrcAnimationLayer
+    {
+        Base = 0,
+        Additive = 1,
+        Gesture = 2,
+        Action = 3,
+        FX = 4,
+        Sitting = 5,
+        TPose = 6,
+        IKPose = 7,
+    }
+
+    /// <summary>One entry of baseAnimationLayers or specialAnimationLayers.</summary>
+    public sealed class VrcAnimationLayerEntry
+    {
+        public VrcAnimationLayer Layer;
+
+        /// <summary>False when the layer is left on VRChat's stock controller.</summary>
+        public bool IsCustom;
+    }
+
     /// <summary>
     /// The parts of a VRCAvatarDescriptor that have a counterpart in Basis. Expression menus,
     /// animation layers and collider configuration are deliberately not read here: they belong
@@ -55,5 +77,17 @@ namespace yuna0x0.Basis.Convert.Model
 
         public long LeftEyeFileId;
         public long RightEyeFileId;
+
+        /// <summary>
+        /// The expression and animation systems, recorded only so a conversion can say they
+        /// exist and will not come across. Basis has no playable layers and no expression menu
+        /// format; HVR Vixxy replaces both, and is authored by hand.
+        /// </summary>
+        public bool HasExpressionsMenu;
+
+        public bool HasExpressionParameters;
+
+        public List<VrcAnimationLayerEntry> AnimationLayers =
+            new List<VrcAnimationLayerEntry>();
     }
 }

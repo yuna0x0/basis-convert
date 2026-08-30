@@ -75,6 +75,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
+                if (kind == SourceComponentKind.VrcContactReceiver
+                    || kind == SourceComponentKind.VrcContactSender)
+                {
+                    plan.ContactsFound++;
+                    continue;
+                }
+
                 if (kind == SourceComponentKind.DynamicBone)
                 {
                     plan.DynamicBonesFound++;
@@ -103,6 +110,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 }
 
                 plan.Rigs.Add(rig);
+            }
+
+            if (plan.ContactsFound > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "contacts.dropped",
+                    $"{plan.ContactsFound} VRChat contact senders and receivers were found. Basis "
+                    + "has no contact system, so anything driven by touch does not come across.");
             }
 
             // Only meaningful once the descriptor is known: a prop has physics but no rig, and

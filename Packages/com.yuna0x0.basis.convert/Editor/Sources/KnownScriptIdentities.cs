@@ -17,6 +17,8 @@ namespace yuna0x0.Basis.Convert.Sources
         VrcExpressionsMenu,
         VrcExpressionParameters,
         VrcPipelineManager,
+        VrcContactReceiver,
+        VrcContactSender,
         DynamicBone,
         DynamicBoneCollider,
         DynamicBonePlaneCollider,
@@ -45,6 +47,7 @@ namespace yuna0x0.Basis.Convert.Sources
         public const string GuidVrcConstraintAssembly = "58e2f01a24261a14cb82e6d3399e8b16";
         public const string GuidVrcSdk3AAssembly = "67cc4cb7839cd3741b63733d5adf0442";
         public const string GuidVrcCoreEditorAssembly = "4ecd63eff847044b68db9453ce219299";
+        public const string GuidVrcContactAssembly = "80f1b8067b0760e4bb45023bc2e9de66";
 
         private static readonly Dictionary<(string Guid, long FileId), SourceComponentKind> Table =
             new Dictionary<(string, long), SourceComponentKind>
@@ -70,6 +73,9 @@ namespace yuna0x0.Basis.Convert.Sources
                 { (GuidVrcSdk3AAssembly, -1506855854L), SourceComponentKind.VrcExpressionParameters },
 
                 { (GuidVrcCoreEditorAssembly, -1427037861L), SourceComponentKind.VrcPipelineManager },
+
+                { (GuidVrcContactAssembly, -1450912254L), SourceComponentKind.VrcContactReceiver },
+                { (GuidVrcContactAssembly, -802764141L), SourceComponentKind.VrcContactSender },
 
                 { ("f9ac8d30c6a0d9642a11e5be4c440740", LooseScriptFileId), SourceComponentKind.DynamicBone },
                 { ("baedd976e12657241bf7ff2d1c685342", LooseScriptFileId), SourceComponentKind.DynamicBoneCollider },

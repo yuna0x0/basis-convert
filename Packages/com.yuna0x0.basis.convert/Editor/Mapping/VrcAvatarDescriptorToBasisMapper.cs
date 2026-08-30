@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using yuna0x0.Basis.Convert.Model;
 
@@ -40,6 +41,7 @@ namespace yuna0x0.Basis.Convert.Mapping
 
             MapVisemes(source, plan);
             MapBlink(source, plan);
+            ReportExpressionSystems(source, plan);
 
             plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "descriptor.autoSetup",
                 "The animator, human scale, renderer list and mouth position were left for "
@@ -47,6 +49,48 @@ namespace yuna0x0.Basis.Convert.Mapping
                 + "overwrite values that are already set, so what came from VRChat stays.");
 
             return plan;
+        }
+
+        /// <summary>
+        /// Basis has no playable animation layers and no expression menu format, so none of this
+        /// converts. It is reported anyway: an avatar's toggles and gestures are most of what
+        /// its owner notices, and a report that stays silent about them reads as though nothing
+        /// was lost.
+        /// </summary>
+        private static void ReportExpressionSystems(
+            VrcAvatarDescriptorData source, BasisAvatarPlan plan)
+        {
+            if (source.HasExpressionsMenu)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "descriptor.expressionsMenu",
+                    "The avatar has an expression menu. Basis has no equivalent format; its "
+                    + "in-app avatar menu is built from HVR Vixxy components, which have to be "
+                    + "authored by hand.");
+            }
+
+            if (source.HasExpressionParameters)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "descriptor.expressionParameters",
+                    "The avatar has expression parameters. Basis has no synced parameter list; "
+                    + "Vixxy controls carry their own state instead.");
+            }
+
+            if (source.AnimationLayers.Count == 0)
+            {
+                return;
+            }
+
+            List<string> names = new List<string>();
+            foreach (VrcAnimationLayerEntry layer in source.AnimationLayers)
+            {
+                names.Add(layer.Layer.ToString());
+            }
+
+            plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "descriptor.animationLayers",
+                $"{names.Count} custom animation layers were assigned ({string.Join(", ", names)}). "
+                + "Basis has no playable layer system, so gestures, toggles and any animation "
+                + "driven through them do not come across. Rebuild what you need with HVR Vixxy "
+                + "for toggles and Basis Authored Motion for looping movement.");
         }
 
         private static void MapVisemes(VrcAvatarDescriptorData source, BasisAvatarPlan plan)

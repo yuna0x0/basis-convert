@@ -154,6 +154,74 @@ namespace yuna0x0.Basis.Convert.Tests
         }
 
         [Test]
+        public void TheExpressionSystemsAreReportedRatherThanPassedOverInSilence()
+        {
+            // These are most of what an avatar's owner notices. A report that says nothing about
+            // them reads as though nothing was lost.
+            List<string> lines = new List<string>
+            {
+                "--- !u!114 &701",
+                "MonoBehaviour:",
+                "  m_GameObject: {fileID: 1}",
+                "  ViewPosition: {x: 0, y: 1.2, z: 0.08}",
+                "  lipSync: 3",
+                "  VisemeSkinnedMesh: {fileID: 55}",
+                "  customExpressions: 1",
+                "  expressionsMenu: {fileID: 11400000, guid: 680d0017fa4a211428aef69c8d5020c2, type: 2}",
+                "  expressionParameters: {fileID: 11400000, guid: 01928f26b6522bf4f99368e79ce6cd5a, type: 2}",
+                "  customizeAnimationLayers: 1",
+                "  baseAnimationLayers:",
+                "  - isEnabled: 0",
+                "    type: 0",
+                "    animatorController: {fileID: 9100000, guid: 205e26ae23607e84d8c162452df418b6, type: 2}",
+                "    mask: {fileID: 0}",
+                "    isDefault: 0",
+                "  - isEnabled: 0",
+                "    type: 2",
+                "    animatorController: {fileID: 0}",
+                "    mask: {fileID: 0}",
+                "    isDefault: 1",
+                "  - isEnabled: 0",
+                "    type: 4",
+                "    animatorController: {fileID: 9100000, guid: 214bad824fc67d94a8b40f11ecfcc3c0, type: 2}",
+                "    mask: {fileID: 0}",
+                "    isDefault: 0",
+                "  specialAnimationLayers:",
+                "  - isEnabled: 0",
+                "    type: 6",
+                "    animatorController: {fileID: 0}",
+                "    mask: {fileID: 0}",
+                "    isDefault: 1",
+            };
+
+            List<UnityYamlDocument> documents = UnityYamlScanner.Scan(lines);
+            VrcAvatarDescriptorData data = VrcAvatarDescriptorReader.Read(documents[0]);
+
+            Assert.That(data.HasExpressionsMenu, Is.True);
+            Assert.That(data.HasExpressionParameters, Is.True);
+
+            // Only layers with a controller that is not VRChat's stock one count: those are the
+            // ones somebody authored and will have to rebuild.
+            Assert.That(data.AnimationLayers.Count, Is.EqualTo(2));
+            Assert.That(data.AnimationLayers[0].Layer, Is.EqualTo(VrcAnimationLayer.Base));
+            Assert.That(data.AnimationLayers[1].Layer, Is.EqualTo(VrcAnimationLayer.FX));
+
+            BasisAvatarPlan plan = VrcAvatarDescriptorToBasisMapper.Map(data);
+            Assert.That(plan.Diagnostics.HasCode("descriptor.expressionsMenu"), Is.True);
+            Assert.That(plan.Diagnostics.HasCode("descriptor.expressionParameters"), Is.True);
+            Assert.That(plan.Diagnostics.HasCode("descriptor.animationLayers"), Is.True);
+        }
+
+        [Test]
+        public void AnAvatarWithNoExpressionSystemsReportsNothingAboutThem()
+        {
+            BasisAvatarPlan plan = VrcAvatarDescriptorToBasisMapper.Map(ReadDescriptor());
+
+            Assert.That(plan.Diagnostics.HasCode("descriptor.expressionsMenu"), Is.False);
+            Assert.That(plan.Diagnostics.HasCode("descriptor.animationLayers"), Is.False);
+        }
+
+        [Test]
         public void ReadsTheDescriptorInARealAvatar()
         {
             if (!File.Exists(FixturePath))

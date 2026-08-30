@@ -50,6 +50,11 @@ namespace yuna0x0.Basis.Convert.Sources
             data.VisemeBlendShapes = ReadStringSequence(document, "VisemeBlendShapes");
             ReadEyeLookSettings(document, data);
 
+            data.HasExpressionsMenu = HasAssetReference(document, "expressionsMenu");
+            data.HasExpressionParameters = HasAssetReference(document, "expressionParameters");
+            ReadAnimationLayers(document, "baseAnimationLayers", data);
+            ReadAnimationLayers(document, "specialAnimationLayers", data);
+
             return data;
         }
 
@@ -121,6 +126,78 @@ namespace yuna0x0.Basis.Convert.Sources
                         break;
                 }
             }
+        }
+
+        private static bool HasAssetReference(UnityYamlDocument document, string key)
+        {
+            string raw = document.GetTopLevelValue(key);
+            return !string.IsNullOrEmpty(raw) && Regex.IsMatch(raw, @"guid:\s*[0-9a-fA-F]{32}");
+        }
+
+        /// <summary>
+        /// A layer counts as custom when it has a controller assigned and is not left on
+        /// VRChat's stock one. Those are the layers someone authored and will have to rebuild.
+        /// </summary>
+        private static void ReadAnimationLayers(
+            UnityYamlDocument document, string key, VrcAvatarDescriptorData data)
+        {
+            if (!document.TryGetTopLevelBlock(key, out List<string> block))
+            {
+                return;
+            }
+
+            int type = -1;
+            bool hasController = false;
+            bool isDefault = false;
+            bool started = false;
+
+            void Flush()
+            {
+                if (started && type >= 0 && hasController && !isDefault)
+                {
+                    data.AnimationLayers.Add(new VrcAnimationLayerEntry
+                    {
+                        Layer = (VrcAnimationLayer)type,
+                        IsCustom = true,
+                    });
+                }
+            }
+
+            foreach (string line in block)
+            {
+                string trimmed = line.Trim();
+
+                if (trimmed.StartsWith("-"))
+                {
+                    Flush();
+                    started = true;
+                    type = -1;
+                    hasController = false;
+                    isDefault = false;
+                }
+
+                Match match = NestedFieldPattern.Match(trimmed.TrimStart('-', ' '));
+                if (!match.Success)
+                {
+                    continue;
+                }
+
+                string value = match.Groups["value"].Value;
+                switch (match.Groups["key"].Value)
+                {
+                    case "type":
+                        UnityYamlValues.TryParseInt(value, out type);
+                        break;
+                    case "animatorController":
+                        hasController = Regex.IsMatch(value, @"guid:\s*[0-9a-fA-F]{32}");
+                        break;
+                    case "isDefault":
+                        isDefault = UnityYamlValues.TryParseInt(value, out int flag) && flag != 0;
+                        break;
+                }
+            }
+
+            Flush();
         }
 
         private static long FileIdIn(string raw)

@@ -102,6 +102,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public int CollidersFound;
         public int ConstraintsFound;
         public int DynamicBonesFound;
+        public int ContactsFound;
 
         /// <summary>Components identified in the file but not tied to a live transform.</summary>
         public int Unresolved;
