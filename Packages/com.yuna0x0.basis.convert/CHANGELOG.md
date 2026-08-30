@@ -6,6 +6,14 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-31
+
+### Changed
+
+- Renamed to Watari. The menu is now **Tools > Watari > Convert Avatar to Basis**, and the
+  repository moved to `yuna0x0/watari-basis`. The package id is unchanged, so an installed copy
+  updates in place.
+
 ## [0.1.0] - 2026-08-30
 
 First release.
@@ -45,5 +53,6 @@ First release.
 - Component data is read from prefab files, so the avatar must still be linked to its prefab,
   and changes made to a prefab instance in a scene rather than to the prefab are not seen.
 
-[Unreleased]: https://github.com/yuna0x0/basis-convert/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/yuna0x0/basis-convert/releases/tag/v0.1.0
+[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.1.1
+[0.1.0]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.1.0

@@ -70,7 +70,7 @@ No extra tooling, and useful for trying an unreleased version.
 **Window > Package Manager > + > Add package from git URL**:
 
 ```
-https://github.com/yuna0x0/basis-convert.git?path=/Packages/com.yuna0x0.basis.convert
+https://github.com/yuna0x0/watari-basis.git?path=/Packages/com.yuna0x0.basis.convert
 ```
 
 Add `#v0.1.0` to the end to pin a version. Packages added this way are updated by removing and
@@ -88,6 +88,6 @@ Every release also has a `.unitypackage` attached, for projects that do not use 
 at all.
 
 Download it from the
-[releases page](https://github.com/yuna0x0/basis-convert/releases) and drag it into your project.
+[releases page](https://github.com/yuna0x0/watari-basis/releases) and drag it into your project.
 It restores to `Packages/com.yuna0x0.basis.convert`, so Unity treats it as an embedded package.
 Updating means deleting that folder first, then importing the new one.

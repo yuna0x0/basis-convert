@@ -39,7 +39,7 @@ export default function Home() {
           beside a converted avatar, shown under the hero.
           Save as docs/static/img/hero-window.png, then replace this comment with:
           <div className="container margin-top--lg text--center">
-            <img src="/basis-convert/img/hero-window.png" alt="The Convert Avatar window" />
+            <img src="/watari-basis/img/hero-window.png" alt="The Convert Avatar window" />
           </div>
         */}
         <HomepageFeatures />

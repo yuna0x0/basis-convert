@@ -2,7 +2,7 @@
 const {themes} = require('prism-react-renderer');
 
 const organizationName = 'yuna0x0';
-const projectName = 'basis-convert';
+const projectName = 'watari-basis';
 const defaultLocale = 'en';
 
 /** @type {import('@docusaurus/types').Config} */

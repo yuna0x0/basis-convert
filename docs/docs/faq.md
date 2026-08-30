@@ -42,7 +42,7 @@ Two settings are fits rather than conversions: stiffness and drag. Both are adju
 
 ### A component was reported as an unknown script.
 
-Please [open an issue](https://github.com/yuna0x0/basis-convert/issues) with the code from the
+Please [open an issue](https://github.com/yuna0x0/watari-basis/issues) with the code from the
 report. Components are identified by their script reference, and that table only grows by people
 reporting what it does not yet know.
 

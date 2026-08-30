@@ -25,7 +25,7 @@ casing wins over it.
 
 ## Rejected
 
-- `com.yuna0x0.basis-convert` with namespace `yuna0x0.BasisConvert`. Treats "BasisConvert" as
+- `com.yuna0x0.watari-basis` with namespace `yuna0x0.BasisConvert`. Treats "BasisConvert" as
   one atom, leaving nowhere for sibling packages and no natural split point for shared code.
 - `Yuna0x0` as the namespace root. Only worth it if C# required an uppercase first character,
   which it does not.

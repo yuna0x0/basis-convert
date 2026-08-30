@@ -59,7 +59,7 @@ namespace yuna0x0.Basis.Convert.UI
         /// </summary>
         private readonly JiggleMappingProfile _profile = JiggleMappingProfile.Default;
 
-        [MenuItem(ProductInfo.ToolsMenu + "Convert Avatar")]
+        [MenuItem(ProductInfo.ToolsMenu + "Convert Avatar to Basis")]
         public static void Open()
         {
             AvatarConversionWindow window = GetWindow<AvatarConversionWindow>();
@@ -68,7 +68,7 @@ namespace yuna0x0.Basis.Convert.UI
             window.Show();
         }
 
-        [MenuItem(ProductInfo.GameObjectMenu + "Convert Avatar", false, 30)]
+        [MenuItem(ProductInfo.GameObjectMenu + "Convert Avatar to Basis", false, 30)]
         private static void OpenFromHierarchy(MenuCommand command)
         {
             Open();

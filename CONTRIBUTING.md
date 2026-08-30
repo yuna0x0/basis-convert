@@ -12,7 +12,7 @@ Develop this repository separately and link the package into that project, so th
 independent:
 
 ```sh
-ln -s /path/to/basis-convert/Packages/com.yuna0x0.basis.convert \
+ln -s /path/to/watari-basis/Packages/com.yuna0x0.basis.convert \
       /path/to/Basis/Basis/Packages/com.yuna0x0.basis.convert
 ```
 

@@ -10,10 +10,10 @@ and menus intact.
 
 Clothing and accessories convert with the avatar they are worn on.
 
-Open **Tools > Watari > Convert Avatar**, pick your avatar, and read what it found.
+Open **Tools > Watari > Convert Avatar to Basis**, pick your avatar, and read what it found.
 Nothing is written until you press Convert.
 
-Documentation: **https://yuna0x0.github.io/basis-convert/**
+Documentation: **https://yuna0x0.github.io/watari-basis/**
 
 Requires a Basis project. The package builds against the Basis SDK, Jiggle Physics and HVR Basis
 Comms, all of which ship with the Basis framework.

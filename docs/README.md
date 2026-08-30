@@ -37,5 +37,5 @@ picker appears on its own.
 ## Deploying
 
 `url` and `baseUrl` in `docusaurus.config.js` are set for GitHub Pages at
-`https://yuna0x0.github.io/basis-convert/`. To serve it from a custom domain instead, set `url` to
+`https://yuna0x0.github.io/watari-basis/`. To serve it from a custom domain instead, set `url` to
 that domain, `baseUrl` to `/`, and add a `static/CNAME` file containing the domain.

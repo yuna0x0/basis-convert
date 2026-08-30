@@ -15,7 +15,7 @@ Clothing and accessories convert with the avatar they are worn on.
 Nothing is written until you press Convert, one undo reverts the lot, and anything that cannot
 come across cleanly is listed rather than dropped quietly.
 
-Documentation: **https://yuna0x0.github.io/basis-convert/**
+Documentation: **https://yuna0x0.github.io/watari-basis/**
 
 ## Installing
 
@@ -39,11 +39,11 @@ openupm add com.yuna0x0.basis.convert
 Or by git URL, in Unity's Package Manager under `Add package from git URL`:
 
 ```
-https://github.com/yuna0x0/basis-convert.git?path=/Packages/com.yuna0x0.basis.convert
+https://github.com/yuna0x0/watari-basis.git?path=/Packages/com.yuna0x0.basis.convert
 ```
 
 Every release also has a `.unitypackage` attached. The
-[documentation](https://yuna0x0.github.io/basis-convert/docs/installation) covers all four in
+[documentation](https://yuna0x0.github.io/watari-basis/docs/installation) covers all four in
 full.
 
 ## Contributing
