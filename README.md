@@ -1,7 +1,7 @@
 # basis-convert
 
 Editor tooling for bringing content from other social VR platforms into
-[Basis](https://basisvr.org/). First target: VRChat PhysBones to Jiggle Physics.
+[Basis](https://basisvr.org/).
 
 The package is in [`Packages/com.yuna0x0.basis.convert`](Packages/com.yuna0x0.basis.convert).
 Read [its README](Packages/com.yuna0x0.basis.convert/README.md) to install and use it; this file

@@ -11,6 +11,9 @@ namespace yuna0x0.Basis.Convert.Sources
         VrcPositionConstraint,
         VrcRotationConstraint,
         VrcAimConstraint,
+        VrcParentConstraint,
+        VrcScaleConstraint,
+        VrcLookAtConstraint,
         VrcExpressionsMenu,
         VrcExpressionParameters,
         VrcPipelineManager,
@@ -52,6 +55,15 @@ namespace yuna0x0.Basis.Convert.Sources
                 { (GuidVrcConstraintAssembly, 1116338486L), SourceComponentKind.VrcPositionConstraint },
                 { (GuidVrcConstraintAssembly, 1788371120L), SourceComponentKind.VrcRotationConstraint },
                 { (GuidVrcConstraintAssembly, -926596935L), SourceComponentKind.VrcAimConstraint },
+
+                // Computed rather than observed: the reference avatars do not use these three.
+                // Unity derives a DLL type's fileID from "s\0\0\0" + namespace + name, hashed
+                // with MD4, taking the first four bytes little-endian. Reproducing that for the
+                // ten identities above, all of which were read off real assets, gives exactly the
+                // values listed, so the same derivation is trusted for these.
+                { (GuidVrcConstraintAssembly, 575728033L), SourceComponentKind.VrcParentConstraint },
+                { (GuidVrcConstraintAssembly, 41250163L), SourceComponentKind.VrcScaleConstraint },
+                { (GuidVrcConstraintAssembly, -372946275L), SourceComponentKind.VrcLookAtConstraint },
 
                 { (GuidVrcSdk3AAssembly, 542108242L), SourceComponentKind.VrcAvatarDescriptor },
                 { (GuidVrcSdk3AAssembly, -340790334L), SourceComponentKind.VrcExpressionsMenu },

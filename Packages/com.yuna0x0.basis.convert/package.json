@@ -2,7 +2,7 @@
   "name": "com.yuna0x0.basis.convert",
   "displayName": "Basis Convert",
   "version": "0.0.1",
-  "description": "Editor tooling for bringing content from other social VR platforms into Basis. First target: VRChat PhysBones to Jiggle Physics.",
+  "description": "Editor tooling for bringing content from other social VR platforms into Basis.",
   "unity": "6000.5",
   "author": {
     "name": "yuna0x0",
