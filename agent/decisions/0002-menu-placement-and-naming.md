@@ -13,8 +13,8 @@ Editor surfaces go under our own product name, never under Basis's menus:
 | project context actions | `Assets/<ProductName>/...` |
 | components, all `EditorOnly` | `AddComponentMenu("<ProductName>/...")` |
 
-The display name `Basis Convert` is **provisional** and must be settled before the first public
-release, because renaming a published UPM package is disruptive.
+The display name `Basis Convert` is **provisional** and should be settled before the first
+public release, because renaming a published UPM package breaks everyone who installed it.
 
 ## Why
 
@@ -42,6 +42,6 @@ observed convention is the whole rulebook.
 
 `basis` as a scope segment in a package id follows Haï's precedent and reads as "our
 Basis-related things". A display name of "Basis Convert" is closer to using the mark as the
-product name, which is the shape the policy warns about. Either pick a distinct product name
-and demote Basis to the description, or ask the Basis project for permission first, which
-`TRADEMARK.md` invites ("Contact us if unsure").
+product name, which is the shape the policy warns about. Two ways out: pick a distinct product
+name and let the description carry the Basis reference, or ask the Basis project for permission,
+which `TRADEMARK.md` explicitly invites ("Contact us if unsure"). Unresolved for now.

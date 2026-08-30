@@ -1,44 +1,39 @@
 # agent/
 
-Committed knowledge base for AI agents and humans picking this repo up cold. The point is that
-a future session should not have to re-derive what an earlier one already established.
+Committed notes so that work can be picked up between sessions without re-deriving what is
+already known. Aimed at AI agents, useful to anyone.
 
 ## Layout
 
-| folder | holds | lifetime |
-|---|---|---|
-| `research/` | API inventories, file format notes, extracts from other projects' docs and source | updated when re-verified |
-| `plans/` | design documents for the current and upcoming milestones | living |
-| `decisions/` | short ADR-style notes: what was decided, why, what was rejected | append only |
-| `worklog/` | `YYYY-MM-DD.md`, one per working session: what happened, what broke, where it stopped | append only |
+| folder | holds |
+|---|---|
+| `research/` | API inventories, file format notes, findings about other projects |
+| `plans/` | design documents for current and upcoming work |
+| `decisions/` | what was decided, why, and what was rejected |
+| `worklog/` | `YYYY-MM-DD.md` per session: what happened, what broke, where it stopped |
 
-## How to use it
+`decisions/` is append-only. Reversing a decision means adding a new one that supersedes it, and
+saying so in both. Research notes are corrected in place when they turn out to be wrong, rather
+than accumulating contradictions.
 
-Read `decisions/` and the newest `worklog/` entry before changing direction on anything. If you
-are about to argue for an approach, check whether it was already considered and rejected.
+## Accuracy
 
-Research notes record what was true when written. **Verify before relying on anything that
-names a file, field or flag.** BasisVR develops on a `developer` branch, every one of its
-packages is version `0.0.1`, and several fields this package touches are `private` or
-`internal` and reached through `SerializedObject`. Things move.
+These notes record what was true when written, against a framework that moves. Verify before
+relying on anything specific, and fix what you find stale.
 
-When a research note turns out to be wrong, fix the note in place rather than adding a
-correction elsewhere. When a decision is reversed, add a new decision that supersedes the old
-one and say so in both.
+Numbers measured against a particular avatar are calibration, not guarantees. Say which avatar,
+or at least say that a number came from one sample.
 
-## Hygiene rules
+## What does not belong here
 
-These are not optional. This repo is going to be public.
+- **Personal information.** Contributors commit under their own name and address, and nothing
+  else needs identifying. Do not record who did what, machine-specific absolute paths, or
+  anything about a contributor's setup that is not needed to reproduce a result. Write paths as
+  `/path/to/...` or relative to the repository.
+- **Third party assets**, in any form, including inside a `.unitypackage`: no VRChat SDK, no
+  purchased avatars or plugins. Script GUIDs, fileIDs and field names are facts about a file
+  format and are fine to record; the files are not ours to redistribute.
+- **Secrets.** No tokens, credentials, asset bundle passwords or server configuration.
 
-1. **Identity.** The only identity that appears anywhere is `yuna0x0 <yuna@yuna0x0.com>`. Never
-   a login address, never a real name, never a machine-specific absolute path. Write `~/...`
-   or repo-relative paths.
-2. **No third party assets.** Never commit the VRChat SDK, Dynamic Bone, Magica Cloth 2, or any
-   avatar bought from Booth or elsewhere, in any form, including inside a `.unitypackage`.
-   Script guids, fileIDs and field names are facts about a file format and are fine to record
-   here. The files themselves are not ours to redistribute.
-3. **Fixtures are hand authored.** Test fixtures are minimal prefab YAML written by hand and
-   checked into the package's `Tests/Editor/Fixtures`. Real avatars are used for local
-   end-to-end checks only, from outside the repo, and their findings are recorded here as
-   prose and numbers rather than as files.
-4. **No secrets.** No tokens, no passwords, no `.BEE` passwords, no server config.
+Test fixtures are hand-authored minimal YAML in the package's test folder. Findings from real
+avatars are recorded here as prose and numbers, never as committed assets.

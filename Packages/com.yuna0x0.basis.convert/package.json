@@ -2,7 +2,7 @@
   "name": "com.yuna0x0.basis.convert",
   "displayName": "Basis Convert",
   "version": "0.0.1",
-  "description": "Unity Editor tooling that converts VRChat avatar components into their BasisVR equivalents, starting with PhysBones to Jiggle Physics. Built with Basis. Not affiliated with or endorsed by the Basis Project.",
+  "description": "Editor tooling for bringing content from other social VR platforms into Basis. First target: VRChat PhysBones to Jiggle Physics.",
   "unity": "6000.5",
   "author": {
     "name": "yuna0x0",
@@ -20,9 +20,10 @@
     "basis",
     "basisvr",
     "avatar",
-    "vrchat",
+    "migration",
     "converter",
-    "editor-tool"
+    "editor-tool",
+    "vrchat"
   ],
   "hideInEditor": false,
   "vpmDependencies": {

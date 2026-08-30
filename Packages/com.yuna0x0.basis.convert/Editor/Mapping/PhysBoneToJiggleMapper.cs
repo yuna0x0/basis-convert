@@ -12,12 +12,11 @@ namespace yuna0x0.Basis.Convert.Mapping
     /// here can be unit tested directly.
     /// </para>
     /// <para>
-    /// Most of the mapping is exact, because the two systems agree on more than they look like
-    /// they do: both evaluate a falloff curve as <c>value * curve(t)</c> over normalized
-    /// distance from the chain root, so curves carry across untouched. What is not exact is
-    /// called out with an <see cref="DiagnosticSeverity.Approximated"/> diagnostic, and what has
-    /// no equivalent at all is reported as <see cref="DiagnosticSeverity.Dropped"/> rather than
-    /// silently ignored.
+    /// Both systems evaluate a falloff curve as <c>value * curve(t)</c> over normalized distance
+    /// from the chain root, so curves carry across untouched and much of the mapping is exact.
+    /// What is not exact is reported as <see cref="DiagnosticSeverity.Approximated"/>, and what
+    /// has no equivalent is reported as <see cref="DiagnosticSeverity.Dropped"/> rather than
+    /// omitted silently.
     /// </para>
     /// </summary>
     public static class PhysBoneToJiggleMapper

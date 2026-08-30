@@ -1,11 +1,11 @@
-# 0004: This package must never leave a runtime component on an avatar
+# 0004: Everything ships editor-only
 
 **Status:** accepted, 2026-08-30
 
 ## Decision
 
-Everything this package ships is editor-only. Any bookkeeping the converter needs to persist
-lives on a child GameObject tagged `EditorOnly`.
+No runtime component of ours may be left on converted content. Anything the converter needs to
+persist lives on a child GameObject tagged `EditorOnly`.
 
 ## Why
 

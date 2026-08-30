@@ -12,8 +12,9 @@ Ship through two channels:
    his own listing, and Basis users already have ALCOM or VCC pointed at listings.
 2. **OpenUPM**, for plain UPM consumers who are not using a VPM client.
 
-Git URL installation keeps working regardless, and is the lowest friction path while the
-package is pre-release. It is how the Basis project itself pulls in Chillaxins.
+Git URL installation through the Unity Package Manager works regardless and needs no additional
+tooling, so it stays the documented default and the method the README leads with. It is also how
+the Basis project itself pulls in Chillaxins.
 
 ## What the listing needs
 
