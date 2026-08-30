@@ -21,17 +21,27 @@ namespace yuna0x0.Basis.Convert.Model
         Blendshapes = 2,
     }
 
-    /// <summary>Which playable layer a controller was assigned to.</summary>
+    /// <summary>
+    /// Which playable layer a controller was assigned to.
+    /// <para>
+    /// Taken from the SDK assembly rather than from the ordering usually quoted, which omits
+    /// <c>Deprecated0</c> and so shifts everything after it by one. With the wrong ordering a
+    /// real avatar's layers read as Base, Action, FX, Sitting when they are actually Base,
+    /// Gesture, Action, FX, which looks plausible enough to go unnoticed. Decompiled from
+    /// VRCSDK3A.dll, VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.AnimLayerType.
+    /// </para>
+    /// </summary>
     public enum VrcAnimationLayer
     {
         Base = 0,
-        Additive = 1,
-        Gesture = 2,
-        Action = 3,
-        FX = 4,
-        Sitting = 5,
-        TPose = 6,
-        IKPose = 7,
+        Deprecated0 = 1,
+        Additive = 2,
+        Gesture = 3,
+        Action = 4,
+        FX = 5,
+        Sitting = 6,
+        TPose = 7,
+        IKPose = 8,
     }
 
     /// <summary>One entry of baseAnimationLayers or specialAnimationLayers.</summary>

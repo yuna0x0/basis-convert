@@ -82,9 +82,19 @@ equivalent.
 - `customEyeLookSettings.eyelidsBlendshapes` is an `int[]` that Unity writes as a **hex byte
   blob**, for example `1d000000ffffffffffffffff` meaning `{29, -1, -1}`, little-endian int32.
   It is not a string.
-- `baseAnimationLayers` / `specialAnimationLayers` entries carry a `type` field
-  (`Base=0, Additive=1, Gesture=2, Action=3, FX=4, Sitting=5, TPose=6, IKPose=7`). Key off
-  `type`, never off array position.
+- `baseAnimationLayers` / `specialAnimationLayers` entries carry a `type` field. **The ordering
+  usually quoted is wrong.** Decompiled from `VRCSDK3A.dll`
+  (`VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.AnimLayerType`) it is:
+
+  ```
+  Base = 0, Deprecated0 = 1, Additive = 2, Gesture = 3,
+  Action = 4, FX = 5, Sitting = 6, TPose = 7, IKPose = 8
+  ```
+
+  The commonly cited version omits `Deprecated0` and shifts everything after it by one. Using it,
+  a real avatar's layers read as Base, Action, FX, Sitting when they are actually Base, Gesture,
+  Action, FX. Plausible enough to go unnoticed, and it makes the FX layer look like Sitting.
+  Key off `type`, never off array position.
 - VRC constraints serialize `Sources` as **16 fixed inline slots plus an `overflowList`**, where
   only the first `totalLength` entries are meaningful. Slots past that are defaults.
 - VRC constraints have a `TargetTransform` that lets them drive a transform other than their

@@ -204,12 +204,31 @@ namespace yuna0x0.Basis.Convert.Tests
             // ones somebody authored and will have to rebuild.
             Assert.That(data.AnimationLayers.Count, Is.EqualTo(2));
             Assert.That(data.AnimationLayers[0].Layer, Is.EqualTo(VrcAnimationLayer.Base));
-            Assert.That(data.AnimationLayers[1].Layer, Is.EqualTo(VrcAnimationLayer.FX));
+            Assert.That(data.AnimationLayers[1].Layer, Is.EqualTo(VrcAnimationLayer.Action),
+                "Type 4 is Action, not FX: the SDK enum has Deprecated0 at 1.");
 
             BasisAvatarPlan plan = VrcAvatarDescriptorToBasisMapper.Map(data);
             Assert.That(plan.Diagnostics.HasCode("descriptor.expressionsMenu"), Is.True);
             Assert.That(plan.Diagnostics.HasCode("descriptor.expressionParameters"), Is.True);
             Assert.That(plan.Diagnostics.HasCode("descriptor.animationLayers"), Is.True);
+        }
+
+        [Test]
+        public void TheAnimationLayerOrderingMatchesTheSdk()
+        {
+            // The ordering usually quoted omits Deprecated0 and shifts everything after it. With
+            // that version a real avatar's layers read as Base, Action, FX, Sitting when they are
+            // Base, Gesture, Action, FX: wrong, and plausible enough to go unnoticed. Values are
+            // from VRCSDK3A.dll.
+            Assert.That((int)VrcAnimationLayer.Base, Is.EqualTo(0));
+            Assert.That((int)VrcAnimationLayer.Deprecated0, Is.EqualTo(1));
+            Assert.That((int)VrcAnimationLayer.Additive, Is.EqualTo(2));
+            Assert.That((int)VrcAnimationLayer.Gesture, Is.EqualTo(3));
+            Assert.That((int)VrcAnimationLayer.Action, Is.EqualTo(4));
+            Assert.That((int)VrcAnimationLayer.FX, Is.EqualTo(5));
+            Assert.That((int)VrcAnimationLayer.Sitting, Is.EqualTo(6));
+            Assert.That((int)VrcAnimationLayer.TPose, Is.EqualTo(7));
+            Assert.That((int)VrcAnimationLayer.IKPose, Is.EqualTo(8));
         }
 
         [Test]
