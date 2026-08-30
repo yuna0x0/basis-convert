@@ -34,6 +34,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public Transform SourceTransform;
     }
 
+    /// <summary>One Vixxy control the conversion intends to produce.</summary>
+    public sealed class PlannedVixxyControl
+    {
+        public VixxyControlPlan Plan;
+        public List<Transform> SourceTargets = new List<Transform>();
+    }
+
     /// <summary>The avatar descriptor the conversion intends to produce.</summary>
     public sealed class PlannedAvatarDescriptor
     {
@@ -103,6 +110,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// generated from, once emitting is implemented.
         /// </summary>
         public List<ResolvedToggle> Toggles = new List<ResolvedToggle>();
+
+        /// <summary>Menu toggles that can be rebuilt as Vixxy controls, with their targets.</summary>
+        public List<PlannedVixxyControl> VixxyControls = new List<PlannedVixxyControl>();
 
         /// <summary>Diagnostics about the avatar as a whole, rather than one component.</summary>
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();

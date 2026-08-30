@@ -15,11 +15,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public int ConstraintsWritten;
         public int ConstraintsSkipped;
         public bool DescriptorWritten;
+        public int VixxyControlsWritten;
         public List<JiggleRig> Written = new List<JiggleRig>();
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
 
         public int TotalWritten =>
-            RigsWritten + ConstraintsWritten + (DescriptorWritten ? 1 : 0);
+            RigsWritten + ConstraintsWritten + VixxyControlsWritten
+            + (DescriptorWritten ? 1 : 0);
         public int TotalSkipped => RigsSkipped + ConstraintsSkipped;
     }
 
@@ -135,6 +137,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
 
             WriteDescriptor(plan, source, target, undoName, result);
+            WriteVixxyControls(plan, source, target, undoName, result);
 
             Undo.CollapseUndoOperations(group);
             return result;
@@ -168,6 +171,45 @@ namespace yuna0x0.Basis.Convert.Pipeline
             BasisAvatarWriter.Write(resolved, undoName);
             result.DescriptorWritten = true;
         }
+
+        private static void WriteVixxyControls(
+            AvatarConversionPlan plan, Transform source, Transform target, string undoName,
+            ConversionResult result)
+        {
+            foreach (PlannedVixxyControl planned in plan.VixxyControls)
+            {
+                ResolvedVixxyControl resolved = new ResolvedVixxyControl
+                {
+                    Plan = planned.Plan,
+                    Host = targetRootOf(target),
+                };
+
+                bool ok = true;
+                foreach (Transform sourceTarget in planned.SourceTargets)
+                {
+                    if (!TryTranslate(source, target, sourceTarget, out Transform translated))
+                    {
+                        ok = false;
+                        break;
+                    }
+
+                    resolved.Targets.Add(translated);
+                }
+
+                if (!ok)
+                {
+                    result.Diagnostics.Add(DiagnosticSeverity.Warning, "apply.vixxyUnresolved",
+                        $"'{planned.Plan.MenuName}' switches an object with no counterpart in "
+                        + "the target hierarchy and was skipped.");
+                    continue;
+                }
+
+                VixxyWriter.Write(resolved, undoName);
+                result.VixxyControlsWritten++;
+            }
+        }
+
+        private static GameObject targetRootOf(Transform target) => target.gameObject;
 
         private static SkinnedMeshRenderer TranslateRenderer(
             Transform source, Transform target, SkinnedMeshRenderer renderer)

@@ -8,6 +8,10 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- Menu toggles that only switch objects are rebuilt as HVR Vixxy controls, each with a menu item.
+  Toggles that also set blendshapes or drive material properties are reported rather than half
+  built.
+
 - The window names what it detected before converting: VRChat avatar, humanoid avatar with
   Dynamic Bone, prop or clothing, and the signals behind the guess. Warns when something has a
   humanoid rig but nothing convertible on it, which usually means the wrong object was picked.

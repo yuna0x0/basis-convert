@@ -6,7 +6,8 @@
         "BasisSDK",
         "com.gator-dragon-games.jigglephysics",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "HVR.Basis.Comms"
     ],
     "includePlatforms": [
         "Editor"

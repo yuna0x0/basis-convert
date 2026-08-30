@@ -19,6 +19,8 @@ result editable.
   Basis constraints always drive their own.
 - **Avatar descriptor.** View position, the fifteen visemes and blink become a `BasisAvatar`
   component.
+- **Menu toggles.** Toggles that only switch objects on and off are rebuilt as HVR Vixxy
+  controls with menu items. Ones that do more are reported, not half built.
 - **Rig check.** Reports the humanoid rig against what Basis's full-body IK needs, and offers to
   clear the Jaw mapping the Basis setup guide asks to be removed.
 

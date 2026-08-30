@@ -459,6 +459,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 }
             }
 
+            BuildVixxyControls(plan);
+
             int toggleControls = plan.Expressions.CountOf(VrcExpressionControlType.Toggle);
 
             plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "expressions.togglesResolved",
@@ -466,6 +468,68 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 + $"animator layer, and {simple} of those only switch objects on and off or set "
                 + "blendshapes, which is what a Vixxy control holds. The rest drive material "
                 + "properties or animate over time and need rebuilding by hand.");
+        }
+
+        /// <summary>
+        /// Turns the toggles that can be rebuilt into Vixxy controls, resolving each switched
+        /// object's path against the avatar.
+        /// </summary>
+        private static void BuildVixxyControls(AvatarConversionPlan plan)
+        {
+            foreach (ResolvedToggle toggle in plan.Toggles)
+            {
+                VixxyControlPlan control = ToggleToVixxyMapper.Map(toggle);
+
+                foreach (ConversionDiagnostic diagnostic in control.Diagnostics)
+                {
+                    plan.Diagnostics.Add(diagnostic);
+                }
+
+                if (control.Activations.Count == 0)
+                {
+                    continue;
+                }
+
+                PlannedVixxyControl planned = new PlannedVixxyControl { Plan = control };
+                bool resolved = true;
+
+                foreach (VixxyActivationPlan activation in control.Activations)
+                {
+                    Transform target = plan.SourceRoot.transform.Find(activation.Path);
+                    if (target == null)
+                    {
+                        plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vixxy.targetMissing",
+                            $"'{control.MenuName}' switches {activation.Path}, which is not in "
+                            + "this avatar. The clip was authored against a different hierarchy.");
+                        resolved = false;
+                        break;
+                    }
+
+                    // Whatever the toggle did not animate stays as the avatar was authored.
+                    if (!activation.BothSidesAnimated)
+                    {
+                        bool authored = target.gameObject.activeSelf;
+                        if (activation.Choices[0] == activation.Choices[1])
+                        {
+                            activation.Choices[activation.Choices[1] ? 0 : 1] = authored;
+                        }
+                    }
+
+                    planned.SourceTargets.Add(target);
+                }
+
+                if (resolved)
+                {
+                    plan.VixxyControls.Add(planned);
+                }
+            }
+
+            if (plan.VixxyControls.Count > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "vixxy.rebuilt",
+                    $"{plan.VixxyControls.Count} menu toggles were rebuilt as Vixxy controls, "
+                    + "each with a menu item. The rest are listed above with why they were not.");
+            }
         }
 
         private static PlannedAvatarDescriptor PlanDescriptor(

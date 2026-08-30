@@ -5,7 +5,8 @@
         "BasisSDK",
         "BasisSDKEditor",
         "BasisDebug",
-        "com.gator-dragon-games.jigglephysics"
+        "com.gator-dragon-games.jigglephysics",
+        "HVR.Basis.Comms"
     ],
     "includePlatforms": [
         "Editor"
