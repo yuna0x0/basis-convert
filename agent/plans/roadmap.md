@@ -79,6 +79,12 @@ the original. Everything else maps directly.
   menu items, covering object switching, blendshapes and material properties. On the reference
   avatar 10 of 26 rebuild; the rest are reported with why. What remains:
 
+  - **Multi-value selectors.** A menu often has several controls sharing one int parameter, each
+    selecting a value: nine facial expressions on `F_Parts`, five hairstyles on `Hair`, outfit
+    sets on `F_Set`. Their layers hold one state per value, and the reader only understands
+    two-state on/off layers, so they are skipped. Vixxy holds this natively as a control with
+    several choices, so this is the next real coverage win: on the reference avatar it is 3 of
+    the 14 parameters behind its 26 menu toggles, and they are the ones people use most.
   - **Toggles in merged animators.** Only 11 of the reference avatar's 26 toggles are traced to
     an animator layer at all, and 10 of those 11 rebuild. The avatar ships several FX
     controllers and the descriptor names one; Modular Avatar's `MergeAnimator` brings the rest

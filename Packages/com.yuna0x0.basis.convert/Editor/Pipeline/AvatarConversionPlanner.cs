@@ -614,12 +614,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             int toggleControls = plan.Expressions.CountOf(VrcExpressionControlType.Toggle);
 
+            // Counting controls against traced parameters compares unlike things: a menu often
+            // has several controls sharing one parameter, each selecting a different value.
             plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "expressions.togglesResolved",
-                $"{plan.Toggles.Count} of {toggleControls} menu toggles were traced to an "
-                + $"animator layer, and {simple} of those only switch objects on and off, set "
-                + "blendshapes or set material properties, which is what a Vixxy control holds. "
-                + "The rest animate over time or drive something else and need rebuilding by "
-                + "hand.");
+                $"{plan.Toggles.Count} animator layers were traced from the {toggleControls} "
+                + "menu toggles, which share fewer parameters between them. Of those layers, "
+                + $"{simple} only switch objects on and off, set blendshapes or set material "
+                + "properties, which is what a Vixxy control holds. The rest animate over time "
+                + "or drive something else and need rebuilding by hand.");
         }
 
         /// <summary>
