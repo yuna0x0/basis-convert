@@ -74,16 +74,25 @@ the original. Everything else maps directly.
   not in the `BasisFullIKConstraintJob` the constraints page names, which does not exist in the
   shipped source. The IK itself lives in `com.basis.eeriemovement`.
 - **Toggles and animation. Partly done.** Menu toggles are rebuilt as HVR Vixxy controls with
-  menu items, covering object switching and blendshapes. On the reference avatar 9 of 26 rebuild;
-  the rest are reported with why. What remains:
+  menu items, covering object switching, blendshapes and material properties. On the reference
+  avatar 10 of 26 rebuild; the rest are reported with why. What remains:
 
-  - **Material properties.** Two of that avatar's toggles drive them, 14 in one case. Vixxy can
-    express them, so this is the next increment and reuses the subject and property path that
-    blendshapes already use.
+  - **Toggles in merged animators.** Only 11 of the reference avatar's 26 toggles are traced to
+    an animator layer at all, and 10 of those 11 rebuild. The avatar ships several FX
+    controllers and the descriptor names one; Modular Avatar's `MergeAnimator` brings the rest
+    in at build time. Reading those is worth more for coverage than anything below it, and is
+    the first concrete cost of the authored hierarchy not being the built hierarchy.
   - **Puppets.** A radial puppet maps onto a Vixxy control with several choices and a slider
     presentation. Two and four axis puppets have no equivalent.
   - **Ambient motion onto `BasisAuthoredMotion`.** Untouched. Clips that animate over time are
     currently counted and reported, and this is where they would go.
+
+  Material properties are done. A clip sets one channel at a time, `material._Color.r` and its
+  siblings, so the channels are gathered back into one property, typed by how they were named:
+  r, g, b, a is a colour, x, y, z, w is a vector, no suffix is a float. Channels neither side of
+  the toggle sets are read from the material as authored, the same rule blendshapes already
+  used. Vixxy applies these through a `MaterialPropertyBlock`, which covers every material on
+  the renderer, so a renderer with more than one material gets a diagnostic saying so.
 
 - **Conversion options in the window. Done.** A conversion can be narrowed rather than being all
   or nothing. Basic is five checkboxes over the kinds of thing a conversion produces: physics,

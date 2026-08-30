@@ -465,9 +465,10 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "expressions.togglesResolved",
                 $"{plan.Toggles.Count} of {toggleControls} menu toggles were traced to an "
-                + $"animator layer, and {simple} of those only switch objects on and off or set "
-                + "blendshapes, which is what a Vixxy control holds. The rest drive material "
-                + "properties or animate over time and need rebuilding by hand.");
+                + $"animator layer, and {simple} of those only switch objects on and off, set "
+                + "blendshapes or set material properties, which is what a Vixxy control holds. "
+                + "The rest animate over time or drive something else and need rebuilding by "
+                + "hand.");
         }
 
         /// <summary>
@@ -549,39 +550,127 @@ namespace yuna0x0.Basis.Convert.Pipeline
             foreach (VixxySubjectPlan subject in control.Subjects)
             {
                 Transform target = plan.SourceRoot.transform.Find(subject.Path);
-                SkinnedMeshRenderer renderer = target == null
-                    ? null
-                    : target.GetComponent<SkinnedMeshRenderer>();
+                Renderer renderer = target == null ? null : target.GetComponent<Renderer>();
 
-                if (renderer == null || renderer.sharedMesh == null)
+                if (renderer == null)
                 {
                     plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vixxy.rendererMissing",
-                        $"'{control.MenuName}' sets blendshapes on {subject.Path}, which is not a "
-                        + "skinned mesh in this avatar.");
+                        $"'{control.MenuName}' sets {subject.Path}, which is not a renderer in "
+                        + "this avatar.");
                     return false;
                 }
 
-                foreach (VixxyBlendShapePlan shape in subject.BlendShapes)
+                if (subject.BlendShapes.Count > 0)
                 {
-                    if (shape.BothSidesAnimated)
+                    SkinnedMeshRenderer skinned = renderer as SkinnedMeshRenderer;
+                    if (skinned == null || skinned.sharedMesh == null)
                     {
-                        continue;
+                        plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vixxy.rendererMissing",
+                            $"'{control.MenuName}' sets blendshapes on {subject.Path}, which is "
+                            + "not a skinned mesh in this avatar.");
+                        return false;
                     }
 
-                    int index = renderer.sharedMesh.GetBlendShapeIndex(shape.ShapeName);
-                    float authored = index >= 0 ? renderer.GetBlendShapeWeight(index) : 0f;
+                    FillBlendShapeDefaults(skinned, subject);
+                }
 
-                    // Whichever side the clip did not set keeps the authored weight.
-                    if (Mathf.Approximately(shape.Choices[0], shape.Choices[1]))
-                    {
-                        shape.Choices[shape.Choices[1] != 0f ? 0 : 1] = authored;
-                    }
+                if (subject.MaterialProperties.Count > 0)
+                {
+                    // Vixxy resolves the component by class name, so it has to be the type that
+                    // is actually there rather than the one the clip was authored against.
+                    subject.RendererTypeName = renderer.GetType().FullName;
+                    FillMaterialDefaults(plan, control, renderer, subject);
                 }
 
                 planned.SourceRenderers.Add(renderer);
             }
 
             return true;
+        }
+
+        private static void FillBlendShapeDefaults(
+            SkinnedMeshRenderer renderer, VixxySubjectPlan subject)
+        {
+            foreach (VixxyBlendShapePlan shape in subject.BlendShapes)
+            {
+                if (shape.BothSidesAnimated)
+                {
+                    continue;
+                }
+
+                int index = renderer.sharedMesh.GetBlendShapeIndex(shape.ShapeName);
+                float authored = index >= 0 ? renderer.GetBlendShapeWeight(index) : 0f;
+
+                // Whichever side the clip did not set keeps the authored weight.
+                if (Mathf.Approximately(shape.Choices[0], shape.Choices[1]))
+                {
+                    shape.Choices[shape.Choices[1] != 0f ? 0 : 1] = authored;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fills in the channels neither side of the toggle set, from the material as authored.
+        /// A clip that sets only the red channel of a colour, or only sets it in one state, is
+        /// the common case rather than the exception.
+        /// </summary>
+        private static void FillMaterialDefaults(
+            AvatarConversionPlan plan, VixxyControlPlan control, Renderer renderer,
+            VixxySubjectPlan subject)
+        {
+            Material material = renderer.sharedMaterial;
+
+            foreach (VixxyMaterialPropertyPlan property in subject.MaterialProperties)
+            {
+                Vector4 authored = AuthoredValue(material, property);
+
+                for (int channel = 0; channel < property.Channels; channel++)
+                {
+                    if (!property.SetWhenOff[channel])
+                    {
+                        Vector4 off = property.Choices[0];
+                        off[channel] = authored[channel];
+                        property.Choices[0] = off;
+                    }
+
+                    if (!property.SetWhenOn[channel])
+                    {
+                        Vector4 on = property.Choices[1];
+                        on[channel] = authored[channel];
+                        property.Choices[1] = on;
+                    }
+                }
+            }
+
+            // Vixxy sets material properties through a MaterialPropertyBlock, which the renderer
+            // applies to all of its materials at once.
+            if (renderer.sharedMaterials.Length > 1)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Approximated, "vixxy.materialBlock",
+                    $"'{control.MenuName}' sets material properties on {subject.Path}, which has "
+                    + $"{renderer.sharedMaterials.Length} materials. Vixxy applies them through a "
+                    + "MaterialPropertyBlock, so every material on that renderer is affected.");
+            }
+        }
+
+        /// <summary>What the material holds for a property, or zero when it does not have it.</summary>
+        private static Vector4 AuthoredValue(
+            Material material, VixxyMaterialPropertyPlan property)
+        {
+            if (material == null || !material.HasProperty(property.PropertyName))
+            {
+                return Vector4.zero;
+            }
+
+            switch (property.Kind)
+            {
+                case VixxyMaterialPropertyKind.Colour:
+                    return material.GetColor(property.PropertyName);
+                case VixxyMaterialPropertyKind.Vector:
+                    return material.GetVector(property.PropertyName);
+                default:
+                    return new Vector4(material.GetFloat(property.PropertyName), 0f, 0f, 0f);
+            }
         }
 
         private static PlannedAvatarDescriptor PlanDescriptor(

@@ -724,19 +724,30 @@ namespace yuna0x0.Basis.Convert.UI
         private static string Describe(VixxyControlPlan plan)
         {
             int shapes = 0;
+            int materials = 0;
             foreach (VixxySubjectPlan subject in plan.Subjects)
             {
                 shapes += subject.BlendShapes.Count;
+                materials += subject.MaterialProperties.Count;
             }
 
-            if (plan.Activations.Count > 0 && shapes > 0)
+            List<string> parts = new List<string>();
+            if (plan.Activations.Count > 0)
             {
-                return $"{plan.Activations.Count} objects, {shapes} blendshapes";
+                parts.Add($"{plan.Activations.Count} objects");
             }
 
-            return plan.Activations.Count > 0
-                ? $"{plan.Activations.Count} objects"
-                : $"{shapes} blendshapes";
+            if (shapes > 0)
+            {
+                parts.Add($"{shapes} blendshapes");
+            }
+
+            if (materials > 0)
+            {
+                parts.Add($"{materials} material properties");
+            }
+
+            return string.Join(", ", parts);
         }
 
         private void DrawActions()

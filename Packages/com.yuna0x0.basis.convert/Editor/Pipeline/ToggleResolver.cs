@@ -17,8 +17,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public ClipEffects WhenOn = new ClipEffects();
 
         /// <summary>
-        /// True when both sides do nothing but switch objects on and off or set blendshapes,
-        /// which is exactly what a Vixxy control holds.
+        /// True when both sides do nothing but switch objects on and off, set blendshapes or set
+        /// material properties, which is exactly what a Vixxy control holds.
         /// </summary>
         public bool IsSimple =>
             WhenOff.OtherCurves == 0 && WhenOn.OtherCurves == 0

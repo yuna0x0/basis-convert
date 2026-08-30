@@ -16,8 +16,8 @@ namespace yuna0x0.Basis.Convert.Writers
         /// <summary>Transforms to switch, in the same order as the plan's activations.</summary>
         public List<Transform> Targets = new List<Transform>();
 
-        /// <summary>Renderers to set blendshapes on, in the same order as the plan's subjects.</summary>
-        public List<SkinnedMeshRenderer> Renderers = new List<SkinnedMeshRenderer>();
+        /// <summary>Renderers the subjects act on, in the same order as the plan's subjects.</summary>
+        public List<Renderer> Renderers = new List<Renderer>();
     }
 
     /// <summary>
@@ -95,9 +95,10 @@ namespace yuna0x0.Basis.Convert.Writers
         }
 
         /// <summary>
-        /// Blendshapes are subjects rather than activations: a subject names the objects, and
-        /// carries a float property per shape with a weight for each choice. The property list is
-        /// a SerializeReference list, so each entry is assigned as a managed reference.
+        /// Blendshapes and material properties are subjects rather than activations: a subject
+        /// names the objects and carries a property per thing it sets, each with a value for
+        /// each choice. The property list is a SerializeReference list, so each entry is
+        /// assigned as a managed reference.
         /// </summary>
         private static void WriteSubjects(
             SerializedObject serialized, ResolvedVixxyControl control)
@@ -110,7 +111,7 @@ namespace yuna0x0.Basis.Convert.Writers
 
             for (int i = 0; i < control.Renderers.Count && i < planned.Count; i++)
             {
-                SkinnedMeshRenderer renderer = control.Renderers[i];
+                Renderer renderer = control.Renderers[i];
                 if (renderer == null)
                 {
                     continue;
@@ -128,13 +129,16 @@ namespace yuna0x0.Basis.Convert.Writers
                 subject.FindPropertyRelative("exceptions").arraySize = 0;
 
                 SerializedProperty properties = subject.FindPropertyRelative("properties");
-                properties.arraySize = planned[i].BlendShapes.Count;
+                properties.arraySize = planned[i].BlendShapes.Count
+                    + planned[i].MaterialProperties.Count;
+
+                int slot = 0;
 
                 for (int p = 0; p < planned[i].BlendShapes.Count; p++)
                 {
                     VixxyBlendShapePlan shape = planned[i].BlendShapes[p];
 
-                    SerializedProperty entry = properties.GetArrayElementAtIndex(p);
+                    SerializedProperty entry = properties.GetArrayElementAtIndex(slot++);
                     entry.managedReferenceValue = new HVRVixxyPropertyFloat
                     {
                         fullClassName = typeof(SkinnedMeshRenderer).FullName,
@@ -148,10 +152,77 @@ namespace yuna0x0.Basis.Convert.Writers
                     choices.GetArrayElementAtIndex(1).floatValue = shape.Choices[1];
                 }
 
+                foreach (VixxyMaterialPropertyPlan property in planned[i].MaterialProperties)
+                {
+                    WriteMaterialProperty(properties.GetArrayElementAtIndex(slot++),
+                        planned[i].RendererTypeName, property);
+                }
+
                 written++;
             }
 
             subjects.arraySize = written;
+        }
+
+        /// <summary>
+        /// One material property, as the type Vixxy holds that shape in. Vixxy's own editor
+        /// picks between a float, a vector and a colour the same way, and turns the property
+        /// name straight into a shader property id, so the name is the shader's own.
+        /// </summary>
+        private static void WriteMaterialProperty(
+            SerializedProperty entry, string rendererTypeName,
+            VixxyMaterialPropertyPlan property)
+        {
+            switch (property.Kind)
+            {
+                case VixxyMaterialPropertyKind.Colour:
+                {
+                    entry.managedReferenceValue = new HVRVixxyPropertyColor
+                    {
+                        fullClassName = rendererTypeName,
+                        variant = HVRVixxyPropertyVariant.MaterialProperty,
+                        propertyName = property.PropertyName,
+                    };
+
+                    SerializedProperty choices = entry.FindPropertyRelative("choices");
+                    choices.arraySize = 2;
+                    choices.GetArrayElementAtIndex(0).colorValue = property.Choices[0];
+                    choices.GetArrayElementAtIndex(1).colorValue = property.Choices[1];
+                    break;
+                }
+
+                case VixxyMaterialPropertyKind.Vector:
+                {
+                    entry.managedReferenceValue = new HVRVixxyPropertyVector4
+                    {
+                        fullClassName = rendererTypeName,
+                        variant = HVRVixxyPropertyVariant.MaterialProperty,
+                        propertyName = property.PropertyName,
+                    };
+
+                    SerializedProperty choices = entry.FindPropertyRelative("choices");
+                    choices.arraySize = 2;
+                    choices.GetArrayElementAtIndex(0).vector4Value = property.Choices[0];
+                    choices.GetArrayElementAtIndex(1).vector4Value = property.Choices[1];
+                    break;
+                }
+
+                default:
+                {
+                    entry.managedReferenceValue = new HVRVixxyPropertyFloat
+                    {
+                        fullClassName = rendererTypeName,
+                        variant = HVRVixxyPropertyVariant.MaterialProperty,
+                        propertyName = property.PropertyName,
+                    };
+
+                    SerializedProperty choices = entry.FindPropertyRelative("choices");
+                    choices.arraySize = 2;
+                    choices.GetArrayElementAtIndex(0).floatValue = property.Choices[0].x;
+                    choices.GetArrayElementAtIndex(1).floatValue = property.Choices[1].x;
+                    break;
+                }
+            }
         }
 
         private static void WriteMenuItem(

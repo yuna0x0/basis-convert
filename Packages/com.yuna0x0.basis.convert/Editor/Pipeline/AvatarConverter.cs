@@ -199,9 +199,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     resolved.Targets.Add(translated);
                 }
 
-                foreach (SkinnedMeshRenderer renderer in planned.SourceRenderers)
+                foreach (Renderer renderer in planned.SourceRenderers)
                 {
-                    SkinnedMeshRenderer translated = TranslateRenderer(source, target, renderer);
+                    Renderer translated = TranslateRenderer(source, target, renderer);
                     if (translated == null)
                     {
                         ok = false;
@@ -226,8 +226,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         private static GameObject targetRootOf(Transform target) => target.gameObject;
 
-        private static SkinnedMeshRenderer TranslateRenderer(
-            Transform source, Transform target, SkinnedMeshRenderer renderer)
+        private static T TranslateRenderer<T>(Transform source, Transform target, T renderer)
+            where T : Renderer
         {
             if (renderer == null)
             {
@@ -235,7 +235,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
 
             return TryTranslate(source, target, renderer.transform, out Transform translated)
-                ? translated.GetComponent<SkinnedMeshRenderer>()
+                ? translated.GetComponent<T>()
                 : null;
         }
 

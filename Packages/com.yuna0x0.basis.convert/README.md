@@ -20,8 +20,8 @@ result editable.
 - **Avatar descriptor.** View position, the fifteen visemes and blink become a `BasisAvatar`
   component.
 - **Menu toggles.** Toggles are rebuilt as HVR Vixxy controls with menu items, covering object
-  switching and blendshapes. Ones that drive material properties or animate over time are
-  reported, not half built.
+  switching, blendshapes and material properties. Ones that animate over time or drive something
+  Vixxy cannot hold are reported, not half built.
 - **Rig check.** Reports the humanoid rig against what Basis's full-body IK needs, and offers to
   clear the Jaw mapping the Basis setup guide asks to be removed.
 - **Convert as much or as little as you want.** Checkboxes for each of those kinds, and, under

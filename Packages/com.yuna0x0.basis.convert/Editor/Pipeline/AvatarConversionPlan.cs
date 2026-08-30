@@ -47,8 +47,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         public List<Transform> SourceTargets = new List<Transform>();
 
-        /// <summary>Renderers carrying the blendshapes, in the same order as the plan's subjects.</summary>
-        public List<SkinnedMeshRenderer> SourceRenderers = new List<SkinnedMeshRenderer>();
+        /// <summary>
+        /// Renderers the subjects name, in the same order as the plan's subjects. Blendshapes
+        /// need a skinned mesh; material properties work on any renderer.
+        /// </summary>
+        public List<Renderer> SourceRenderers = new List<Renderer>();
     }
 
     /// <summary>The avatar descriptor the conversion intends to produce.</summary>

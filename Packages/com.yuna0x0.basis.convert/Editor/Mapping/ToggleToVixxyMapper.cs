@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 using yuna0x0.Basis.Convert.Model;
 using yuna0x0.Basis.Convert.Pipeline;
 
@@ -7,10 +8,10 @@ namespace yuna0x0.Basis.Convert.Mapping
     /// <summary>
     /// Turns a resolved menu toggle into a Vixxy control, where it can be turned into one at all.
     /// <para>
-    /// Only object switching is rebuilt. A toggle that also sets blendshapes or drives material
-    /// properties is left alone rather than half converted: emitting the object switching and
-    /// silently dropping the rest would produce a control that looks right and does part of the
-    /// job, which is worse than not making it.
+    /// Object switching, blendshapes and material properties are rebuilt. A toggle that does
+    /// anything else is left alone rather than half converted: emitting part of it and silently
+    /// dropping the rest would produce a control that looks right and does some of the job,
+    /// which is worse than not making it.
     /// </para>
     /// </summary>
     public static class ToggleToVixxyMapper
@@ -27,8 +28,8 @@ namespace yuna0x0.Basis.Convert.Mapping
                 || toggle.WhenOn.AnimatedCurves + toggle.WhenOff.AnimatedCurves > 0)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vixxy.notSimple",
-                    $"'{toggle.MenuName}' drives material properties or animates over time, "
-                    + "which a Vixxy control cannot hold. Rebuild it by hand.");
+                    $"'{toggle.MenuName}' animates over time or drives something a Vixxy control "
+                    + "cannot hold, such as a transform. Rebuild it by hand.");
                 return plan;
             }
 
@@ -55,6 +56,7 @@ namespace yuna0x0.Basis.Convert.Mapping
             }
 
             MapBlendShapes(toggle, plan);
+            MapMaterialProperties(toggle, plan);
 
             if (plan.Activations.Count == 0 && plan.Subjects.Count == 0
                 && plan.Diagnostics.Count == 0)
@@ -73,9 +75,6 @@ namespace yuna0x0.Basis.Convert.Mapping
         /// </summary>
         private static void MapBlendShapes(ResolvedToggle toggle, VixxyControlPlan plan)
         {
-            Dictionary<string, VixxySubjectPlan> byPath =
-                new Dictionary<string, VixxySubjectPlan>();
-
             Dictionary<(string, string), float> off = ShapesIn(toggle.WhenOff);
             Dictionary<(string, string), float> on = ShapesIn(toggle.WhenOn);
 
@@ -87,12 +86,7 @@ namespace yuna0x0.Basis.Convert.Mapping
                 bool hasOn = on.TryGetValue((path, shape), out float onValue);
                 bool hasOff = off.TryGetValue((path, shape), out float offValue);
 
-                if (!byPath.TryGetValue(path, out VixxySubjectPlan subject))
-                {
-                    subject = new VixxySubjectPlan { Path = path };
-                    byPath[path] = subject;
-                    plan.Subjects.Add(subject);
-                }
+                VixxySubjectPlan subject = SubjectFor(plan, path);
 
                 subject.BlendShapes.Add(new VixxyBlendShapePlan
                 {
@@ -101,6 +95,88 @@ namespace yuna0x0.Basis.Convert.Mapping
                     BothSidesAnimated = hasOn && hasOff,
                 });
             }
+        }
+
+        /// <summary>
+        /// Material properties become subjects too, holding one property each. Vixxy applies
+        /// them through a MaterialPropertyBlock, so the property name is the shader's own.
+        /// <para>
+        /// A clip sets one channel of a colour at a time, `material._Color.r` and its siblings,
+        /// so the channels are gathered back into one property here. Which channels each side of
+        /// the toggle set is recorded rather than assumed: what a clip does not set keeps the
+        /// value the material was authored with, which is filled in once the renderer is known.
+        /// </para>
+        /// </summary>
+        private static void MapMaterialProperties(ResolvedToggle toggle, VixxyControlPlan plan)
+        {
+            Dictionary<(string, string), VixxyMaterialPropertyPlan> byProperty =
+                new Dictionary<(string, string), VixxyMaterialPropertyPlan>();
+
+            Collect(plan, toggle.WhenOff, byProperty, 0);
+            Collect(plan, toggle.WhenOn, byProperty, 1);
+        }
+
+        private static void Collect(
+            VixxyControlPlan plan, Sources.ClipEffects effects,
+            Dictionary<(string, string), VixxyMaterialPropertyPlan> byProperty, int choice)
+        {
+            foreach (Sources.MaterialPropertyEffect effect in effects.MaterialProperties)
+            {
+                if (!byProperty.TryGetValue((effect.Path, effect.PropertyName),
+                        out VixxyMaterialPropertyPlan property))
+                {
+                    VixxySubjectPlan subject = SubjectFor(plan, effect.Path);
+                    subject.RendererTypeName = effect.RendererTypeName;
+
+                    property = new VixxyMaterialPropertyPlan
+                    {
+                        PropertyName = effect.PropertyName,
+                        Kind = KindOf(effect),
+                    };
+
+                    subject.MaterialProperties.Add(property);
+                    byProperty[(effect.Path, effect.PropertyName)] = property;
+                }
+
+                int channel = effect.Channel < 0 ? 0 : effect.Channel;
+                Vector4 value = property.Choices[choice];
+                value[channel] = effect.Value;
+                property.Choices[choice] = value;
+
+                bool[] set = choice == 0 ? property.SetWhenOff : property.SetWhenOn;
+                set[channel] = true;
+            }
+        }
+
+        private static VixxyMaterialPropertyKind KindOf(Sources.MaterialPropertyEffect effect)
+        {
+            if (effect.Channel < 0)
+            {
+                return VixxyMaterialPropertyKind.Float;
+            }
+
+            return effect.ColourChannel
+                ? VixxyMaterialPropertyKind.Colour
+                : VixxyMaterialPropertyKind.Vector;
+        }
+
+        /// <summary>
+        /// The subject for one path, shared between blendshapes and material properties so a
+        /// toggle setting both on the same renderer produces one subject rather than two.
+        /// </summary>
+        private static VixxySubjectPlan SubjectFor(VixxyControlPlan plan, string path)
+        {
+            foreach (VixxySubjectPlan existing in plan.Subjects)
+            {
+                if (existing.Path == path)
+                {
+                    return existing;
+                }
+            }
+
+            VixxySubjectPlan subject = new VixxySubjectPlan { Path = path };
+            plan.Subjects.Add(subject);
+            return subject;
         }
 
         private static Dictionary<(string, string), float> ShapesIn(

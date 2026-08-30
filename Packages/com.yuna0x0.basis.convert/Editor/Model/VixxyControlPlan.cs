@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace yuna0x0.Basis.Convert.Model
 {
@@ -31,13 +32,54 @@ namespace yuna0x0.Basis.Convert.Model
         public bool BothSidesAnimated = true;
     }
 
-    /// <summary>Blendshapes a control sets on one renderer.</summary>
+    /// <summary>How a material property is held, which decides the Vixxy property type.</summary>
+    public enum VixxyMaterialPropertyKind
+    {
+        Float,
+        Colour,
+        Vector,
+    }
+
+    /// <summary>One material property a control sets, and its value in each choice.</summary>
+    public sealed class VixxyMaterialPropertyPlan
+    {
+        /// <summary>Shader property name, as the material declares it.</summary>
+        public string PropertyName = string.Empty;
+
+        public VixxyMaterialPropertyKind Kind = VixxyMaterialPropertyKind.Float;
+
+        /// <summary>Value per choice, index 0 being off and 1 being on. A float uses x only.</summary>
+        public Vector4[] Choices = new Vector4[2];
+
+        /// <summary>
+        /// Per channel, whether each side of the toggle set it. A clip commonly sets one channel
+        /// of a colour, or one side of the toggle only; the rest keep what the material was
+        /// authored with, read from the renderer rather than guessed.
+        /// </summary>
+        public bool[] SetWhenOff = new bool[4];
+        public bool[] SetWhenOn = new bool[4];
+
+        public int Channels => Kind == VixxyMaterialPropertyKind.Float ? 1 : 4;
+    }
+
+    /// <summary>What a control sets on one renderer: blendshapes, material properties, or both.</summary>
     public sealed class VixxySubjectPlan
     {
         /// <summary>Transform path of the renderer, relative to the avatar root.</summary>
         public string Path = string.Empty;
 
+        /// <summary>
+        /// Full name of the renderer type the clip named. Vixxy resolves the component by this
+        /// name, and is lenient between the two renderer types for material properties.
+        /// </summary>
+        public string RendererTypeName = typeof(SkinnedMeshRenderer).FullName;
+
         public List<VixxyBlendShapePlan> BlendShapes = new List<VixxyBlendShapePlan>();
+
+        public List<VixxyMaterialPropertyPlan> MaterialProperties =
+            new List<VixxyMaterialPropertyPlan>();
+
+        public bool IsEmpty => BlendShapes.Count == 0 && MaterialProperties.Count == 0;
     }
 
     /// <summary>
