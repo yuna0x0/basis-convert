@@ -89,5 +89,5 @@ at all.
 
 Download it from the
 [releases page](https://github.com/yuna0x0/basis-convert/releases) and drag it into your project.
-Installed this way the package lives under `Assets`, and updating means deleting the old folder
-first.
+It restores to `Packages/com.yuna0x0.basis.convert`, so Unity treats it as an embedded package.
+Updating means deleting that folder first, then importing the new one.
