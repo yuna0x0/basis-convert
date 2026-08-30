@@ -24,10 +24,14 @@ result editable.
   reported, not half built.
 - **Rig check.** Reports the humanoid rig against what Basis's full-body IK needs, and offers to
   clear the Jaw mapping the Basis setup guide asks to be removed.
+- **Convert as much or as little as you want.** Checkboxes for each of those kinds, and, under
+  Advanced, one per rig, constraint and toggle. The scan always reads the whole avatar, so the
+  counts and the diagnostics do not change with what is ticked; what you leave out is reported
+  as left out.
 
-Early, and the package name may still change. Magica Cloth and toggle systems come next. Props
-and worlds are in scope later, and so are source platforms other than VRChat, which is why
-reading, mapping and writing are separate stages.
+Early, and the package name may still change. Props and worlds are in scope later, and so are
+source platforms other than VRChat, which is why reading, mapping and writing are separate
+stages.
 
 ## Using it
 
@@ -36,8 +40,8 @@ reading, mapping and writing are separate stages.
 2. Drag the avatar into a scene.
 3. Open **Tools > Basis Convert > Convert Avatar**, or right-click the avatar in the
    hierarchy and pick the same entry.
-4. Read the summary. Nothing is written until you press Convert, and the report lists everything
-   that will be approximated or dropped.
+4. Read the summary, and tick off anything you do not want converted. Nothing is written until
+   you press Convert, and the report lists everything that will be approximated or dropped.
 5. Convert, then tune the resulting components by hand. One undo reverts the whole conversion.
 
 To check the result, use the `Basis Avatar` component's **Test in Editor** button. Jiggle physics

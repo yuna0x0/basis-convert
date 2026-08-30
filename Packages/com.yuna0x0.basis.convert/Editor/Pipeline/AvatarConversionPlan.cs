@@ -10,6 +10,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
     {
         public JiggleRigPlan Plan;
 
+        /// <summary>Whether the conversion will write this one. Cleared from the window.</summary>
+        public bool Include = true;
+
         /// <summary>Bone the rig is rooted at, in the source hierarchy.</summary>
         public Transform SourceRootBone;
 
@@ -38,6 +41,10 @@ namespace yuna0x0.Basis.Convert.Pipeline
     public sealed class PlannedVixxyControl
     {
         public VixxyControlPlan Plan;
+
+        /// <summary>Whether the conversion will write this one. Cleared from the window.</summary>
+        public bool Include = true;
+
         public List<Transform> SourceTargets = new List<Transform>();
 
         /// <summary>Renderers carrying the blendshapes, in the same order as the plan's subjects.</summary>
@@ -48,6 +55,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
     public sealed class PlannedAvatarDescriptor
     {
         public BasisAvatarPlan Plan;
+
+        /// <summary>Whether the conversion will write this one. Cleared from the window.</summary>
+        public bool Include = true;
 
         /// <summary>Kept so the expression assets it references can be followed.</summary>
         public VrcAvatarDescriptorData Source;
@@ -60,6 +70,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
     public sealed class PlannedConstraint
     {
         public BasisConstraintPlan Plan;
+
+        /// <summary>Whether the conversion will write this one. Cleared from the window.</summary>
+        public bool Include = true;
 
         /// <summary>
         /// The transform the component will sit on, which is the transform the constraint drives.
@@ -87,6 +100,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         /// <summary>Root of the hierarchy the plan was read from.</summary>
         public GameObject SourceRoot;
+
+        /// <summary>
+        /// Which parts of this plan a conversion will write. Everything, unless the window
+        /// narrows it.
+        /// </summary>
+        public ConversionOptions Options = new ConversionOptions();
 
         public List<PlannedJiggleRig> Rigs = new List<PlannedJiggleRig>();
 
@@ -138,34 +157,120 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>Components identified in the file but not tied to a live transform.</summary>
         public int Unresolved;
 
+        /// <summary>Everything the plan holds, whatever the options are set to.</summary>
         public int TotalPlanned =>
-            Rigs.Count + Constraints.Count + (Descriptor != null ? 1 : 0);
+            Rigs.Count + Constraints.Count + VixxyControls.Count
+            + (Descriptor != null ? 1 : 0);
 
-        public IEnumerable<ConversionDiagnostic> AllDiagnostics()
+        /// <summary>What a conversion would write, with the current options applied.</summary>
+        public int TotalSelected =>
+            SelectedRigCount + SelectedConstraintCount + SelectedVixxyControlCount
+            + (DescriptorSelected ? 1 : 0);
+
+        public IEnumerable<PlannedJiggleRig> SelectedRigs()
+        {
+            if (!Options.Physics)
+            {
+                yield break;
+            }
+
+            foreach (PlannedJiggleRig rig in Rigs)
+            {
+                if (rig.Include)
+                {
+                    yield return rig;
+                }
+            }
+        }
+
+        public IEnumerable<PlannedConstraint> SelectedConstraints()
+        {
+            if (!Options.Constraints)
+            {
+                yield break;
+            }
+
+            foreach (PlannedConstraint constraint in Constraints)
+            {
+                if (constraint.Include)
+                {
+                    yield return constraint;
+                }
+            }
+        }
+
+        public IEnumerable<PlannedVixxyControl> SelectedVixxyControls()
+        {
+            if (!Options.Toggles)
+            {
+                yield break;
+            }
+
+            foreach (PlannedVixxyControl control in VixxyControls)
+            {
+                if (control.Include)
+                {
+                    yield return control;
+                }
+            }
+        }
+
+        public bool DescriptorSelected =>
+            Options.Descriptor && Descriptor != null && Descriptor.Include;
+
+        public int SelectedRigCount => Tally(SelectedRigs());
+        public int SelectedConstraintCount => Tally(SelectedConstraints());
+        public int SelectedVixxyControlCount => Tally(SelectedVixxyControls());
+
+        private static int Tally<T>(IEnumerable<T> items)
+        {
+            int count = 0;
+            foreach (T unused in items)
+            {
+                count++;
+            }
+
+            return count;
+        }
+
+        /// <summary>Everything reported about the avatar, whatever the options are set to.</summary>
+        public IEnumerable<ConversionDiagnostic> AllDiagnostics() => DiagnosticsOf(false);
+
+        /// <summary>
+        /// What the conversion the options describe would report. A narrowed conversion should
+        /// not be read alongside the losses of the parts it leaves out; what it leaves out is
+        /// stated as such instead, by the window and by the report.
+        /// </summary>
+        public IEnumerable<ConversionDiagnostic> SelectedDiagnostics() => DiagnosticsOf(true);
+
+        private IEnumerable<ConversionDiagnostic> DiagnosticsOf(bool selectedOnly)
         {
             foreach (ConversionDiagnostic diagnostic in Diagnostics)
             {
                 yield return diagnostic;
             }
 
-            foreach (PlannedJiggleRig rig in Rigs)
+            foreach (PlannedJiggleRig rig in selectedOnly ? SelectedRigs() : Rigs)
             {
                 foreach (ConversionDiagnostic diagnostic in rig.Plan.Diagnostics)
                 {
                     yield return diagnostic;
                 }
-
             }
 
-            foreach (PlannedJiggleCollider collider in Colliders)
+            if (!selectedOnly || (Options.Physics && Options.Colliders))
             {
-                foreach (ConversionDiagnostic diagnostic in collider.Plan.Diagnostics)
+                foreach (PlannedJiggleCollider collider in Colliders)
                 {
-                    yield return diagnostic;
+                    foreach (ConversionDiagnostic diagnostic in collider.Plan.Diagnostics)
+                    {
+                        yield return diagnostic;
+                    }
                 }
             }
 
-            foreach (PlannedConstraint constraint in Constraints)
+            foreach (PlannedConstraint constraint in
+                     selectedOnly ? SelectedConstraints() : Constraints)
             {
                 foreach (ConversionDiagnostic diagnostic in constraint.Plan.Diagnostics)
                 {
@@ -173,7 +278,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 }
             }
 
-            if (Descriptor != null)
+            if (Descriptor != null && (!selectedOnly || DescriptorSelected))
             {
                 foreach (ConversionDiagnostic diagnostic in Descriptor.Plan.Diagnostics)
                 {

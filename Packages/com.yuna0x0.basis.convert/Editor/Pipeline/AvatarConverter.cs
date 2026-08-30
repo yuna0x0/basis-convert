@@ -55,7 +55,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             Transform source = plan.SourceRoot.transform;
             Transform target = targetRoot.transform;
 
-            foreach (PlannedJiggleRig planned in plan.Rigs)
+            foreach (PlannedJiggleRig planned in plan.SelectedRigs())
             {
                 if (!TryTranslate(source, target, planned.SourceHost, out Transform host)
                     || !TryTranslate(source, target, planned.SourceRootBone, out Transform root))
@@ -82,26 +82,29 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     }
                 }
 
-                foreach (PlannedJiggleCollider collider in planned.Colliders)
+                if (plan.Options.Colliders)
                 {
-                    if (!TryTranslate(source, target, collider.SourceTransform,
-                            out Transform translated))
+                    foreach (PlannedJiggleCollider collider in planned.Colliders)
                     {
-                        continue;
-                    }
+                        if (!TryTranslate(source, target, collider.SourceTransform,
+                                out Transform translated))
+                        {
+                            continue;
+                        }
 
-                    resolved.Colliders.Add(new ResolvedJiggleCollider
-                    {
-                        Plan = collider.Plan,
-                        Transform = translated,
-                    });
+                        resolved.Colliders.Add(new ResolvedJiggleCollider
+                        {
+                            Plan = collider.Plan,
+                            Transform = translated,
+                        });
+                    }
                 }
 
                 result.Written.Add(JiggleRigWriter.Write(resolved, undoName));
                 result.RigsWritten++;
             }
 
-            foreach (PlannedConstraint planned in plan.Constraints)
+            foreach (PlannedConstraint planned in plan.SelectedConstraints())
             {
                 if (!TryTranslate(source, target, planned.SourceHost, out Transform host))
                 {
@@ -147,7 +150,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             AvatarConversionPlan plan, Transform source, Transform target, string undoName,
             ConversionResult result)
         {
-            if (plan.Descriptor == null)
+            if (!plan.DescriptorSelected)
             {
                 return;
             }
@@ -176,7 +179,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             AvatarConversionPlan plan, Transform source, Transform target, string undoName,
             ConversionResult result)
         {
-            foreach (PlannedVixxyControl planned in plan.VixxyControls)
+            foreach (PlannedVixxyControl planned in plan.SelectedVixxyControls())
             {
                 ResolvedVixxyControl resolved = new ResolvedVixxyControl
                 {
@@ -238,13 +241,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         /// <summary>
         /// Components of the kinds a conversion writes, on exactly the transforms this plan
-        /// would write to.
+        /// would write to, with the current options applied.
         /// <para>
         /// This is how converting twice avoids stacking a second set on top of the first. It
         /// needs no stored state: the plan already knows every transform it targets, so the
         /// previous output can be found by looking there. Anything on a transform the plan does
         /// not touch is left alone, which is what protects rigs added by hand elsewhere on the
-        /// avatar.
+        /// avatar, and what leaves an earlier conversion's output intact where the options have
+        /// since narrowed what gets written.
         /// </para>
         /// </summary>
         public static List<Component> FindReplaceable(
@@ -260,7 +264,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             Transform target = targetRoot.transform;
             HashSet<Transform> seen = new HashSet<Transform>();
 
-            foreach (PlannedJiggleRig planned in plan.Rigs)
+            foreach (PlannedJiggleRig planned in plan.SelectedRigs())
             {
                 if (TryTranslate(source, target, planned.SourceHost, out Transform host)
                     && seen.Add(host))
@@ -270,7 +274,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
 
             seen.Clear();
-            foreach (PlannedConstraint planned in plan.Constraints)
+            foreach (PlannedConstraint planned in plan.SelectedConstraints())
             {
                 if (TryTranslate(source, target, planned.SourceHost, out Transform host)
                     && seen.Add(host))

@@ -22,8 +22,9 @@ Only writers touch Unity objects, which is what keeps the rest testable without 
 **Done.** VRChat PhysBones and their colliders, legacy Dynamic Bone, all six VRChat constraint
 types, and the avatar descriptor. Reading components out of prefabs whose scripts are missing,
 resolving each to the transform that carries it, mapping, and writing, driven from an editor
-window that scans, reports and converts. Re-running replaces its own output rather than stacking
-a second set. The humanoid rig is checked against what Basis's IK needs.
+window that scans, reports and converts, over as much or as little of the avatar as is ticked.
+Re-running replaces its own output rather than stacking a second set. The humanoid rig is checked
+against what Basis's IK needs.
 
 See `../research/physbone-to-jiggle-mapping.md` for the mapping table, and the decisions folder
 for why chain splitting is unnecessary (0006) and why repeated conversions carry no stored state
@@ -84,12 +85,16 @@ the original. Everything else maps directly.
   - **Ambient motion onto `BasisAuthoredMotion`.** Untouched. Clips that animate over time are
     currently counted and reported, and this is where they would go.
 
-- **Conversion options in the window.** Requested, not started. A basic and an advanced view, so
-  a conversion can be narrowed rather than being all or nothing: which component kinds to convert
-  at all (physics, constraints, descriptor, toggles), and per-item control over what gets
-  written. The per-rig preset dropdown and the two tuning weights already work this way and are
-  the pattern to follow. The plan is already a list of independent items with a diagnostic each,
-  so filtering it is the natural shape rather than threading flags through the readers.
+- **Conversion options in the window. Done.** A conversion can be narrowed rather than being all
+  or nothing. Basic is five checkboxes over the kinds of thing a conversion produces: physics,
+  the colliders those rigs rest on, constraints, the avatar descriptor and menu toggles. Advanced
+  adds a checkbox per rig, per constraint and per toggle, with All and None on each list, and the
+  two tuning weights.
+
+  The narrowing is a filter over the plan, not a flag threaded through the readers: every scan
+  still reads the whole avatar, so the counts and the detected source kind do not change with
+  what is ticked. Diagnostics follow the selection, and what was left out is stated as left out
+  in the window and in the report. See [decision 0008](../decisions/0008-conversion-options.md).
 - **Modular Avatar.** Works on Basis but has no Basis-specific integration. `MergeArmature` and
   `BoneProxy` mean the authored hierarchy is not the built hierarchy, which is the strongest
   argument for eventually offering a build-time path alongside the destructive one.

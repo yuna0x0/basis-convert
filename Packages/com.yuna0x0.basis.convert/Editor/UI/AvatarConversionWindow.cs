@@ -30,10 +30,27 @@ namespace yuna0x0.Basis.Convert.UI
         private List<DiagnosticGroup> _groups;
 
         private Vector2 _scroll;
+        private bool _showOptions = true;
         private bool _showRigs = true;
+        private bool _showConstraints;
+        private bool _showToggles;
         private bool _showDiagnostics = true;
         private bool _showTuning;
         private bool _showRig = true;
+
+        /// <summary>
+        /// Per item control and the tuning weights, hidden by default. The common case is the
+        /// handful of checkboxes above them.
+        /// </summary>
+        private bool _advanced;
+
+        /// <summary>
+        /// Which kinds of thing to write. Held by the window rather than by the plan so a choice
+        /// survives rescanning, and remembered between sessions.
+        /// </summary>
+        private readonly ConversionOptions _options = new ConversionOptions();
+
+        private const string PrefsPrefix = "yuna0x0.basis.convert.options.";
 
         /// <summary>
         /// The two parts of the mapping that are judgement calls rather than conversions.
@@ -62,10 +79,32 @@ namespace yuna0x0.Basis.Convert.UI
 
         private void OnEnable()
         {
+            LoadOptions();
+
             if (_target == null && Selection.activeGameObject != null)
             {
                 SetTarget(Selection.activeGameObject);
             }
+        }
+
+        private void LoadOptions()
+        {
+            _advanced = EditorPrefs.GetBool(PrefsPrefix + "advanced", false);
+            _options.Physics = EditorPrefs.GetBool(PrefsPrefix + "physics", true);
+            _options.Colliders = EditorPrefs.GetBool(PrefsPrefix + "colliders", true);
+            _options.Constraints = EditorPrefs.GetBool(PrefsPrefix + "constraints", true);
+            _options.Descriptor = EditorPrefs.GetBool(PrefsPrefix + "descriptor", true);
+            _options.Toggles = EditorPrefs.GetBool(PrefsPrefix + "toggles", true);
+        }
+
+        private void SaveOptions()
+        {
+            EditorPrefs.SetBool(PrefsPrefix + "advanced", _advanced);
+            EditorPrefs.SetBool(PrefsPrefix + "physics", _options.Physics);
+            EditorPrefs.SetBool(PrefsPrefix + "colliders", _options.Colliders);
+            EditorPrefs.SetBool(PrefsPrefix + "constraints", _options.Constraints);
+            EditorPrefs.SetBool(PrefsPrefix + "descriptor", _options.Descriptor);
+            EditorPrefs.SetBool(PrefsPrefix + "toggles", _options.Toggles);
         }
 
         public void SetTarget(GameObject target)
@@ -108,10 +147,25 @@ namespace yuna0x0.Basis.Convert.UI
             DrawSummary();
 
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
-            DrawRig();
-            DrawTuning();
-            DrawDiagnostics();
-            DrawRigs();
+
+            // Narrowing the conversion narrows what is reported with it, so the diagnostics are
+            // regrouped whenever the selection changes rather than only on a rescan.
+            using (EditorGUI.ChangeCheckScope changed = new EditorGUI.ChangeCheckScope())
+            {
+                DrawOptions();
+                DrawRig();
+                DrawDiagnostics();
+                DrawRigs();
+                DrawConstraints();
+                DrawToggles();
+                DrawTuning();
+
+                if (changed.changed)
+                {
+                    _groups = ConversionReport.Group(_plan);
+                }
+            }
+
             EditorGUILayout.EndScrollView();
 
             DrawActions();
@@ -142,12 +196,15 @@ namespace yuna0x0.Basis.Convert.UI
             string summary = $"Found {_plan.PhysBonesFound} PhysBones, "
                 + $"{_plan.DynamicBonesFound} Dynamic Bones, {_plan.CollidersFound} colliders "
                 + $"and {_plan.ConstraintsFound} constraints.\n"
-                + $"Would create {_plan.Rigs.Count} jiggle rigs, "
-                + $"{_plan.Constraints.Count} Basis constraints"
-                + (_plan.Descriptor != null ? " and set up the Basis Avatar component." : ".");
+                + $"Would create {_plan.SelectedRigCount} jiggle rigs, "
+                + $"{_plan.SelectedConstraintCount} Basis constraints and "
+                + $"{_plan.SelectedVixxyControlCount} Vixxy controls"
+                + (_plan.DescriptorSelected
+                    ? ", and set up the Basis Avatar component."
+                    : ".");
 
             EditorGUILayout.HelpBox(summary,
-                _plan.TotalPlanned > 0 ? MessageType.Info : MessageType.Warning);
+                _plan.TotalSelected > 0 ? MessageType.Info : MessageType.Warning);
 
             if (_plan.Unresolved > 0)
             {
@@ -187,6 +244,143 @@ namespace yuna0x0.Basis.Convert.UI
         }
 
 
+
+        /// <summary>
+        /// Which parts of the plan get written.
+        /// <para>
+        /// Basic is the kinds of thing a conversion produces. Advanced adds the per item lists
+        /// and the tuning weights, so narrowing a conversion to a single bone or toggle is
+        /// possible without that being in the way of the common case.
+        /// </para>
+        /// </summary>
+        private void DrawOptions()
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _showOptions = EditorGUILayout.Foldout(_showOptions, "What to convert", true);
+
+                using (EditorGUI.ChangeCheckScope changed = new EditorGUI.ChangeCheckScope())
+                {
+                    _advanced = GUILayout.Toggle(_advanced, "Advanced", EditorStyles.miniButton,
+                        GUILayout.Width(72f));
+
+                    if (changed.changed)
+                    {
+                        SaveOptions();
+                    }
+                }
+            }
+
+            if (!_showOptions)
+            {
+                return;
+            }
+
+            using (new EditorGUI.IndentLevelScope())
+            using (EditorGUI.ChangeCheckScope changed = new EditorGUI.ChangeCheckScope())
+            {
+                _options.Physics = Category("Physics", _options.Physics,
+                    Tally(_plan.SelectedRigCount, _plan.Rigs.Count, "jiggle rigs"),
+                    _plan.Rigs.Count > 0);
+
+                if (_advanced)
+                {
+                    using (new EditorGUI.IndentLevelScope())
+                    {
+                        _options.Colliders = Category("Colliders", _options.Colliders,
+                            $"{_plan.Colliders.Count} shapes for those rigs to rest on",
+                            _options.Physics && _plan.Colliders.Count > 0);
+                    }
+                }
+
+                _options.Constraints = Category("Constraints", _options.Constraints,
+                    Tally(_plan.SelectedConstraintCount, _plan.Constraints.Count,
+                        "Basis constraints"),
+                    _plan.Constraints.Count > 0);
+
+                _options.Descriptor = Category("Avatar descriptor", _options.Descriptor,
+                    _plan.Descriptor != null
+                        ? "view position, visemes and blink"
+                        : "none found",
+                    _plan.Descriptor != null);
+
+                _options.Toggles = Category("Menu toggles", _options.Toggles,
+                    Tally(_plan.SelectedVixxyControlCount, _plan.VixxyControls.Count,
+                        "Vixxy controls"),
+                    _plan.VixxyControls.Count > 0);
+
+                if (changed.changed)
+                {
+                    SaveOptions();
+                }
+            }
+
+            if (_advanced)
+            {
+                return;
+            }
+
+            using (new EditorGUI.IndentLevelScope())
+            {
+                EditorGUILayout.LabelField(
+                    "Advanced adds a checkbox per rig, constraint and toggle, and the two "
+                    + "tuning weights.", EditorStyles.wordWrappedMiniLabel);
+
+                // Colliders only appear under Advanced, so say so here rather than let the
+                // setting act on a conversion from somewhere the reader cannot see it.
+                if (!_options.Colliders)
+                {
+                    EditorGUILayout.LabelField(
+                        "Colliders are switched off under Advanced, so the rigs will be written "
+                        + "without them.", EditorStyles.wordWrappedMiniLabel);
+                }
+            }
+        }
+
+        /// <summary>
+        /// One category row: what it is on the left, how much of it there is on the right.
+        /// Disabled when the avatar has none of that kind, so an unchecked box always means a
+        /// choice rather than an absence.
+        /// </summary>
+        private static bool Category(string label, bool value, string detail, bool available)
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            using (new EditorGUI.DisabledScope(!available))
+            {
+                bool result = EditorGUILayout.ToggleLeft(label, value && available,
+                    GUILayout.Width(170f));
+                EditorGUILayout.LabelField(detail, EditorStyles.miniLabel);
+                return available ? result : value;
+            }
+        }
+
+        private static string Tally(int selected, int total, string noun)
+        {
+            return selected == total
+                ? $"{total} {noun}"
+                : $"{selected} of {total} {noun}";
+        }
+
+        /// <summary>Select or clear a whole list at once, since avatars carry dozens of each.</summary>
+        private static void DrawSelectAll(System.Action<bool> apply)
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                GUILayout.Space(EditorGUI.indentLevel * 15f);
+
+                if (GUILayout.Button("All", EditorStyles.miniButtonLeft, GUILayout.Width(42f)))
+                {
+                    apply(true);
+                }
+
+                if (GUILayout.Button("None", EditorStyles.miniButtonRight, GUILayout.Width(46f)))
+                {
+                    apply(false);
+                }
+
+                GUILayout.FlexibleSpace();
+            }
+        }
 
         private void DrawRig()
         {
@@ -270,6 +464,12 @@ namespace yuna0x0.Basis.Convert.UI
 
         private void DrawTuning()
         {
+            if (!_advanced)
+            {
+                return;
+            }
+
+            EditorGUILayout.Space();
             _showTuning = EditorGUILayout.Foldout(_showTuning, "Tuning", true);
             if (!_showTuning)
             {
@@ -371,19 +571,43 @@ namespace yuna0x0.Basis.Convert.UI
 
         private void DrawRigs()
         {
+            if (_plan.Rigs.Count == 0)
+            {
+                return;
+            }
+
             EditorGUILayout.Space();
-            _showRigs = EditorGUILayout.Foldout(_showRigs, $"Rigs ({_plan.Rigs.Count})", true);
+            _showRigs = EditorGUILayout.Foldout(_showRigs,
+                $"Rigs ({Tally(_plan.SelectedRigCount, _plan.Rigs.Count, "selected")})", true);
             if (!_showRigs)
             {
                 return;
             }
 
             using (new EditorGUI.IndentLevelScope())
+            using (new EditorGUI.DisabledScope(!_options.Physics))
             {
+                if (_advanced)
+                {
+                    DrawSelectAll(include =>
+                    {
+                        foreach (PlannedJiggleRig rig in _plan.Rigs)
+                        {
+                            rig.Include = include;
+                        }
+                    });
+                }
+
                 foreach (PlannedJiggleRig rig in _plan.Rigs)
                 {
                     using (new EditorGUILayout.HorizontalScope())
                     {
+                        if (_advanced)
+                        {
+                            rig.Include = EditorGUILayout.Toggle(rig.Include,
+                                GUILayout.Width(24f));
+                        }
+
                         if (GUILayout.Button(rig.Describe(), EditorStyles.linkLabel,
                                 GUILayout.MinWidth(120f)))
                         {
@@ -393,11 +617,126 @@ namespace yuna0x0.Basis.Convert.UI
                         rig.Plan.Preset = (JigglePreset)EditorGUILayout.EnumPopup(
                             rig.Plan.Preset, GUILayout.Width(90f));
                         EditorGUILayout.LabelField(
-                            rig.Colliders.Count > 0 ? $"{rig.Colliders.Count} colliders" : " ",
+                            _options.Colliders && rig.Colliders.Count > 0
+                                ? $"{rig.Colliders.Count} colliders"
+                                : " ",
                             GUILayout.Width(80f));
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// The constraints, one per row, so a single misbehaving one can be left out without
+        /// giving up the rest. Advanced only: with no checkboxes there is nothing to do here
+        /// that the report does not already say.
+        /// </summary>
+        private void DrawConstraints()
+        {
+            if (!_advanced || _plan.Constraints.Count == 0)
+            {
+                return;
+            }
+
+            EditorGUILayout.Space();
+            _showConstraints = EditorGUILayout.Foldout(_showConstraints,
+                $"Constraints ({Tally(_plan.SelectedConstraintCount, _plan.Constraints.Count, "selected")})",
+                true);
+            if (!_showConstraints)
+            {
+                return;
+            }
+
+            using (new EditorGUI.IndentLevelScope())
+            using (new EditorGUI.DisabledScope(!_options.Constraints))
+            {
+                DrawSelectAll(include =>
+                {
+                    foreach (PlannedConstraint constraint in _plan.Constraints)
+                    {
+                        constraint.Include = include;
+                    }
+                });
+
+                foreach (PlannedConstraint constraint in _plan.Constraints)
+                {
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        constraint.Include = EditorGUILayout.Toggle(constraint.Include,
+                            GUILayout.Width(24f));
+
+                        if (GUILayout.Button(constraint.Describe(), EditorStyles.linkLabel,
+                                GUILayout.MinWidth(120f)))
+                        {
+                            EditorGUIUtility.PingObject(constraint.SourceHost);
+                        }
+
+                        EditorGUILayout.LabelField(
+                            $"{constraint.Plan.Sources.Count} sources", GUILayout.Width(80f));
+                    }
+                }
+            }
+        }
+
+        /// <summary>The menu toggles that can be rebuilt, one per row. Advanced only.</summary>
+        private void DrawToggles()
+        {
+            if (!_advanced || _plan.VixxyControls.Count == 0)
+            {
+                return;
+            }
+
+            EditorGUILayout.Space();
+            _showToggles = EditorGUILayout.Foldout(_showToggles,
+                $"Menu toggles ({Tally(_plan.SelectedVixxyControlCount, _plan.VixxyControls.Count, "selected")})",
+                true);
+            if (!_showToggles)
+            {
+                return;
+            }
+
+            using (new EditorGUI.IndentLevelScope())
+            using (new EditorGUI.DisabledScope(!_options.Toggles))
+            {
+                DrawSelectAll(include =>
+                {
+                    foreach (PlannedVixxyControl control in _plan.VixxyControls)
+                    {
+                        control.Include = include;
+                    }
+                });
+
+                foreach (PlannedVixxyControl control in _plan.VixxyControls)
+                {
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        control.Include = EditorGUILayout.Toggle(control.Include,
+                            GUILayout.Width(24f));
+                        EditorGUILayout.LabelField(control.Plan.MenuName,
+                            GUILayout.MinWidth(120f));
+                        EditorGUILayout.LabelField(Describe(control.Plan),
+                            EditorStyles.miniLabel);
+                    }
+                }
+            }
+        }
+
+        private static string Describe(VixxyControlPlan plan)
+        {
+            int shapes = 0;
+            foreach (VixxySubjectPlan subject in plan.Subjects)
+            {
+                shapes += subject.BlendShapes.Count;
+            }
+
+            if (plan.Activations.Count > 0 && shapes > 0)
+            {
+                return $"{plan.Activations.Count} objects, {shapes} blendshapes";
+            }
+
+            return plan.Activations.Count > 0
+                ? $"{plan.Activations.Count} objects"
+                : $"{shapes} blendshapes";
         }
 
         private void DrawActions()
@@ -415,9 +754,9 @@ namespace yuna0x0.Basis.Convert.UI
                     Rescan();
                 }
 
-                using (new EditorGUI.DisabledScope(_plan.TotalPlanned == 0))
+                using (new EditorGUI.DisabledScope(_plan.TotalSelected == 0))
                 {
-                    if (GUILayout.Button($"Convert {_plan.TotalPlanned} components"))
+                    if (GUILayout.Button($"Convert {_plan.TotalSelected} components"))
                     {
                         Convert();
                     }
@@ -464,7 +803,8 @@ namespace yuna0x0.Basis.Convert.UI
 
             EditorGUILayout.LabelField(headline, HeadlineStyle(trouble));
             EditorGUILayout.LabelField(
-                $"{_result.RigsWritten} jiggle rigs, {_result.ConstraintsWritten} constraints"
+                $"{_result.RigsWritten} jiggle rigs, {_result.ConstraintsWritten} constraints, "
+                + $"{_result.VixxyControlsWritten} Vixxy controls"
                 + (_result.DescriptorWritten ? ", Basis Avatar component." : "."),
                 EditorStyles.miniLabel);
 
@@ -527,6 +867,7 @@ namespace yuna0x0.Basis.Convert.UI
             }
 
             _plan = AvatarConversionPlanner.Plan(_sourceAssetPath, _profile);
+            _plan.Options = _options;
             _groups = ConversionReport.Group(_plan);
 
             if (_plan.TotalPlanned == 0)

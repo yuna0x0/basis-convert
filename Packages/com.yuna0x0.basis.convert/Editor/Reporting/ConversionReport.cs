@@ -21,7 +21,8 @@ namespace yuna0x0.Basis.Convert.Reporting
     /// <para>
     /// Diagnostics are grouped by code because they repeat per component: a single avatar
     /// produced 61 identical "Is Animated was on" warnings, which is unreadable listed one by
-    /// one but useful as a count.
+    /// one but useful as a count. Only what the current options would convert is grouped; what
+    /// the options leave out is stated as left out rather than reported as a loss.
     /// </para>
     /// </summary>
     public static class ConversionReport
@@ -30,7 +31,7 @@ namespace yuna0x0.Basis.Convert.Reporting
         {
             Dictionary<string, DiagnosticGroup> groups = new Dictionary<string, DiagnosticGroup>();
 
-            foreach (ConversionDiagnostic diagnostic in plan.AllDiagnostics())
+            foreach (ConversionDiagnostic diagnostic in plan.SelectedDiagnostics())
             {
                 if (!groups.TryGetValue(diagnostic.Code, out DiagnosticGroup group))
                 {
@@ -77,13 +78,17 @@ namespace yuna0x0.Basis.Convert.Reporting
             text.AppendLine($"- Constraints found: {plan.ConstraintsFound}");
             text.AppendLine($"- Jiggle rigs planned: {plan.Rigs.Count}");
             text.AppendLine($"- Basis constraints planned: {plan.Constraints.Count}");
-            text.AppendLine($"- Avatar descriptor: "
-                + (plan.Descriptor != null ? "converted" : "none found"));
+            text.AppendLine("- Avatar descriptor: "
+                + (plan.Descriptor == null
+                    ? "none found"
+                    : plan.DescriptorSelected ? "converted" : "found, left out"));
 
             if (plan.Unresolved > 0)
             {
                 text.AppendLine($"- Could not be placed: {plan.Unresolved}");
             }
+
+            WriteExclusions(plan, text);
 
             if (result != null)
             {
@@ -131,7 +136,8 @@ namespace yuna0x0.Basis.Convert.Reporting
                 foreach (PlannedConstraint constraint in plan.Constraints)
                 {
                     text.AppendLine($"- {constraint.Describe()}, "
-                        + $"{constraint.Plan.Sources.Count} sources");
+                        + $"{constraint.Plan.Sources.Count} sources"
+                        + Suffix(plan.Options.Constraints && constraint.Include));
                 }
 
                 text.AppendLine();
@@ -156,14 +162,57 @@ namespace yuna0x0.Basis.Convert.Reporting
             text.AppendLine();
             foreach (PlannedJiggleRig rig in plan.Rigs)
             {
+                bool colliders = plan.Options.Physics && plan.Options.Colliders;
                 text.AppendLine($"- {rig.Describe()} "
                     + $"[{rig.Plan.Preset}]"
                     + $"{(rig.Plan.ExcludeRoot ? ", motionless root" : string.Empty)}"
-                    + $"{(rig.Colliders.Count > 0 ? $", {rig.Colliders.Count} colliders" : string.Empty)}");
+                    + $"{(colliders && rig.Colliders.Count > 0 ? $", {rig.Colliders.Count} colliders" : string.Empty)}"
+                    + Suffix(plan.Options.Physics && rig.Include));
             }
 
             return text.ToString();
         }
+
+        /// <summary>
+        /// What the conversion was told not to write. A report of a narrowed conversion has to
+        /// say what was narrowed, or it reads as a report of the whole avatar.
+        /// </summary>
+        private static void WriteExclusions(AvatarConversionPlan plan, StringBuilder text)
+        {
+            string categories = string.Join(", ", plan.Options.Excluded());
+            if (!string.IsNullOrEmpty(categories))
+            {
+                text.AppendLine($"- Left out by choice: {categories}");
+            }
+
+            int individually = 0;
+            if (plan.Options.Physics)
+            {
+                individually += plan.Rigs.Count - plan.SelectedRigCount;
+            }
+
+            if (plan.Options.Constraints)
+            {
+                individually += plan.Constraints.Count - plan.SelectedConstraintCount;
+            }
+
+            if (plan.Options.Toggles)
+            {
+                individually += plan.VixxyControls.Count - plan.SelectedVixxyControlCount;
+            }
+
+            if (plan.Options.Descriptor && plan.Descriptor != null && !plan.Descriptor.Include)
+            {
+                individually++;
+            }
+
+            if (individually > 0)
+            {
+                text.AppendLine($"- Left out one by one: {individually}");
+            }
+        }
+
+        private static string Suffix(bool included) => included ? string.Empty : "  (left out)";
 
         private static string HeadingFor(DiagnosticSeverity severity)
         {

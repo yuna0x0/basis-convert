@@ -33,6 +33,9 @@ Working, from **Tools > Basis Convert > Convert Avatar**:
 - The VRChat avatar descriptor, to a `BasisAvatar` component
 - A check of the humanoid rig against what Basis's full-body IK needs
 
+Each of those can be switched off, and under Advanced, so can any single rig, constraint or
+toggle.
+
 Nothing is written until you confirm, one undo reverts a whole conversion, and converting again
 replaces what it wrote last time rather than stacking a second set.
 

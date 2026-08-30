@@ -9,7 +9,8 @@ a Basis project as a UPM package.
 
 Working today: VRChat PhysBones and colliders, legacy Dynamic Bone, all six VRChat constraint
 types, the avatar descriptor, menu toggles rebuilt as HVR Vixxy controls, and a check of the
-humanoid rig against what Basis's IK needs.
+humanoid rig against what Basis's IK needs. A conversion can be narrowed to some of those, or to
+individual items, from the window.
 
 ## Picking this up cold
 
