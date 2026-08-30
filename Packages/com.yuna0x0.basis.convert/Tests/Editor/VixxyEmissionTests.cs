@@ -46,6 +46,16 @@ namespace yuna0x0.Basis.Convert.Tests
                         $"    {activation.Path}: off={activation.Choices[0]} "
                         + $"on={activation.Choices[1]}");
                 }
+
+                foreach (VixxySubjectPlan subject in control.Plan.Subjects)
+                {
+                    foreach (VixxyBlendShapePlan shape in subject.BlendShapes)
+                    {
+                        TestContext.WriteLine(
+                            $"    {subject.Path} shape {shape.ShapeName}: "
+                            + $"off={shape.Choices[0]} on={shape.Choices[1]}");
+                    }
+                }
             }
 
             Assert.That(plan.VixxyControls, Is.Not.Empty,
@@ -62,6 +72,26 @@ namespace yuna0x0.Basis.Convert.Tests
                     Assert.That(activation.Choices[0], Is.Not.EqualTo(activation.Choices[1]),
                         $"{control.Plan.MenuName} would not change {activation.Path} at all.");
                 }
+
+                Assert.That(control.SourceRenderers.Count,
+                    Is.EqualTo(control.Plan.Subjects.Count),
+                    "Every blendshape subject should have resolved to a renderer.");
+            }
+
+            bool anyBlendShapes = false;
+            foreach (PlannedVixxyControl control in plan.VixxyControls)
+            {
+                if (control.Plan.Subjects.Count > 0)
+                {
+                    anyBlendShapes = true;
+                }
+            }
+
+            Assert.That(anyBlendShapes, Is.True,
+                "Toggles that set blendshapes should be rebuilt too, not only object switches.");
+
+            foreach (PlannedVixxyControl control in plan.VixxyControls)
+            {
             }
         }
 
@@ -94,6 +124,39 @@ namespace yuna0x0.Basis.Convert.Tests
                 Assert.That(control.choices[0].value, Is.EqualTo(0f).Within(1e-6f));
                 Assert.That(control.choices[1].value, Is.EqualTo(1f).Within(1e-6f));
             }
+
+            // The blendshape half is written as subjects carrying float properties, which is a
+            // SerializeReference list and the easiest part to get silently wrong.
+            int shapeProperties = 0;
+            foreach (HVRVixxyControl control in controls)
+            {
+                SerializedObject serialized = new SerializedObject(control);
+                SerializedProperty subjects = serialized.FindProperty("subjects");
+
+                for (int i = 0; i < subjects.arraySize; i++)
+                {
+                    SerializedProperty properties = subjects.GetArrayElementAtIndex(i)
+                        .FindPropertyRelative("properties");
+
+                    for (int p = 0; p < properties.arraySize; p++)
+                    {
+                        SerializedProperty entry = properties.GetArrayElementAtIndex(p);
+                        Assert.That(entry.managedReferenceValue, Is.Not.Null,
+                            "A blendshape property was written as a null reference.");
+                        Assert.That(
+                            entry.FindPropertyRelative("propertyName").stringValue,
+                            Is.Not.Empty);
+                        Assert.That(
+                            entry.FindPropertyRelative("choices").arraySize, Is.EqualTo(2));
+                        shapeProperties++;
+                    }
+                }
+
+                serialized.Dispose();
+            }
+
+            TestContext.WriteLine($"blendshape properties written: {shapeProperties}");
+            Assert.That(shapeProperties, Is.GreaterThan(0));
         }
 
         [Test]

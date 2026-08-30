@@ -196,6 +196,18 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     resolved.Targets.Add(translated);
                 }
 
+                foreach (SkinnedMeshRenderer renderer in planned.SourceRenderers)
+                {
+                    SkinnedMeshRenderer translated = TranslateRenderer(source, target, renderer);
+                    if (translated == null)
+                    {
+                        ok = false;
+                        break;
+                    }
+
+                    resolved.Renderers.Add(translated);
+                }
+
                 if (!ok)
                 {
                     result.Diagnostics.Add(DiagnosticSeverity.Warning, "apply.vixxyUnresolved",

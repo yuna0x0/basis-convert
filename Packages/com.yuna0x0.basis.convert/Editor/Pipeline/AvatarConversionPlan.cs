@@ -39,6 +39,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
     {
         public VixxyControlPlan Plan;
         public List<Transform> SourceTargets = new List<Transform>();
+
+        /// <summary>Renderers carrying the blendshapes, in the same order as the plan's subjects.</summary>
+        public List<SkinnedMeshRenderer> SourceRenderers = new List<SkinnedMeshRenderer>();
     }
 
     /// <summary>The avatar descriptor the conversion intends to produce.</summary>

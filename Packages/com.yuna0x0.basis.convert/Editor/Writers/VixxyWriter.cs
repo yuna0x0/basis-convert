@@ -15,6 +15,9 @@ namespace yuna0x0.Basis.Convert.Writers
 
         /// <summary>Transforms to switch, in the same order as the plan's activations.</summary>
         public List<Transform> Targets = new List<Transform>();
+
+        /// <summary>Renderers to set blendshapes on, in the same order as the plan's subjects.</summary>
+        public List<SkinnedMeshRenderer> Renderers = new List<SkinnedMeshRenderer>();
     }
 
     /// <summary>
@@ -79,6 +82,9 @@ namespace yuna0x0.Basis.Convert.Writers
             }
 
             activations.arraySize = written;
+
+            WriteSubjects(serialized, control);
+
             serialized.ApplyModifiedPropertiesWithoutUndo();
             serialized.Dispose();
 
@@ -86,6 +92,66 @@ namespace yuna0x0.Basis.Convert.Writers
 
             EditorUtility.SetDirty(component);
             return component;
+        }
+
+        /// <summary>
+        /// Blendshapes are subjects rather than activations: a subject names the objects, and
+        /// carries a float property per shape with a weight for each choice. The property list is
+        /// a SerializeReference list, so each entry is assigned as a managed reference.
+        /// </summary>
+        private static void WriteSubjects(
+            SerializedObject serialized, ResolvedVixxyControl control)
+        {
+            SerializedProperty subjects = serialized.FindProperty("subjects");
+            List<VixxySubjectPlan> planned = control.Plan.Subjects;
+
+            int written = 0;
+            subjects.arraySize = control.Renderers.Count;
+
+            for (int i = 0; i < control.Renderers.Count && i < planned.Count; i++)
+            {
+                SkinnedMeshRenderer renderer = control.Renderers[i];
+                if (renderer == null)
+                {
+                    continue;
+                }
+
+                SerializedProperty subject = subjects.GetArrayElementAtIndex(written);
+                subject.FindPropertyRelative("selection").enumValueIndex =
+                    (int)HVRVixxySelection.Normal;
+
+                SerializedProperty targets = subject.FindPropertyRelative("targets");
+                targets.arraySize = 1;
+                targets.GetArrayElementAtIndex(0).objectReferenceValue = renderer.gameObject;
+
+                subject.FindPropertyRelative("childrenOf").arraySize = 0;
+                subject.FindPropertyRelative("exceptions").arraySize = 0;
+
+                SerializedProperty properties = subject.FindPropertyRelative("properties");
+                properties.arraySize = planned[i].BlendShapes.Count;
+
+                for (int p = 0; p < planned[i].BlendShapes.Count; p++)
+                {
+                    VixxyBlendShapePlan shape = planned[i].BlendShapes[p];
+
+                    SerializedProperty entry = properties.GetArrayElementAtIndex(p);
+                    entry.managedReferenceValue = new HVRVixxyPropertyFloat
+                    {
+                        fullClassName = typeof(SkinnedMeshRenderer).FullName,
+                        variant = HVRVixxyPropertyVariant.BlendShape,
+                        propertyName = shape.ShapeName,
+                    };
+
+                    SerializedProperty choices = entry.FindPropertyRelative("choices");
+                    choices.arraySize = 2;
+                    choices.GetArrayElementAtIndex(0).floatValue = shape.Choices[0];
+                    choices.GetArrayElementAtIndex(1).floatValue = shape.Choices[1];
+                }
+
+                written++;
+            }
+
+            subjects.arraySize = written;
         }
 
         private static void WriteMenuItem(

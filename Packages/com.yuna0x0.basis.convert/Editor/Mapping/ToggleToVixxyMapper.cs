@@ -32,15 +32,6 @@ namespace yuna0x0.Basis.Convert.Mapping
                 return plan;
             }
 
-            if (toggle.WhenOn.BlendShapes.Count + toggle.WhenOff.BlendShapes.Count > 0)
-            {
-                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vixxy.blendShapes",
-                    $"'{toggle.MenuName}' sets blendshapes as well as switching objects. Vixxy "
-                    + "can express both, but rebuilding only the object switching would leave a "
-                    + "control that looks finished and is not, so it was left for you.");
-                return plan;
-            }
-
             Dictionary<string, bool> off = StatesIn(toggle.WhenOff);
             Dictionary<string, bool> on = StatesIn(toggle.WhenOn);
 
@@ -63,7 +54,10 @@ namespace yuna0x0.Basis.Convert.Mapping
                 });
             }
 
-            if (plan.Activations.Count == 0 && plan.Diagnostics.Count == 0)
+            MapBlendShapes(toggle, plan);
+
+            if (plan.Activations.Count == 0 && plan.Subjects.Count == 0
+                && plan.Diagnostics.Count == 0)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vixxy.nothingToSwitch",
                     $"'{toggle.MenuName}' did not switch any objects, so there was nothing to "
@@ -71,6 +65,56 @@ namespace yuna0x0.Basis.Convert.Mapping
             }
 
             return plan;
+        }
+
+        /// <summary>
+        /// Blendshapes become subjects holding a float property per shape. As with objects, a
+        /// shape set on only one side leaves the other at the avatar's authored weight.
+        /// </summary>
+        private static void MapBlendShapes(ResolvedToggle toggle, VixxyControlPlan plan)
+        {
+            Dictionary<string, VixxySubjectPlan> byPath =
+                new Dictionary<string, VixxySubjectPlan>();
+
+            Dictionary<(string, string), float> off = ShapesIn(toggle.WhenOff);
+            Dictionary<(string, string), float> on = ShapesIn(toggle.WhenOn);
+
+            HashSet<(string, string)> keys = new HashSet<(string, string)>(on.Keys);
+            keys.UnionWith(off.Keys);
+
+            foreach ((string path, string shape) in keys)
+            {
+                bool hasOn = on.TryGetValue((path, shape), out float onValue);
+                bool hasOff = off.TryGetValue((path, shape), out float offValue);
+
+                if (!byPath.TryGetValue(path, out VixxySubjectPlan subject))
+                {
+                    subject = new VixxySubjectPlan { Path = path };
+                    byPath[path] = subject;
+                    plan.Subjects.Add(subject);
+                }
+
+                subject.BlendShapes.Add(new VixxyBlendShapePlan
+                {
+                    ShapeName = shape,
+                    Choices = new[] { offValue, onValue },
+                    BothSidesAnimated = hasOn && hasOff,
+                });
+            }
+        }
+
+        private static Dictionary<(string, string), float> ShapesIn(
+            yuna0x0.Basis.Convert.Sources.ClipEffects effects)
+        {
+            Dictionary<(string, string), float> shapes =
+                new Dictionary<(string, string), float>();
+
+            foreach (yuna0x0.Basis.Convert.Sources.BlendShapeEffect shape in effects.BlendShapes)
+            {
+                shapes[(shape.Path, shape.ShapeName)] = shape.Value;
+            }
+
+            return shapes;
         }
 
         private static Dictionary<string, bool> StatesIn(yuna0x0.Basis.Convert.Sources.ClipEffects effects)

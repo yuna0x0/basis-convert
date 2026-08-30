@@ -19,6 +19,27 @@ namespace yuna0x0.Basis.Convert.Model
         public bool BothSidesAnimated = true;
     }
 
+    /// <summary>One blendshape a control sets, and its value in each choice.</summary>
+    public sealed class VixxyBlendShapePlan
+    {
+        public string ShapeName = string.Empty;
+
+        /// <summary>Weight per choice, index 0 being off and 1 being on.</summary>
+        public float[] Choices = new float[2];
+
+        /// <summary>False when only one side of the toggle set this shape.</summary>
+        public bool BothSidesAnimated = true;
+    }
+
+    /// <summary>Blendshapes a control sets on one renderer.</summary>
+    public sealed class VixxySubjectPlan
+    {
+        /// <summary>Transform path of the renderer, relative to the avatar root.</summary>
+        public string Path = string.Empty;
+
+        public List<VixxyBlendShapePlan> BlendShapes = new List<VixxyBlendShapePlan>();
+    }
+
     /// <summary>
     /// One HVR Vixxy control to create, rebuilt from a VRChat menu toggle.
     /// <para>
@@ -36,6 +57,7 @@ namespace yuna0x0.Basis.Convert.Model
         public bool DefaultOn;
 
         public List<VixxyActivationPlan> Activations = new List<VixxyActivationPlan>();
+        public List<VixxySubjectPlan> Subjects = new List<VixxySubjectPlan>();
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
     }
 }

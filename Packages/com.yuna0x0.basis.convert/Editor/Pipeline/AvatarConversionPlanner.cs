@@ -485,7 +485,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     plan.Diagnostics.Add(diagnostic);
                 }
 
-                if (control.Activations.Count == 0)
+                // A control may switch nothing and only set blendshapes, which is how a body
+                // shape slider is built.
+                if (control.Activations.Count == 0 && control.Subjects.Count == 0)
                 {
                     continue;
                 }
@@ -520,6 +522,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 if (resolved)
                 {
+                    resolved = ResolveSubjects(plan, control, planned);
+                }
+
+                if (resolved)
+                {
                     plan.VixxyControls.Add(planned);
                 }
             }
@@ -530,6 +537,51 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     $"{plan.VixxyControls.Count} menu toggles were rebuilt as Vixxy controls, "
                     + "each with a menu item. The rest are listed above with why they were not.");
             }
+        }
+
+        /// <summary>
+        /// Resolves each blendshape subject to its renderer, and fills in the weight for whichever
+        /// side of the toggle did not set it from what the avatar was authored with.
+        /// </summary>
+        private static bool ResolveSubjects(
+            AvatarConversionPlan plan, VixxyControlPlan control, PlannedVixxyControl planned)
+        {
+            foreach (VixxySubjectPlan subject in control.Subjects)
+            {
+                Transform target = plan.SourceRoot.transform.Find(subject.Path);
+                SkinnedMeshRenderer renderer = target == null
+                    ? null
+                    : target.GetComponent<SkinnedMeshRenderer>();
+
+                if (renderer == null || renderer.sharedMesh == null)
+                {
+                    plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vixxy.rendererMissing",
+                        $"'{control.MenuName}' sets blendshapes on {subject.Path}, which is not a "
+                        + "skinned mesh in this avatar.");
+                    return false;
+                }
+
+                foreach (VixxyBlendShapePlan shape in subject.BlendShapes)
+                {
+                    if (shape.BothSidesAnimated)
+                    {
+                        continue;
+                    }
+
+                    int index = renderer.sharedMesh.GetBlendShapeIndex(shape.ShapeName);
+                    float authored = index >= 0 ? renderer.GetBlendShapeWeight(index) : 0f;
+
+                    // Whichever side the clip did not set keeps the authored weight.
+                    if (Mathf.Approximately(shape.Choices[0], shape.Choices[1]))
+                    {
+                        shape.Choices[shape.Choices[1] != 0f ? 0 : 1] = authored;
+                    }
+                }
+
+                planned.SourceRenderers.Add(renderer);
+            }
+
+            return true;
         }
 
         private static PlannedAvatarDescriptor PlanDescriptor(
