@@ -22,8 +22,13 @@ Documentation: **https://yuna0x0.github.io/basis-convert/**
 The package needs a Basis project.
 
 Add the VPM listing `https://vpm.yuna0x0.com/index.json` in
-[ALCOM](https://vrc-get.anatawa12.com/en/alcom/) or the VPM CLI, then add **Basis Convert** to
-your project.
+[ALCOM](https://vrc-get.anatawa12.com/en/alcom/), or from a terminal with
+[vrc-get](https://github.com/vrc-get/vrc-get) or VRChat's VPM CLI:
+
+```sh
+vrc-get repo add https://vpm.yuna0x0.com/index.json
+vrc-get install com.yuna0x0.basis.convert
+```
 
 With [OpenUPM](https://openupm.com/):
 

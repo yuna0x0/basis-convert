@@ -12,8 +12,9 @@ Four ways to install it, in the order most people will want them.
 
 ## ALCOM
 
-The package is published to a VPM listing, and [ALCOM](https://vrc-get.anatawa12.com/en/alcom/)
-is the client to use for it: it is an open-source VPM client that works with any Unity project.
+The package is published to a VPM listing. [ALCOM](https://vrc-get.anatawa12.com/en/alcom/) is
+the client to use for it: an open-source VPM client, the graphical front end to vrc-get, and it
+works with any Unity project.
 
 1. Add the repository `https://vpm.yuna0x0.com/index.json` under Packages, using
    **Add Repository**.
@@ -22,7 +23,15 @@ is the client to use for it: it is an open-source VPM client that works with any
 
 Updates appear in the same place, as a version to move to.
 
-The [VPM CLI](https://vcc.docs.vrchat.com/vpm/cli/) works too, if you prefer a terminal:
+From a terminal, [vrc-get](https://github.com/vrc-get/vrc-get) does the same job. It is the
+open-source client ALCOM is built on, so the two share their repository list:
+
+```sh
+vrc-get repo add https://vpm.yuna0x0.com/index.json
+vrc-get install com.yuna0x0.basis.convert
+```
+
+VRChat's own [VPM CLI](https://vcc.docs.vrchat.com/vpm/cli/) understands the same listing:
 
 ```sh
 vpm add repo https://vpm.yuna0x0.com/index.json
