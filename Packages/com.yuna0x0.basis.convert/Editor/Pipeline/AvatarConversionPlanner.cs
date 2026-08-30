@@ -393,6 +393,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     + "but anything driven by these has to be rebuilt control by control.");
             }
 
+            ResolveToggles(plan, source);
+
             if (puppets > 0)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "expressions.puppets",
@@ -400,6 +402,52 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     + "with several choices, which covers a radial puppet; the two and four axis "
                     + "ones have no direct equivalent.");
             }
+        }
+
+        /// <summary>
+        /// Ties the menu's toggles to the animator layers behind them, and says how many could be
+        /// rebuilt as they stand.
+        /// </summary>
+        private static void ResolveToggles(
+            AvatarConversionPlan plan, VrcAvatarDescriptorData source)
+        {
+            string fxGuid = null;
+            foreach (VrcAnimationLayerEntry layer in source.AnimationLayers)
+            {
+                if (layer.Layer == VrcAnimationLayer.FX)
+                {
+                    fxGuid = layer.ControllerGuid;
+                    break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(fxGuid))
+            {
+                return;
+            }
+
+            plan.Toggles = ToggleResolver.Resolve(plan.Expressions, fxGuid);
+            if (plan.Toggles.Count == 0)
+            {
+                return;
+            }
+
+            int simple = 0;
+            foreach (ResolvedToggle toggle in plan.Toggles)
+            {
+                if (toggle.IsSimple)
+                {
+                    simple++;
+                }
+            }
+
+            int toggleControls = plan.Expressions.CountOf(VrcExpressionControlType.Toggle);
+
+            plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "expressions.togglesResolved",
+                $"{plan.Toggles.Count} of {toggleControls} menu toggles were traced to an "
+                + $"animator layer, and {simple} of those only switch objects on and off or set "
+                + "blendshapes, which is what a Vixxy control holds. The rest drive material "
+                + "properties or animate over time and need rebuilding by hand.");
         }
 
         private static PlannedAvatarDescriptor PlanDescriptor(

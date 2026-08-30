@@ -51,6 +51,9 @@ namespace yuna0x0.Basis.Convert.Model
 
         /// <summary>False when the layer is left on VRChat's stock controller.</summary>
         public bool IsCustom;
+
+        /// <summary>Asset guid of the assigned controller.</summary>
+        public string ControllerGuid;
     }
 
     /// <summary>

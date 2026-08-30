@@ -98,6 +98,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// </summary>
         public VrcExpressionInventory Expressions = new VrcExpressionInventory();
 
+        /// <summary>
+        /// Menu toggles whose animator layer and clips were found. What a Vixxy rebuild can be
+        /// generated from, once emitting is implemented.
+        /// </summary>
+        public List<ResolvedToggle> Toggles = new List<ResolvedToggle>();
+
         /// <summary>Diagnostics about the avatar as a whole, rather than one component.</summary>
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
 

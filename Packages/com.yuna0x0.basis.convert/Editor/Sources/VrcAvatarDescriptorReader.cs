@@ -153,18 +153,19 @@ namespace yuna0x0.Basis.Convert.Sources
             }
 
             int type = -1;
-            bool hasController = false;
+            string controllerGuid = null;
             bool isDefault = false;
             bool started = false;
 
             void Flush()
             {
-                if (started && type >= 0 && hasController && !isDefault)
+                if (started && type >= 0 && controllerGuid != null && !isDefault)
                 {
                     data.AnimationLayers.Add(new VrcAnimationLayerEntry
                     {
                         Layer = (VrcAnimationLayer)type,
                         IsCustom = true,
+                        ControllerGuid = controllerGuid,
                     });
                 }
             }
@@ -178,7 +179,7 @@ namespace yuna0x0.Basis.Convert.Sources
                     Flush();
                     started = true;
                     type = -1;
-                    hasController = false;
+                    controllerGuid = null;
                     isDefault = false;
                 }
 
@@ -195,7 +196,10 @@ namespace yuna0x0.Basis.Convert.Sources
                         UnityYamlValues.TryParseInt(value, out type);
                         break;
                     case "animatorController":
-                        hasController = Regex.IsMatch(value, @"guid:\s*[0-9a-fA-F]{32}");
+                        Match controller = Regex.Match(value, @"guid:\s*(?<guid>[0-9a-fA-F]{32})");
+                        controllerGuid = controller.Success
+                            ? controller.Groups["guid"].Value
+                            : null;
                         break;
                     case "isDefault":
                         isDefault = UnityYamlValues.TryParseInt(value, out int flag) && flag != 0;
