@@ -51,7 +51,7 @@ Chain splitting turned out to be unnecessary, see `../decisions/0006`.
   becomes one rig each. Magica Cloth is still open; it needs a hand-authored fixture, since no
   reference avatar uses it.
 
-- **Rig readiness for full-body IK.** Full-body tracking itself is not convertible: trackers,
+- **Rig readiness for full-body IK. Done.** Full-body tracking itself is not convertible: trackers,
   calibration and the IK solve are all client side, and a VRChat avatar carries no data about
   them. What *is* avatar-side, and does belong here, is whether the rig meets what Basis's IK
   needs. That lives in the FBX importer's humanoid description rather than in components, and
@@ -64,12 +64,14 @@ Chain splitting turned out to be unnecessary, see `../decisions/0006`.
     child bones whose names contain `twist` or `roll`.
   - Eye bones are mapped, since Basis calibrates gaze from them at load.
 
-  This is a validate-and-offer-to-fix pass rather than a conversion, and it fits the existing
-  diagnostic model. **Verify the twist bone behaviour against the code before building it:** the
-  constraints documentation attributes it to `BasisFullIKConstraintJob`, and no such type exists
-  in the shipped source on this branch. The IK actually lives in `com.basis.eeriemovement`
-  (`BasisTwistSolveCore`, `BasisBodyFitCores`, `BasisCalibrationLockInCore`). This is the third
-  place the Basis docs describe something the code does differently.
+  Implemented as a validate-and-offer-to-fix pass reported alongside the conversion diagnostics,
+  and skipped entirely for props, which carry physics but no humanoid rig.
+
+  The twist behaviour was checked against the code first, as planned, and the documentation was
+  half right. It happens exactly as described, first direct child whose name contains `twist` or
+  `roll`, case-insensitively, but in `BasisTransformMapping.FindTwistBone` in `com.basis.common`,
+  not in the `BasisFullIKConstraintJob` the constraints page names, which does not exist in the
+  shipped source. The IK itself lives in `com.basis.eeriemovement`.
 - **Toggles and animation.** Expression menus and FX layers onto HVR Vixxy, ambient motion onto
   `BasisAuthoredMotion`. The least mechanical part by far; expect assisted authoring rather than
   automatic conversion.

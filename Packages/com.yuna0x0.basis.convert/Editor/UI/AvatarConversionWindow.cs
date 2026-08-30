@@ -8,6 +8,7 @@ using yuna0x0.Basis.Convert.Mapping;
 using yuna0x0.Basis.Convert.Model;
 using yuna0x0.Basis.Convert.Pipeline;
 using yuna0x0.Basis.Convert.Reporting;
+using yuna0x0.Basis.Convert.Rig;
 using yuna0x0.Basis.Convert.Writers;
 
 namespace yuna0x0.Basis.Convert.UI
@@ -32,6 +33,7 @@ namespace yuna0x0.Basis.Convert.UI
         private bool _showRigs = true;
         private bool _showDiagnostics = true;
         private bool _showTuning;
+        private bool _showRig = true;
 
         /// <summary>
         /// The two parts of the mapping that are judgement calls rather than conversions.
@@ -106,6 +108,7 @@ namespace yuna0x0.Basis.Convert.UI
             DrawSummary();
 
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
+            DrawRig();
             DrawTuning();
             DrawDiagnostics();
             DrawRigs();
@@ -170,6 +173,86 @@ namespace yuna0x0.Basis.Convert.UI
         }
 
 
+
+        private void DrawRig()
+        {
+            if (_plan.RigDiagnostics.Count == 0)
+            {
+                return;
+            }
+
+            _showRig = EditorGUILayout.Foldout(_showRig, "Rig", true);
+            if (!_showRig)
+            {
+                return;
+            }
+
+            using (new EditorGUI.IndentLevelScope())
+            {
+                EditorGUILayout.LabelField(
+                    "What Basis's full-body IK will make of this rig. Nothing here is converted; "
+                    + "these are settings on the model itself.",
+                    EditorStyles.wordWrappedMiniLabel);
+
+                foreach (ConversionDiagnostic diagnostic in _plan.RigDiagnostics)
+                {
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        GUILayout.Space(EditorGUI.indentLevel * 15f);
+                        GUILayout.Label(IconFor(diagnostic.Severity), GUILayout.Width(20f),
+                            GUILayout.Height(18f));
+                        EditorGUILayout.LabelField(diagnostic.Message,
+                            EditorStyles.wordWrappedMiniLabel);
+                    }
+                }
+
+                DrawJawFix();
+            }
+        }
+
+        /// <summary>
+        /// Clearing the Jaw mapping edits the model's import settings rather than the scene, so
+        /// it is offered separately from Convert and confirmed on its own.
+        /// </summary>
+        private void DrawJawFix()
+        {
+            bool jawMapped = false;
+            foreach (ConversionDiagnostic diagnostic in _plan.RigDiagnostics)
+            {
+                if (diagnostic.Code == "rig.jawMapped")
+                {
+                    jawMapped = true;
+                    break;
+                }
+            }
+
+            if (!jawMapped)
+            {
+                return;
+            }
+
+            ModelImporter importer = RigReadiness.TryGetModelImporter(_plan.SourceRoot);
+            using (new EditorGUI.DisabledScope(importer == null))
+            {
+                if (!GUILayout.Button("Clear the Jaw mapping on the model"))
+                {
+                    return;
+                }
+
+                bool confirmed = EditorUtility.DisplayDialog(
+                    "Clear the Jaw mapping?",
+                    $"This edits the humanoid rig on {importer.assetPath} and reimports it.\n\n"
+                    + "Every avatar using that model is affected, and this is not covered by "
+                    + "undo.",
+                    "Clear it",
+                    "Cancel");
+
+                if (confirmed && RigReadiness.ClearJawMapping(importer))
+                {
+                    Rescan();
+                }
+            }
+        }
 
         private void DrawTuning()
         {

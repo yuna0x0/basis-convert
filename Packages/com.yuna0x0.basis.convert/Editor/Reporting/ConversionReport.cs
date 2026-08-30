@@ -136,6 +136,21 @@ namespace yuna0x0.Basis.Convert.Reporting
                 text.AppendLine();
             }
 
+            if (plan.RigDiagnostics.Count > 0)
+            {
+                text.AppendLine("## Rig");
+                text.AppendLine();
+                text.AppendLine("What the humanoid rig looks like to Basis's full-body IK. These "
+                    + "are not conversions; they are things to fix on the model itself.");
+                text.AppendLine();
+                foreach (ConversionDiagnostic diagnostic in plan.RigDiagnostics)
+                {
+                    text.AppendLine($"- **{diagnostic.Code}**: {diagnostic.Message}");
+                }
+
+                text.AppendLine();
+            }
+
             text.AppendLine("## Rigs");
             text.AppendLine();
             foreach (PlannedJiggleRig rig in plan.Rigs)

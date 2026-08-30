@@ -4,6 +4,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using yuna0x0.Basis.Convert.Mapping;
 using yuna0x0.Basis.Convert.Model;
+using yuna0x0.Basis.Convert.Rig;
 using yuna0x0.Basis.Convert.Sources;
 using yuna0x0.Basis.Convert.Writers;
 
@@ -103,6 +104,10 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 plan.Rigs.Add(rig);
             }
+
+            // Only meaningful once the descriptor is known: a prop has physics but no rig, and
+            // asking it for a humanoid mapping would be noise.
+            plan.RigDiagnostics = RigReadiness.Inspect(plan.SourceRoot, plan.Descriptor != null);
 
             // An unrecognised script is reported rather than skipped silently: VRChat ships its
             // components in DLLs, so a new SDK release can introduce identities this table has

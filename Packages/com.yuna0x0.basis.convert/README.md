@@ -14,10 +14,10 @@ Converts VRChat PhysBones and their colliders into Basis Jiggle Physics rigs, ca
 per-bone falloff curves, collider shapes, ignored transforms and grab settings. Converts all six
 VRChat constraint types into their Basis equivalents. Sets up the `BasisAvatar` component from
 the VRChat avatar descriptor: view position, visemes and blink. Converts legacy Dynamic Bone
-components and their colliders too.
+components and their colliders too. Checks the humanoid rig against what Basis's full-body IK
+needs, and offers to clear the Jaw mapping the Basis setup guide asks to be removed.
 
-Early, and the package name may still change. Magica Cloth, toggle systems, and a rig readiness
-check for Basis's full-body IK come next. Props and worlds are in scope later, and so
+Early, and the package name may still change. Magica Cloth and toggle systems come next. Props and worlds are in scope later, and so
 are source platforms other than VRChat, which is why reading, mapping and writing are separate
 stages.
 

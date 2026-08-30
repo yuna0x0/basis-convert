@@ -92,6 +92,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>Diagnostics about the avatar as a whole, rather than one component.</summary>
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
 
+        /// <summary>
+        /// What the humanoid rig looks like to Basis's full-body IK. Not a conversion, so these
+        /// are kept apart from the component diagnostics.
+        /// </summary>
+        public List<ConversionDiagnostic> RigDiagnostics = new List<ConversionDiagnostic>();
+
         public int PhysBonesFound;
         public int CollidersFound;
         public int ConstraintsFound;
@@ -141,6 +147,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 {
                     yield return diagnostic;
                 }
+            }
+
+            foreach (ConversionDiagnostic diagnostic in RigDiagnostics)
+            {
+                yield return diagnostic;
             }
         }
 

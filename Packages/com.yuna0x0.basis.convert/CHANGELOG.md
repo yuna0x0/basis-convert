@@ -8,6 +8,10 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- Rig readiness check: reports whether the humanoid mapping is complete, whether a Jaw bone is
+  mapped that the Basis setup guide asks to be cleared, whether the eye bones are mapped, and
+  which arm bones have a twist child Basis will pick up. Offers to clear the Jaw mapping.
+
 - Legacy Dynamic Bone components convert to jiggle rigs, along with their colliders. Damping and
   inert map straight across, and a component driving several roots becomes one rig per root.
 
