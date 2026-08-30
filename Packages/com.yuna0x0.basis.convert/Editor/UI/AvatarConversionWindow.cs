@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using Basis.Scripts.BasisSdk.Constraints;
 using GatorDragonGames.JigglePhysics;
 using UnityEditor;
 using UnityEngine;
@@ -150,24 +151,6 @@ namespace yuna0x0.Basis.Convert.UI
                     + "approximated. Conversion is not lossless.", MessageType.Info);
             }
 
-            int existing = CountExistingRigs();
-            if (existing > 0)
-            {
-                EditorGUILayout.HelpBox(
-                    $"This hierarchy already has {existing} jiggle rigs. Converting again adds "
-                    + "more rather than replacing them. Undo the previous conversion first.",
-                    MessageType.Warning);
-            }
-
-            if (_result != null)
-            {
-                EditorGUILayout.HelpBox(
-                    $"Converted: {_result.TotalWritten} written"
-                    + (_result.TotalSkipped > 0 ? $", {_result.TotalSkipped} skipped" : string.Empty)
-                    + ". Use the Basis Avatar component's Test in Editor button to see them "
-                    + "move; plain Play mode does not calibrate the avatar.",
-                    _result.TotalSkipped > 0 ? MessageType.Warning : MessageType.Info);
-            }
         }
 
         private int CountOf(DiagnosticSeverity severity)
@@ -184,15 +167,21 @@ namespace yuna0x0.Basis.Convert.UI
             return count;
         }
 
-        private int CountExistingRigs()
+        /// <summary>
+        /// Components of the kinds a conversion produces that are already on the target,
+        /// whether written by an earlier conversion or added by hand.
+        /// </summary>
+        private static List<Component> ExistingConverted(GameObject target)
         {
-            GameObject scanned = _target;
-            if (scanned == null || PrefabUtility.IsPartOfPrefabAsset(scanned))
+            List<Component> existing = new List<Component>();
+            if (target == null || PrefabUtility.IsPartOfPrefabAsset(target))
             {
-                return 0;
+                return existing;
             }
 
-            return scanned.GetComponentsInChildren<JiggleRig>(true).Length;
+            existing.AddRange(target.GetComponentsInChildren<JiggleRig>(true));
+            existing.AddRange(target.GetComponentsInChildren<BasisConstraintBase>(true));
+            return existing;
         }
 
         private void DrawTuning()
@@ -329,7 +318,11 @@ namespace yuna0x0.Basis.Convert.UI
 
         private void DrawActions()
         {
-            EditorGUILayout.Space();
+            DrawResult();
+
+            EditorGUILayout.Space(6f);
+            Separator();
+            EditorGUILayout.Space(6f);
 
             using (new EditorGUILayout.HorizontalScope())
             {
@@ -363,6 +356,43 @@ namespace yuna0x0.Basis.Convert.UI
             EditorGUILayout.LabelField(
                 "Convert writes components you can tune by hand. One undo reverts all of it.",
                 EditorStyles.wordWrappedMiniLabel);
+        }
+
+        /// <summary>
+        /// The outcome of the last conversion, kept apart from the scan's warnings so the two
+        /// are not read as one block.
+        /// </summary>
+        private void DrawResult()
+        {
+            if (_result == null)
+            {
+                return;
+            }
+
+            EditorGUILayout.Space(8f);
+            Separator();
+            EditorGUILayout.Space(4f);
+
+            string headline = _result.TotalSkipped > 0
+                ? $"Converted {_result.TotalWritten} components, skipped {_result.TotalSkipped}"
+                : $"Converted {_result.TotalWritten} components";
+
+            EditorGUILayout.LabelField(headline, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(
+                $"{_result.RigsWritten} jiggle rigs, {_result.ConstraintsWritten} constraints.",
+                EditorStyles.miniLabel);
+
+            EditorGUILayout.Space(2f);
+            EditorGUILayout.LabelField(
+                "To see the jiggle move, press Test in Editor on the Basis Avatar component. "
+                + "Play mode alone does not calibrate the avatar.",
+                EditorStyles.wordWrappedMiniLabel);
+        }
+
+        private static void Separator()
+        {
+            Rect line = EditorGUILayout.GetControlRect(false, 1f);
+            EditorGUI.DrawRect(line, new Color(0f, 0f, 0f, 0.25f));
         }
 
         private void Rescan()
@@ -436,10 +466,71 @@ namespace yuna0x0.Basis.Convert.UI
                 Selection.activeGameObject = destination;
             }
 
+            if (!ConfirmReplacement(destination))
+            {
+                return;
+            }
+
             _result = AvatarConverter.Apply(_plan, destination,
-                $"{ProductInfo.Name}: PhysBones to Jiggle");
+                $"{ProductInfo.Name}: convert avatar");
 
             _groups = ConversionReport.Group(_plan);
+        }
+
+        /// <summary>
+        /// Converting twice would otherwise stack a second set of components on top of the
+        /// first. Offers to remove what is there, and says plainly what that includes: without
+        /// per-component bookkeeping there is no way to tell a previous conversion's output from
+        /// components added by hand.
+        /// </summary>
+        private static bool ConfirmReplacement(GameObject destination)
+        {
+            List<Component> existing = ExistingConverted(destination);
+            if (existing.Count == 0)
+            {
+                return true;
+            }
+
+            int rigs = 0;
+            int constraints = 0;
+            foreach (Component component in existing)
+            {
+                if (component is JiggleRig)
+                {
+                    rigs++;
+                }
+                else
+                {
+                    constraints++;
+                }
+            }
+
+            bool replace = EditorUtility.DisplayDialog(
+                "Replace existing components?",
+                $"{destination.name} already has {rigs} jiggle rigs and {constraints} Basis "
+                + "constraints.\n\nConverting again would add a second set on top of them. "
+                + "Replacing removes every jiggle rig and Basis constraint under this avatar "
+                + "first, including any you added or edited by hand.\n\nThis is undoable.",
+                "Replace",
+                "Cancel");
+
+            if (!replace)
+            {
+                return false;
+            }
+
+            Undo.IncrementCurrentGroup();
+            Undo.SetCurrentGroupName($"{ProductInfo.Name}: replace converted components");
+
+            foreach (Component component in existing)
+            {
+                if (component != null)
+                {
+                    Undo.DestroyObjectImmediate(component);
+                }
+            }
+
+            return true;
         }
 
         private void SaveReport()
