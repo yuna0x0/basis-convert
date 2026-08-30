@@ -690,23 +690,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     }
 
                     // Whatever the toggle did not animate stays as the avatar was authored.
-                    // Only the side that said nothing is filled in: a clip switching an object
-                    // off is indistinguishable from silence if you look at the value alone,
-                    // which inverted every one-sided toggle.
-                    if (!activation.BothSidesAnimated)
-                    {
-                        bool authored = target.gameObject.activeSelf;
-
-                        if (!activation.SetWhenOff)
-                        {
-                            activation.Choices[0] = authored;
-                        }
-
-                        if (!activation.SetWhenOn)
-                        {
-                            activation.Choices[1] = authored;
-                        }
-                    }
+                    VixxyAuthoredDefaults.Apply(activation, target.gameObject.activeSelf);
 
                     planned.SourceTargets.Add(target);
                 }
@@ -793,16 +777,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 int index = renderer.sharedMesh.GetBlendShapeIndex(shape.ShapeName);
                 float authored = index >= 0 ? renderer.GetBlendShapeWeight(index) : 0f;
 
-                // Whichever side the clip did not set keeps the authored weight.
-                if (!shape.SetWhenOff)
-                {
-                    shape.Choices[0] = authored;
-                }
-
-                if (!shape.SetWhenOn)
-                {
-                    shape.Choices[1] = authored;
-                }
+                VixxyAuthoredDefaults.Apply(shape, authored);
             }
         }
 
