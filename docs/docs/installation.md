@@ -10,39 +10,48 @@ project already has everything it needs.
 
 Four ways to install it, in the order most people will want them.
 
-## ALCOM
+## VPM
 
-The package is published to a VPM listing. [ALCOM](https://vrc-get.anatawa12.com/en/alcom/) is
-the client to use for it: an open-source VPM client, the graphical front end to vrc-get, and it
-works with any Unity project.
+The package is published to a VPM listing at `https://vpm.yuna0x0.com/index.json`. Add that
+listing to your VPM client once, and the package and its updates appear alongside everything else
+you install that way.
 
-1. Add the repository `https://vpm.yuna0x0.com/index.json` under Packages, using
-   **Add Repository**.
+### ALCOM
+
+[ALCOM](https://vrc-get.anatawa12.com/en/alcom/) is an open-source VPM client with a graphical
+interface, and works with any Unity project.
+
+1. Under Packages, choose **Add Repository** and enter
+   `https://vpm.yuna0x0.com/index.json`.
 2. Open your Basis project under Manage Project.
 3. Add **Watari** and apply.
 
 Updates appear in the same place, as a version to move to.
-
-From a terminal, [vrc-get](https://github.com/vrc-get/vrc-get) does the same job. It is the
-open-source client ALCOM is built on, so the two share their repository list:
-
-```sh
-vrc-get repo add https://vpm.yuna0x0.com/index.json
-vrc-get install com.yuna0x0.basis.convert
-```
-
-VRChat's own [VPM CLI](https://vcc.docs.vrchat.com/vpm/cli/) understands the same listing:
-
-```sh
-vpm add repo https://vpm.yuna0x0.com/index.json
-vpm add package com.yuna0x0.basis.convert
-```
 
 {/*
   IMAGE PLACEHOLDER: ALCOM with the listing added and Watari ready to install.
   Save as docs/static/img/install-alcom.png, then replace this comment with:
   ![Installing through ALCOM](/img/install-alcom.png)
 */}
+
+### vrc-get
+
+[vrc-get](https://github.com/vrc-get/vrc-get) is the command line client ALCOM is built on, so
+the two share their repository list:
+
+```sh
+vrc-get repo add https://vpm.yuna0x0.com/index.json
+vrc-get install com.yuna0x0.basis.convert
+```
+
+### VPM CLI
+
+VRChat's own [VPM CLI](https://vcc.docs.vrchat.com/vpm/cli/) reads the same listing:
+
+```sh
+vpm add repo https://vpm.yuna0x0.com/index.json
+vpm add package com.yuna0x0.basis.convert
+```
 
 ## OpenUPM
 
