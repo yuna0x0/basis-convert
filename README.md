@@ -15,14 +15,27 @@ Documentation: **https://yuna0x0.github.io/basis-convert/**
 
 ## Installing
 
-Unity Package Manager, `Add package from git URL`:
+The package needs a Basis project.
+
+Add the VPM listing `https://vpm.yuna0x0.com/index.json` in
+[ALCOM](https://vrc-get.anatawa12.com/en/alcom/) or the VPM CLI, then add **Basis Convert** to
+your project.
+
+With [OpenUPM](https://openupm.com/):
+
+```sh
+openupm add com.yuna0x0.basis.convert
+```
+
+Or by git URL, in Unity's Package Manager under `Add package from git URL`:
 
 ```
 https://github.com/yuna0x0/basis-convert.git?path=/Packages/com.yuna0x0.basis.convert
 ```
 
-The package needs a Basis project. See the [documentation](https://yuna0x0.github.io/basis-convert/) for
-the other ways to install it.
+Every release also has a `.unitypackage` attached. The
+[documentation](https://yuna0x0.github.io/basis-convert/docs/installation) covers all four in
+full.
 
 ## Contributing
 
