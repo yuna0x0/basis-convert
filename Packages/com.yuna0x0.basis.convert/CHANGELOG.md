@@ -6,6 +6,8 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-08-31
+
 ### Fixed
 
 - Menu toggles that animate one side only came out inverted: turning a toggle named `Tail_OFF`
@@ -61,6 +63,7 @@ First release.
 - Component data is read from prefab files, so the avatar must still be linked to its prefab,
   and changes made to a prefab instance in a scene rather than to the prefab are not seen.
 
-[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.1.2
 [0.1.1]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.1.1
 [0.1.0]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.1.0
