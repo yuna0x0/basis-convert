@@ -8,6 +8,9 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- Legacy Dynamic Bone components convert to jiggle rigs, along with their colliders. Damping and
+  inert map straight across, and a component driving several roots becomes one rig per root.
+
 - The VRChat avatar descriptor converts to a `BasisAvatar` component: view position, the fifteen
   viseme blendshapes and the blink blendshape. The component is updated in place on a re-convert
   rather than replaced, so anything Basis filled in itself survives.

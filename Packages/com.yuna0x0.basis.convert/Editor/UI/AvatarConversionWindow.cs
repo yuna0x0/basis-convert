@@ -122,8 +122,9 @@ namespace yuna0x0.Basis.Convert.UI
             int dropped = CountOf(DiagnosticSeverity.Dropped);
             int approximated = CountOf(DiagnosticSeverity.Approximated);
 
-            string summary = $"Found {_plan.PhysBonesFound} PhysBones, {_plan.CollidersFound} "
-                + $"colliders and {_plan.ConstraintsFound} constraints.\n"
+            string summary = $"Found {_plan.PhysBonesFound} PhysBones, "
+                + $"{_plan.DynamicBonesFound} Dynamic Bones, {_plan.CollidersFound} colliders "
+                + $"and {_plan.ConstraintsFound} constraints.\n"
                 + $"Would create {_plan.Rigs.Count} jiggle rigs, "
                 + $"{_plan.Constraints.Count} Basis constraints"
                 + (_plan.Descriptor != null ? " and set up the Basis Avatar component." : ".");

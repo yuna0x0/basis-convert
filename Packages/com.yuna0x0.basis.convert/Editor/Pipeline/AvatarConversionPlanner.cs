@@ -74,6 +74,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
+                if (kind == SourceComponentKind.DynamicBone)
+                {
+                    plan.DynamicBonesFound++;
+                    PlanDynamicBone(document, resolver, colliders, profile, plan);
+                    continue;
+                }
+
                 if (kind == SourceComponentKind.VrcAvatarDescriptor)
                 {
                     plan.Descriptor = PlanDescriptor(document, resolver, plan);
@@ -124,22 +131,44 @@ namespace yuna0x0.Basis.Convert.Pipeline
             foreach (UnityYamlDocument document in documents)
             {
                 if (document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
-                    || !document.TryGetScriptIdentity(out string guid, out long scriptFileId)
-                    || KnownScriptIdentities.Resolve(guid, scriptFileId)
-                        != SourceComponentKind.VrcPhysBoneCollider)
+                    || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))
                 {
                     continue;
                 }
 
+                SourceComponentKind kind = KnownScriptIdentities.Resolve(guid, scriptFileId);
+                JiggleColliderPlan colliderPlan;
+                long transformFileId;
+
+                switch (kind)
+                {
+                    case SourceComponentKind.VrcPhysBoneCollider:
+                    {
+                        PhysBoneColliderData data = PhysBoneDocumentReader.ReadCollider(document);
+                        colliderPlan = PhysBoneColliderToJiggleMapper.Map(data);
+
+                        // No Root Transform means the collider sits on its own object.
+                        transformFileId = data.RootTransformFileId != 0L
+                            ? data.RootTransformFileId
+                            : data.OwnerGameObjectFileId;
+                        break;
+                    }
+
+                    case SourceComponentKind.DynamicBoneCollider:
+                    case SourceComponentKind.DynamicBonePlaneCollider:
+                    {
+                        DynamicBoneColliderData data = DynamicBoneDocumentReader.ReadCollider(
+                            document, kind == SourceComponentKind.DynamicBonePlaneCollider);
+                        colliderPlan = DynamicBoneColliderToJiggleMapper.Map(data);
+                        transformFileId = data.OwnerGameObjectFileId;
+                        break;
+                    }
+
+                    default:
+                        continue;
+                }
+
                 plan.CollidersFound++;
-
-                PhysBoneColliderData data = PhysBoneDocumentReader.ReadCollider(document);
-                JiggleColliderPlan colliderPlan = PhysBoneColliderToJiggleMapper.Map(data);
-
-                // A collider with no Root Transform sits on its own object, same as a PhysBone.
-                long transformFileId = data.RootTransformFileId != 0L
-                    ? data.RootTransformFileId
-                    : data.OwnerGameObjectFileId;
 
                 if (!resolver.TryResolveTransform(transformFileId, out Transform transform))
                 {
@@ -160,6 +189,92 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
 
             return colliders;
+        }
+
+        /// <summary>
+        /// One Dynamic Bone can drive several chains, so it produces one rig per root rather
+        /// than one per component.
+        /// </summary>
+        private static void PlanDynamicBone(
+            UnityYamlDocument document, PrefabObjectResolver resolver,
+            IReadOnlyDictionary<long, PlannedJiggleCollider> colliders,
+            JiggleMappingProfile profile, AvatarConversionPlan plan)
+        {
+            DynamicBoneData source = DynamicBoneDocumentReader.ReadBone(document);
+
+            if (!resolver.TryResolveTransform(source.OwnerGameObjectFileId, out Transform host))
+            {
+                plan.Unresolved++;
+                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "dynamicbone.unresolved",
+                    $"A Dynamic Bone at &{document.FileId} could not be tied to a transform and "
+                    + "was skipped.");
+                return;
+            }
+
+            foreach (JiggleRigPlan rigPlan in DynamicBoneToJiggleMapper.Map(source, profile))
+            {
+                Transform rootBone = host;
+                if (rigPlan.RootBoneFileId != 0L
+                    && !resolver.TryResolveTransform(rigPlan.RootBoneFileId, out rootBone))
+                {
+                    rootBone = host;
+                    rigPlan.Diagnostics.Add(DiagnosticSeverity.Warning,
+                        "dynamicbone.rootUnresolved",
+                        $"A root of the Dynamic Bone on {host.name} could not be resolved. Fell "
+                        + "back to the object the component sits on.");
+                }
+
+                rigPlan.Preset = JigglePresetLibrary.GuessFrom(rootBone.name);
+
+                PlannedJiggleRig planned = new PlannedJiggleRig
+                {
+                    Plan = rigPlan,
+                    SourceHost = host,
+                    SourceRootBone = rootBone,
+                };
+
+                AttachExclusionsAndColliders(rigPlan, planned, resolver, colliders);
+                plan.Rigs.Add(planned);
+            }
+        }
+
+        /// <summary>
+        /// Shared by both physics sources: their exclusion and collider lists are the same shape
+        /// once mapped.
+        /// </summary>
+        private static void AttachExclusionsAndColliders(
+            JiggleRigPlan rigPlan, PlannedJiggleRig planned, PrefabObjectResolver resolver,
+            IReadOnlyDictionary<long, PlannedJiggleCollider> colliders)
+        {
+            foreach (long excludedFileId in rigPlan.ExcludedTransformFileIds)
+            {
+                if (resolver.TryResolveTransform(excludedFileId, out Transform excluded))
+                {
+                    planned.SourceExcludedTransforms.Add(excluded);
+                }
+                else
+                {
+                    rigPlan.Diagnostics.Add(DiagnosticSeverity.Warning,
+                        "physics.excludedTransform.unresolved",
+                        "An excluded transform could not be resolved and was dropped.");
+                }
+            }
+
+            foreach (long colliderFileId in rigPlan.ColliderSourceFileIds)
+            {
+                if (!colliders.TryGetValue(colliderFileId, out PlannedJiggleCollider collider))
+                {
+                    rigPlan.Diagnostics.Add(DiagnosticSeverity.Warning,
+                        "physics.collider.unresolved",
+                        "A referenced collider was not found in the file and was dropped.");
+                    continue;
+                }
+
+                if (collider.SourceTransform != null)
+                {
+                    planned.Colliders.Add(collider);
+                }
+            }
         }
 
         private static PlannedAvatarDescriptor PlanDescriptor(
@@ -295,37 +410,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 SourceRootBone = rootBone,
             };
 
-            foreach (long excludedFileId in source.IgnoreTransformFileIds)
-            {
-                if (resolver.TryResolveTransform(excludedFileId, out Transform excluded))
-                {
-                    planned.SourceExcludedTransforms.Add(excluded);
-                }
-                else
-                {
-                    rigPlan.Diagnostics.Add(DiagnosticSeverity.Warning,
-                        "physbone.ignoreTransform.unresolved",
-                        "An entry in Ignore Transforms could not be resolved and was dropped.");
-                }
-            }
-
-            foreach (long colliderFileId in source.ColliderFileIds)
-            {
-                if (!colliders.TryGetValue(colliderFileId, out PlannedJiggleCollider collider))
-                {
-                    rigPlan.Diagnostics.Add(DiagnosticSeverity.Warning,
-                        "physbone.collider.unresolved",
-                        "A referenced collider was not found in the file and was dropped.");
-                    continue;
-                }
-
-                if (collider.SourceTransform == null)
-                {
-                    continue;
-                }
-
-                planned.Colliders.Add(collider);
-            }
+            AttachExclusionsAndColliders(rigPlan, planned, resolver, colliders);
 
             if (planned.Colliders.Count > JiggleRigDataLimits.MaxColliders)
             {
