@@ -51,6 +51,7 @@ OpenUPM reads releases.
 ## State here
 
 `.github/workflows/release.yml` carries the steps, guarded on `UPM_ORG_ID` being set, so releases
-work unchanged until the secrets exist. What remains is outside this repository: the Unity
+work unchanged until the secrets exist. The signed tarball is attached to the release alongside
+the VPM zip and the unitypackage. What remains is outside this repository: the Unity
 organization and service account, making the repository public, and the OpenUPM package entry
 with `trackingMode: githubRelease`.

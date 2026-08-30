@@ -20,7 +20,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Read the package
         id: package
@@ -44,24 +44,29 @@ jobs:
       # folder Unity ignores, so a consumer never compiles them; ours stay in the repository
       # where the dev loop can run them, and are left out of the artifacts instead.
       - name: Build the zip
+        env:
+          ZIP_NAME: ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip
         run: |
           cd "$PACKAGE_PATH"
-          zip -r "$GITHUB_WORKSPACE/${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip" .             -x '*.DS_Store' 'Tests/*' 'Tests.meta'
+          zip -r "$GITHUB_WORKSPACE/$ZIP_NAME" . -x '*.DS_Store' 'Tests/*' 'Tests.meta'
 
-      - name: List the files for the unitypackage
+      # The action packs the asset each .meta file belongs to, so the list it is given is the
+      # meta files rather than the assets, directories included.
+      - name: List the meta files for the unitypackage
         run: |
-          find "$PACKAGE_PATH" -type f ! -name '*.meta' ! -path "$PACKAGE_PATH/Tests/*" -print             > unitypackage-files.txt
+          find "$PACKAGE_PATH" -name '*.meta' ! -path "$PACKAGE_PATH/Tests/*" ! -name 'Tests.meta' > meta-files.txt
+          wc -l < meta-files.txt
 
       - name: Build the unitypackage
         uses: pCYSl5EDgo/create-unitypackage@v1.2.3
         with:
           package-path: ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.unitypackage
-          include-files: unitypackage-files.txt
+          include-files: meta-files.txt
 
       # Unity 6.3 and later check tarball packages for a signature, and OpenUPM publishes a
       # pre-signed tarball rather than signing anything itself. Unity holds the certificate; a
-      # service account with the "Package Manager Package Signer" role authenticates. The steps
-      # below do nothing until those secrets exist, so a release works either way.
+      # service account with the "Package Manager Package Signer" role authenticates. These
+      # steps do nothing until those secrets exist, so a release works either way.
       - name: Check for signing credentials
         id: signing
         run: |
@@ -76,18 +81,21 @@ jobs:
         env:
           UPM_SERVICE_ACCOUNT_KEY_ID: ${{ secrets.UPM_SERVICE_ACCOUNT_KEY_ID }}
           UPM_SERVICE_ACCOUNT_KEY_SECRET: ${{ secrets.UPM_SERVICE_ACCOUNT_KEY_SECRET }}
+          UPM_ORG_ID: ${{ secrets.UPM_ORG_ID }}
         run: |
           curl -fsSL https://cdn.packages.unity.com/upm-cli/install.sh | bash
           export PATH="$HOME/.upm-cli/bin:$PATH"
           upm --version
           mkdir -p dist
-          upm pack "$PACKAGE_PATH" --organization-id "${{ secrets.UPM_ORG_ID }}" --destination dist
+          upm pack "$PACKAGE_PATH" --organization-id "$UPM_ORG_ID" --destination dist
           tarball=$(ls dist/*.tgz)
-          tar -tzf "$tarball" | grep -q 'package/.attestation.p7m' \
-            || { echo "The tarball carries no attestation." >&2; exit 1; }
+          if ! tar -tzf "$tarball" | grep -q 'package/.attestation.p7m'; then
+            echo "The tarball carries no attestation." >&2
+            exit 1
+          fi
 
       - name: Publish the release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           draft: false
           generate_release_notes: true

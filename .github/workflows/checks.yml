@@ -1,0 +1,25 @@
+name: Checks
+
+# The EditMode tests need a Basis project and a Unity licence, so they are not run here. What
+# this checks is that the documentation site still builds, which catches a broken link or a bad
+# page before it reaches Pages.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/setup@v2
+        with:
+          working-directory: docs
+          cache: true
+          require-lockfile: true
+
+      - run: pnpm build
+        working-directory: docs

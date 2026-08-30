@@ -3,6 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@11.24.0",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "22"
+    }
+  },
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
