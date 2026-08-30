@@ -45,7 +45,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
             List<MergedAnimator> animators = ReadAnimators(documents, resolver, source);
             List<MaMenuItemData> items = ReadMenuItems(documents);
 
-            if (animators.Count == 0 || items.Count == 0)
+            // A merged animator is only needed by the toggles that have one. An Object Toggle
+            // describes what it switches by itself, so requiring an animator here missed them.
+            if (items.Count == 0)
             {
                 return resolved;
             }
@@ -71,8 +73,18 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 shared.Add(item);
             }
 
+            // An Object Toggle needs no animator at all: the menu item makes its object active,
+            // and the component lists what that switches. Read first, so a parameter covered
+            // this way is not looked for in a merged animator.
+            ReadObjectToggles(documents, resolver, source, byParameter, resolved);
+
             foreach (KeyValuePair<string, List<MaMenuItemData>> group in byParameter)
             {
+                if (Already(resolved, group.Key))
+                {
+                    continue;
+                }
+
                 foreach (MergedAnimator animator in animators)
                 {
                     List<FxToggleLayer> layers = FxControllerReader.FindToggleLayers(
@@ -108,6 +120,108 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
 
             return resolved;
+        }
+
+        private static bool Already(List<ModularAvatarToggle> resolved, string parameter)
+        {
+            foreach (ModularAvatarToggle toggle in resolved)
+            {
+                if (toggle.Toggle.Parameter == parameter)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Turns an Object Toggle into a control, when a menu item on the same object drives it.
+        /// <para>
+        /// The component switches objects while its own object is active, and a menu item on
+        /// that object is what makes it active, so the two together say the same thing a toggle
+        /// and its clips say. What the component does not name keeps the state the avatar was
+        /// authored with, which is the same rule everywhere else.
+        /// </para>
+        /// </summary>
+        private static void ReadObjectToggles(
+            List<UnityYamlDocument> documents, PrefabObjectResolver resolver,
+            ConversionSource source, Dictionary<string, List<MaMenuItemData>> byParameter,
+            List<ModularAvatarToggle> resolved)
+        {
+            foreach (UnityYamlDocument document in documents)
+            {
+                if (!IsKind(document, SourceComponentKind.MaObjectToggle))
+                {
+                    continue;
+                }
+
+                MaObjectToggleData data =
+                    ModularAvatarDocumentReader.ReadObjectToggle(document);
+
+                if (data.Objects.Count == 0)
+                {
+                    continue;
+                }
+
+                MaMenuItemData item = MenuItemOn(byParameter, data.OwnerGameObjectFileId);
+                if (item == null)
+                {
+                    continue;
+                }
+
+                ResolvedToggle toggle = new ResolvedToggle
+                {
+                    MenuName = string.IsNullOrEmpty(item.Name) ? item.Parameter : item.Name,
+                    Parameter = item.Parameter,
+                    LayerName = "Object Toggle",
+                };
+
+                ClipEffects whenOn = new ClipEffects();
+                foreach (MaToggledObject switched in data.Objects)
+                {
+                    // Inverted means the component acts while its object is inactive, which
+                    // swaps which side of the menu item switches things.
+                    bool active = data.Inverted ? !switched.Active : switched.Active;
+
+                    // Modular Avatar resolves these against the avatar root, not against the
+                    // component: AvatarObjectReference.Get walks up to the avatar and calls
+                    // Find on the path. So the path is used as written, and a path that names
+                    // something outside this prefab is reported rather than guessed at.
+                    string path = switched.Path;
+
+                    if (active)
+                    {
+                        whenOn.Activated.Add(path);
+                    }
+                    else
+                    {
+                        whenOn.Deactivated.Add(path);
+                    }
+                }
+
+                toggle.Choices.Add(new ResolvedChoice {Name = "OFF", Value = 0});
+                toggle.Choices.Add(new ResolvedChoice {Name = "ON", Value = 1, Effects = whenOn});
+
+                resolved.Add(new ModularAvatarToggle {Source = source, Toggle = toggle});
+            }
+        }
+
+        private static MaMenuItemData MenuItemOn(
+            Dictionary<string, List<MaMenuItemData>> byParameter, long ownerFileId)
+        {
+            foreach (KeyValuePair<string, List<MaMenuItemData>> group in byParameter)
+            {
+                foreach (MaMenuItemData item in group.Value)
+                {
+                    if (item.OwnerGameObjectFileId == ownerFileId)
+                    {
+                        return item;
+                    }
+                }
+            }
+
+            return null;
         }
 
         private sealed class MergedAnimator

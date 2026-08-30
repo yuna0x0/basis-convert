@@ -286,6 +286,10 @@ namespace yuna0x0.Basis.Convert.Pipeline
             EnsureAvatarComponent(plan);
             LoadExpressions(plan);
 
+            // Clothing has no descriptor and no expression menu of its own, so this is not part
+            // of reading one: what Modular Avatar installs stands on its own.
+            BuildModularAvatarControls(plan);
+
             // Only meaningful once the descriptor is known: a prop has physics but no rig, and
             // asking it for a humanoid mapping would be noise.
             plan.RigDiagnostics = RigReadiness.Inspect(plan.SourceRoot, plan.Descriptor != null);
@@ -623,7 +627,6 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             BuildVixxyControls(plan, plan.Toggles, plan.SourceRoot.transform,
                 plan.Sources.Count > 0 ? plan.Sources[0] : null);
-            BuildModularAvatarControls(plan);
 
             int toggleControls = plan.Expressions.CountOf(VrcExpressionControlType.Toggle);
 
