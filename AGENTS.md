@@ -7,6 +7,9 @@ Orientation for AI agents and for anyone picking this repo up cold.
 Editor tooling for bringing content from other social VR platforms into Basis. It installs into
 a Basis project as a UPM package.
 
+Working today: VRChat PhysBones and colliders, legacy Dynamic Bone, all six VRChat constraint
+types, and the avatar descriptor, plus a check of the humanoid rig against what Basis's IK needs.
+
 The scope is wider than what is built. Avatars first, then props and worlds; VRChat first, then
 whatever else is worth reading. Reading, mapping and writing are separate stages so that a new
 source platform is a new reader and nothing else has to move. Do not narrow the vocabulary in

@@ -19,19 +19,19 @@ Only writers touch Unity objects, which is what keeps the rest testable without 
 
 ## Where things stand
 
-**Done.** The whole PhysBone path: reading components out of prefabs whose scripts are missing,
-resolving each to the bone that carries it, mapping onto jiggle parameters and colliders, writing
-the rigs, and an editor window that scans, reports and converts. See
-`../research/physbone-to-jiggle-mapping.md`.
+**Done.** VRChat PhysBones and their colliders, legacy Dynamic Bone, all six VRChat constraint
+types, and the avatar descriptor. Reading components out of prefabs whose scripts are missing,
+resolving each to the transform that carries it, mapping, and writing, driven from an editor
+window that scans, reports and converts. Re-running replaces its own output rather than stacking
+a second set. The humanoid rig is checked against what Basis's IK needs.
 
-Chain splitting turned out to be unnecessary, see `../decisions/0006`.
+See `../research/physbone-to-jiggle-mapping.md` for the mapping table, and the decisions folder
+for why chain splitting is unnecessary (0006) and why repeated conversions carry no stored state
+(0007).
 
-**Next, to finish avatar physics.**
-
-1. **Tune the two heuristic mappings** against avatars compared side by side in motion. Nothing
-   else here is guesswork; these two are.
-2. **Re-running should update rather than duplicate.** Needs bookkeeping tying each rig to the
-   component it came from, on an `EditorOnly` GameObject per decision 0004.
+**The one thing still open on physics** is tuning. Two mappings are fits rather than conversions,
+pull to stiffness and spring to drag, and they need a converted avatar watched in motion next to
+the original. Everything else maps directly.
 
 ## After that
 
