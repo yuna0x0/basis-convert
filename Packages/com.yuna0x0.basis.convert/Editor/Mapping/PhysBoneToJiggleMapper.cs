@@ -14,9 +14,6 @@ namespace yuna0x0.Basis.Convert.Mapping
     /// <para>
     /// Both systems evaluate a falloff curve as <c>value * curve(t)</c> over normalized distance
     /// from the chain root, so curves carry across untouched and much of the mapping is exact.
-    /// What is not exact is reported as <see cref="DiagnosticSeverity.Approximated"/>, and what
-    /// has no equivalent is reported as <see cref="DiagnosticSeverity.Dropped"/> rather than
-    /// omitted silently.
     /// </para>
     /// </summary>
     public static class PhysBoneToJiggleMapper

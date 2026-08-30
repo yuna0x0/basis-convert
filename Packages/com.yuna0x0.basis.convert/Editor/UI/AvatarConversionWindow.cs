@@ -1073,12 +1073,6 @@ namespace yuna0x0.Basis.Convert.UI
 
         /// <summary>
         /// Converting twice would otherwise stack a second set of components on top of the
-        /// first. Offers to remove what is there, and says plainly what that includes: without
-        /// per-component bookkeeping there is no way to tell a previous conversion's output from
-        /// components added by hand.
-        /// </summary>
-        /// <summary>
-        /// Converting twice would otherwise stack a second set of components on top of the
         /// first. Offers to remove the ones sitting where this conversion is about to write, and
         /// leaves the rest of the avatar alone.
         /// </summary>

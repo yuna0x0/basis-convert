@@ -16,8 +16,6 @@ namespace yuna0x0.Basis.Convert.Sources
     /// used more than once.
     /// </para>
     /// <para>
-    /// Measured on an avatar with 102 VRChat components across 95 stripped GameObjects, the
-    /// stripped route resolved all 95 with no ambiguity while local identifiers alone reached 1.
     /// Neither route matches on names, so the duplicate bone names avatars routinely have cannot
     /// cause a mismatch.
     /// </para>

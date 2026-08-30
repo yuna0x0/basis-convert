@@ -6,9 +6,8 @@ namespace yuna0x0.Basis.Convert.Mapping
     /// <summary>
     /// Turns a VRChat constraint into the Basis constraint that corresponds to it.
     /// <para>
-    /// This is the most direct mapping in the package: the two systems model constraints the
-    /// same way, both following Unity's own built-in constraints, so most fields transfer
-    /// unchanged. Three things do not.
+    /// Both systems follow Unity's own built-in constraints, so most fields transfer unchanged.
+    /// Two things do not.
     /// </para>
     /// <para>
     /// A VRChat constraint can drive a transform other than the object it sits on. Basis

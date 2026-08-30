@@ -2,8 +2,8 @@
 
 ## Setting up
 
-You need a Basis project to build against: the package references Basis SDK types and the
-Jiggle Physics package. Clone [BasisVR/Basis](https://github.com/BasisVR/Basis) and open the
+You need a Basis project to build against: the package references the Basis SDK, Jiggle Physics
+and HVR Basis Comms, all of which ship inside the Basis repository. Clone [BasisVR/Basis](https://github.com/BasisVR/Basis) and open the
 `Basis/` subfolder as the Unity project, not the repository root. Use the editor version in that
 project's `ProjectSettings/ProjectVersion.txt`; Basis moves between editor versions and the
 package follows it rather than pinning one.
