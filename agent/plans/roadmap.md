@@ -72,10 +72,24 @@ the original. Everything else maps directly.
   `roll`, case-insensitively, but in `BasisTransformMapping.FindTwistBone` in `com.basis.common`,
   not in the `BasisFullIKConstraintJob` the constraints page names, which does not exist in the
   shipped source. The IK itself lives in `com.basis.eeriemovement`.
-- **Toggles and animation.** Expression menus and FX layers onto HVR Vixxy, ambient motion onto
-  `BasisAuthoredMotion`. The least mechanical part by far; expect assisted authoring rather than
-  automatic conversion. Their presence is already reported, so a conversion no longer implies
-  they came across; what is missing is doing anything about them.
+- **Toggles and animation. Partly done.** Menu toggles are rebuilt as HVR Vixxy controls with
+  menu items, covering object switching and blendshapes. On the reference avatar 9 of 26 rebuild;
+  the rest are reported with why. What remains:
+
+  - **Material properties.** Two of that avatar's toggles drive them, 14 in one case. Vixxy can
+    express them, so this is the next increment and reuses the subject and property path that
+    blendshapes already use.
+  - **Puppets.** A radial puppet maps onto a Vixxy control with several choices and a slider
+    presentation. Two and four axis puppets have no equivalent.
+  - **Ambient motion onto `BasisAuthoredMotion`.** Untouched. Clips that animate over time are
+    currently counted and reported, and this is where they would go.
+
+- **Conversion options in the window.** Requested, not started. A basic and an advanced view, so
+  a conversion can be narrowed rather than being all or nothing: which component kinds to convert
+  at all (physics, constraints, descriptor, toggles), and per-item control over what gets
+  written. The per-rig preset dropdown and the two tuning weights already work this way and are
+  the pattern to follow. The plan is already a list of independent items with a diagnostic each,
+  so filtering it is the natural shape rather than threading flags through the readers.
 - **Modular Avatar.** Works on Basis but has no Basis-specific integration. `MergeArmature` and
   `BoneProxy` mean the authored hierarchy is not the built hierarchy, which is the strongest
   argument for eventually offering a build-time path alongside the destructive one.

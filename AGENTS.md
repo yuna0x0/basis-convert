@@ -8,7 +8,33 @@ Editor tooling for bringing content from other social VR platforms into Basis. I
 a Basis project as a UPM package.
 
 Working today: VRChat PhysBones and colliders, legacy Dynamic Bone, all six VRChat constraint
-types, and the avatar descriptor, plus a check of the humanoid rig against what Basis's IK needs.
+types, the avatar descriptor, menu toggles rebuilt as HVR Vixxy controls, and a check of the
+humanoid rig against what Basis's IK needs.
+
+## Picking this up cold
+
+Read `agent/worklog/` newest entry first; it ends with where the last session stopped and what is
+next. Then `agent/decisions/`. The short version of how this works:
+
+- **Source data is read from YAML**, because the VRChat SDK cannot be installed into a Basis
+  project and its components arrive as missing scripts. Native Unity types, animator controllers
+  and clips, are read through the editor API instead.
+- **Three stages**: readers produce plain data, mappers are pure and produce plans, writers touch
+  Unity objects. Only writers need a scene, which is what keeps the rest testable headlessly.
+- **Anything approximated or dropped produces a diagnostic** with a stable code. Roughly a third
+  of the source surface has no Basis equivalent, so silence would misrepresent the result.
+
+## Lessons this project keeps relearning
+
+- **Read the code, not the docs.** Basis's documentation has been wrong three times: jiggle
+  colliders are not sphere-only, chain splitting is unnecessary, and the twist bone lookup lives
+  somewhere other than the type named.
+- **Decompile rather than infer.** The animation layer ordering quoted everywhere omits a
+  deprecated entry and shifts every layer after it. One `ilspycmd` call settled it after the
+  wrong version had already shipped in a report.
+- **Read the output, not just the test results.** A wide angle limit clamping to a tighter one,
+  and duplicate collider diagnostics, were both found by reading a generated report while every
+  test passed.
 
 The scope is wider than what is built. Avatars first, then props and worlds; VRChat first, then
 whatever else is worth reading. Reading, mapping and writing are separate stages so that a new
