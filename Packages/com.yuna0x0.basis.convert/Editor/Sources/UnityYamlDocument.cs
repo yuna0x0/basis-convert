@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace yuna0x0.Basis.Convert.Sources
 {
@@ -124,6 +125,142 @@ namespace yuna0x0.Basis.Convert.Sources
             guid = guidMatch.Groups["guid"].Value;
             return long.TryParse(fileIdMatch.Groups["id"].Value, NumberStyles.Integer,
                 CultureInfo.InvariantCulture, out fileId);
+        }
+
+        /// <summary>
+        /// The lines belonging to a top-level key, excluding the key line itself. Covers both a
+        /// nested map, whose lines are indented further, and a sequence, whose "- " entries sit
+        /// at the same indent as the key.
+        /// </summary>
+        public bool TryGetTopLevelBlock(string key, out List<string> block)
+        {
+            block = null;
+            string prefix = "  " + key + ":";
+
+            for (int i = 0; i < Lines.Count; i++)
+            {
+                string line = Lines[i];
+                if (IndentOf(line) != 2 || !line.StartsWith(prefix))
+                {
+                    continue;
+                }
+
+                block = new List<string>();
+                for (int j = i + 1; j < Lines.Count; j++)
+                {
+                    string candidate = Lines[j];
+                    int indent = IndentOf(candidate);
+                    bool isSequenceEntry = indent == 2
+                        && candidate.Length > 2
+                        && candidate[2] == '-';
+
+                    if (indent > 2 || isSequenceEntry)
+                    {
+                        block.Add(candidate);
+                        continue;
+                    }
+
+                    break;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool TryGetFloat(string key, out float value)
+        {
+            return UnityYamlValues.TryParseFloat(GetTopLevelValue(key), out value);
+        }
+
+        public bool TryGetInt(string key, out int value)
+        {
+            return UnityYamlValues.TryParseInt(GetTopLevelValue(key), out value);
+        }
+
+        public bool TryGetBool(string key, out bool value)
+        {
+            value = false;
+            if (!UnityYamlValues.TryParseInt(GetTopLevelValue(key), out int raw))
+            {
+                return false;
+            }
+
+            value = raw != 0;
+            return true;
+        }
+
+        public bool TryGetVector3(string key, out Vector3 value)
+        {
+            return UnityYamlValues.TryParseVector3(GetTopLevelValue(key), out value);
+        }
+
+        public bool TryGetQuaternion(string key, out Quaternion value)
+        {
+            return UnityYamlValues.TryParseQuaternion(GetTopLevelValue(key), out value);
+        }
+
+        /// <summary>
+        /// File identifiers referenced by a sequence of object references. Null references,
+        /// written as {fileID: 0}, are dropped: the VRChat inspector leaves them behind when a
+        /// list entry is cleared, and they are not meaningful.
+        /// </summary>
+        public List<long> GetFileIdList(string key)
+        {
+            List<long> ids = new List<long>();
+
+            string inline = GetTopLevelValue(key);
+            if (!string.IsNullOrEmpty(inline) && inline.StartsWith("["))
+            {
+                // "[]" or an inline sequence.
+                foreach (Match match in FileIdPattern.Matches(inline))
+                {
+                    AddFileId(ids, match);
+                }
+
+                return ids;
+            }
+
+            if (!TryGetTopLevelBlock(key, out List<string> block))
+            {
+                return ids;
+            }
+
+            foreach (string line in block)
+            {
+                foreach (Match match in FileIdPattern.Matches(line))
+                {
+                    AddFileId(ids, match);
+                }
+            }
+
+            return ids;
+        }
+
+        /// <summary>
+        /// An AnimationCurve block. Returns false when the key is absent; returns true with an
+        /// empty curve when the block is present but holds no keyframes.
+        /// </summary>
+        public bool TryGetCurve(string key, out AnimationCurve curve)
+        {
+            curve = null;
+            if (!TryGetTopLevelBlock(key, out List<string> block))
+            {
+                return false;
+            }
+
+            curve = UnityYamlValues.ParseCurveKeyframes(block);
+            return true;
+        }
+
+        private static void AddFileId(List<long> ids, Match match)
+        {
+            if (long.TryParse(match.Groups["id"].Value, NumberStyles.Integer,
+                    CultureInfo.InvariantCulture, out long id) && id != 0L)
+            {
+                ids.Add(id);
+            }
         }
 
         private static int IndentOf(string line)
