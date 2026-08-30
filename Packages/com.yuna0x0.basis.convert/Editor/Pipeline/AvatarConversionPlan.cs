@@ -119,6 +119,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public int DynamicBonesFound;
         public int ContactsFound;
 
+        /// <summary>What kind of source this appears to be, for the reader to sanity check.</summary>
+        public SourceProfile Profile = new SourceProfile();
+
         /// <summary>Components identified in the file but not tied to a live transform.</summary>
         public int Unresolved;
 

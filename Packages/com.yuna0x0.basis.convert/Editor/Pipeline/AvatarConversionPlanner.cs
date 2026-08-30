@@ -119,6 +119,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     + "has no contact system, so anything driven by touch does not come across.");
             }
 
+            BuildProfile(plan);
             EnsureAvatarComponent(plan);
             LoadExpressions(plan);
 
@@ -304,6 +305,23 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     $"{planned.Colliders.Count} colliders were referenced but a jiggle rig "
                     + $"supports {JiggleRigDataLimits.MaxColliders}. The extras were dropped.");
             }
+        }
+
+        private static void BuildProfile(AvatarConversionPlan plan)
+        {
+            Animator animator = plan.SourceRoot == null
+                ? null
+                : plan.SourceRoot.GetComponentInChildren<Animator>(true);
+
+            plan.Profile = new SourceProfile
+            {
+                HasVrchatDescriptor = plan.Descriptor != null,
+                HasVrchatComponents = plan.PhysBonesFound > 0 || plan.ConstraintsFound > 0
+                    || plan.ContactsFound > 0,
+                HasDynamicBone = plan.DynamicBonesFound > 0,
+                HasHumanoidRig = animator != null && animator.avatar != null
+                    && animator.avatar.isHuman,
+            };
         }
 
         /// <summary>

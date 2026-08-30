@@ -121,6 +121,20 @@ namespace yuna0x0.Basis.Convert.UI
         {
             EditorGUILayout.Space();
 
+            EditorGUILayout.LabelField("Detected", _plan.Profile.Kind, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(" ", string.Join(", ", _plan.Profile.Signals()),
+                EditorStyles.miniLabel);
+
+            if (_plan.Profile.LooksInconsistent)
+            {
+                EditorGUILayout.HelpBox(
+                    "This has a humanoid rig but nothing convertible on it. If you meant to "
+                    + "convert an avatar, check you picked the right object: a rig with its "
+                    + "physics on a child prefab looks like this.", MessageType.Warning);
+            }
+
+            EditorGUILayout.Space(2f);
+
             int warnings = CountOf(DiagnosticSeverity.Warning);
             int dropped = CountOf(DiagnosticSeverity.Dropped);
             int approximated = CountOf(DiagnosticSeverity.Approximated);

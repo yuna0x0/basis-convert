@@ -8,6 +8,12 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- The window names what it detected before converting: VRChat avatar, humanoid avatar with
+  Dynamic Bone, prop or clothing, and the signals behind the guess. Warns when something has a
+  humanoid rig but nothing convertible on it, which usually means the wrong object was picked.
+- Menu toggles are traced to the animator layers behind them, and each side reduced to what it
+  does: objects switched, blendshapes set, and how much it does beyond that.
+
 - Avatars that never came from VRChat convert too. Dynamic Bone is an ordinary Unity asset, and
   an avatar using it now gets a `BasisAvatar` component created from its humanoid rig, with the
   report saying what was left for Basis to fill in.

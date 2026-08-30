@@ -70,6 +70,7 @@ namespace yuna0x0.Basis.Convert.Reporting
 
             text.AppendLine("## Summary");
             text.AppendLine();
+            text.AppendLine($"- Detected: {plan.Profile.Describe()}");
             text.AppendLine($"- PhysBones found: {plan.PhysBonesFound}");
             text.AppendLine($"- Dynamic Bones found: {plan.DynamicBonesFound}");
             text.AppendLine($"- Colliders found: {plan.CollidersFound}");
