@@ -114,15 +114,57 @@ namespace yuna0x0.Basis.Convert.Tests
         }
 
         [Test]
-        public void ASelectorParameterIsNotYetRebuilt()
+        public void ASelectorBecomesOneControlWithAChoicePerValue()
         {
-            // Three menu controls share HairStyle, and its layer holds one state per value.
-            // Vixxy can hold that as a control with several choices; the reader cannot read it
-            // yet, so it is reported rather than half converted.
+            // Three menu controls share HairStyle and pick different values from it, and its
+            // layer holds one state per value. Vixxy holds that as one control with three
+            // choices rather than three separate toggles.
             AvatarConversionPlan plan = Plan();
 
-            Assert.That(plan.Toggles.Find(toggle => toggle.Parameter == "HairStyle"), Is.Null);
-            Assert.That(plan.VixxyControls.Find(c => c.Plan.Parameter == "HairStyle"), Is.Null);
+            ResolvedToggle selector = plan.Toggles.Find(toggle => toggle.Parameter == "HairStyle");
+            Assert.That(selector, Is.Not.Null);
+            Assert.That(selector.IsSelector, Is.True);
+            Assert.That(selector.Choices.Count, Is.EqualTo(3));
+
+            PlannedVixxyControl control =
+                plan.VixxyControls.Find(c => c.Plan.Parameter == "HairStyle");
+            Assert.That(control, Is.Not.Null, "The selector rebuilds as a Vixxy control.");
+            Assert.That(control.Plan.ChoiceNames,
+                Is.EqualTo(new[] {"Hair_Long", "Hair_Braid", "Hair_Short"}),
+                "Choices are named by the menu entries that select them, in value order.");
+            Assert.That(control.Plan.ChoiceValues, Is.EqualTo(new[] {0, 1, 2}));
+
+            foreach (VixxyActivationPlan activation in control.Plan.Activations)
+            {
+                Assert.That(activation.Choices.Length, Is.EqualTo(3),
+                    $"{activation.Path} needs a state for every choice.");
+            }
+        }
+
+        [Test]
+        public void ASelectorIsWrittenWithItsChoices()
+        {
+            AvatarConversionPlan plan = Plan();
+            _instance = (GameObject)PrefabUtility.InstantiatePrefab(
+                AssetDatabase.LoadAssetAtPath<GameObject>(FixturePath));
+
+            AvatarConverter.Apply(plan, _instance);
+
+            HVR.Vixxy.HVRVixxyControl written = null;
+            foreach (HVR.Vixxy.HVRVixxyControl control in
+                     _instance.GetComponentsInChildren<HVR.Vixxy.HVRVixxyControl>(true))
+            {
+                if (control.choices != null && control.choices.Length == 3)
+                {
+                    written = control;
+                    break;
+                }
+            }
+
+            Assert.That(written, Is.Not.Null, "The selector's control has three choices.");
+            Assert.That(written.choices[1].title, Is.EqualTo("Hair_Braid"));
+            Assert.That(written.choices[2].value, Is.EqualTo(2f),
+                "A choice carries the parameter value that selects it.");
         }
 
         [Test]

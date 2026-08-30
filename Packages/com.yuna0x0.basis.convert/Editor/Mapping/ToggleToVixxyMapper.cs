@@ -24,35 +24,49 @@ namespace yuna0x0.Basis.Convert.Mapping
                 Parameter = toggle.Parameter,
             };
 
-            if (toggle.WhenOn.OtherCurves + toggle.WhenOff.OtherCurves > 0
-                || toggle.WhenOn.AnimatedCurves + toggle.WhenOff.AnimatedCurves > 0)
+            foreach (ResolvedChoice choice in toggle.Choices)
             {
-                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vixxy.notSimple",
-                    $"'{toggle.MenuName}' animates over time or drives something a Vixxy control "
-                    + "cannot hold, such as a transform. Rebuild it by hand.");
-                return plan;
+                plan.ChoiceNames.Add(choice.Name);
+                plan.ChoiceValues.Add(choice.Value);
+
+                if (choice.Effects.OtherCurves > 0 || choice.Effects.AnimatedCurves > 0)
+                {
+                    plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vixxy.notSimple",
+                        $"'{toggle.MenuName}' animates over time or drives something a Vixxy "
+                        + "control cannot hold, such as a transform. Rebuild it by hand.");
+                    return plan;
+                }
             }
 
-            Dictionary<string, bool> off = StatesIn(toggle.WhenOff);
-            Dictionary<string, bool> on = StatesIn(toggle.WhenOn);
+            int count = toggle.Choices.Count;
+            Dictionary<string, bool>[] states = new Dictionary<string, bool>[count];
+            HashSet<string> paths = new HashSet<string>();
 
-            HashSet<string> paths = new HashSet<string>(on.Keys);
-            paths.UnionWith(off.Keys);
+            for (int choice = 0; choice < count; choice++)
+            {
+                states[choice] = StatesIn(toggle.Choices[choice].Effects);
+                paths.UnionWith(states[choice].Keys);
+            }
 
             foreach (string path in paths)
             {
-                bool hasOn = on.TryGetValue(path, out bool onState);
-                bool hasOff = off.TryGetValue(path, out bool offState);
-
-                // Only one side animating is the common shape: the other state leaves the object
-                // as the avatar was authored, so its value is read from the hierarchy later
-                // rather than assumed to be the opposite.
-                plan.Activations.Add(new VixxyActivationPlan
+                // A choice that says nothing about an object leaves it as the avatar was
+                // authored, so its value is read from the hierarchy later rather than assumed.
+                VixxyActivationPlan activation = new VixxyActivationPlan
                 {
                     Path = path,
-                    Choices = new[] { offState, onState },
-                    Set = new[] {hasOff, hasOn},
-                });
+                    Choices = new bool[count],
+                    Set = new bool[count],
+                };
+
+                for (int choice = 0; choice < count; choice++)
+                {
+                    activation.Set[choice] =
+                        states[choice].TryGetValue(path, out bool active);
+                    activation.Choices[choice] = active;
+                }
+
+                plan.Activations.Add(activation);
             }
 
             MapBlendShapes(toggle, plan);
@@ -75,25 +89,34 @@ namespace yuna0x0.Basis.Convert.Mapping
         /// </summary>
         private static void MapBlendShapes(ResolvedToggle toggle, VixxyControlPlan plan)
         {
-            Dictionary<(string, string), float> off = ShapesIn(toggle.WhenOff);
-            Dictionary<(string, string), float> on = ShapesIn(toggle.WhenOn);
+            int count = toggle.Choices.Count;
+            Dictionary<(string, string), float>[] shapes =
+                new Dictionary<(string, string), float>[count];
+            HashSet<(string, string)> keys = new HashSet<(string, string)>();
 
-            HashSet<(string, string)> keys = new HashSet<(string, string)>(on.Keys);
-            keys.UnionWith(off.Keys);
+            for (int choice = 0; choice < count; choice++)
+            {
+                shapes[choice] = ShapesIn(toggle.Choices[choice].Effects);
+                keys.UnionWith(shapes[choice].Keys);
+            }
 
             foreach ((string path, string shape) in keys)
             {
-                bool hasOn = on.TryGetValue((path, shape), out float onValue);
-                bool hasOff = off.TryGetValue((path, shape), out float offValue);
-
-                VixxySubjectPlan subject = SubjectFor(plan, path);
-
-                subject.BlendShapes.Add(new VixxyBlendShapePlan
+                VixxyBlendShapePlan planned = new VixxyBlendShapePlan
                 {
                     ShapeName = shape,
-                    Choices = new[] { offValue, onValue },
-                    Set = new[] {hasOff, hasOn},
-                });
+                    Choices = new float[count],
+                    Set = new bool[count],
+                };
+
+                for (int choice = 0; choice < count; choice++)
+                {
+                    planned.Set[choice] =
+                        shapes[choice].TryGetValue((path, shape), out float weight);
+                    planned.Choices[choice] = weight;
+                }
+
+                SubjectFor(plan, path).BlendShapes.Add(planned);
             }
         }
 
@@ -112,13 +135,17 @@ namespace yuna0x0.Basis.Convert.Mapping
             Dictionary<(string, string), VixxyMaterialPropertyPlan> byProperty =
                 new Dictionary<(string, string), VixxyMaterialPropertyPlan>();
 
-            Collect(plan, toggle.WhenOff, byProperty, 0);
-            Collect(plan, toggle.WhenOn, byProperty, 1);
+            for (int choice = 0; choice < toggle.Choices.Count; choice++)
+            {
+                Collect(plan, toggle.Choices[choice].Effects, byProperty, choice,
+                    toggle.Choices.Count);
+            }
         }
 
         private static void Collect(
             VixxyControlPlan plan, Sources.ClipEffects effects,
-            Dictionary<(string, string), VixxyMaterialPropertyPlan> byProperty, int choice)
+            Dictionary<(string, string), VixxyMaterialPropertyPlan> byProperty, int choice,
+            int choiceCount)
         {
             foreach (Sources.MaterialPropertyEffect effect in effects.MaterialProperties)
             {
@@ -132,6 +159,8 @@ namespace yuna0x0.Basis.Convert.Mapping
                     {
                         PropertyName = effect.PropertyName,
                         Kind = KindOf(effect),
+                        Choices = new Vector4[choiceCount],
+                        Set = NewSetFlags(choiceCount),
                     };
 
                     subject.MaterialProperties.Add(property);
@@ -145,6 +174,17 @@ namespace yuna0x0.Basis.Convert.Mapping
 
                 property.Set[choice][channel] = true;
             }
+        }
+
+        private static bool[][] NewSetFlags(int choiceCount)
+        {
+            bool[][] flags = new bool[choiceCount][];
+            for (int choice = 0; choice < choiceCount; choice++)
+            {
+                flags[choice] = new bool[4];
+            }
+
+            return flags;
         }
 
         private static VixxyMaterialPropertyKind KindOf(Sources.MaterialPropertyEffect effect)

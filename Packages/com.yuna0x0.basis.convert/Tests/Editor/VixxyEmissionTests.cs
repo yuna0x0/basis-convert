@@ -120,7 +120,8 @@ namespace yuna0x0.Basis.Convert.Tests
 
             foreach (HVRVixxyControl control in controls)
             {
-                Assert.That(control.choices.Length, Is.EqualTo(2));
+                Assert.That(control.choices.Length, Is.GreaterThanOrEqualTo(2),
+                    "A toggle has two choices; a selector has one per value of its parameter.");
                 Assert.That(control.choices[0].value, Is.EqualTo(0f).Within(1e-6f));
                 Assert.That(control.choices[1].value, Is.EqualTo(1f).Within(1e-6f));
             }
@@ -147,7 +148,9 @@ namespace yuna0x0.Basis.Convert.Tests
                             entry.FindPropertyRelative("propertyName").stringValue,
                             Is.Not.Empty);
                         Assert.That(
-                            entry.FindPropertyRelative("choices").arraySize, Is.EqualTo(2));
+                            entry.FindPropertyRelative("choices").arraySize,
+                            Is.EqualTo(control.choices.Length),
+                            "A property holds one value per choice of its control.");
                         shapeProperties++;
                     }
                 }

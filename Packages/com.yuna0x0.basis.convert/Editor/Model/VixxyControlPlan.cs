@@ -130,6 +130,17 @@ namespace yuna0x0.Basis.Convert.Model
         public string MenuName = string.Empty;
         public string Parameter = string.Empty;
 
+        /// <summary>
+        /// What each choice is called, in the order the control offers them. A toggle has two,
+        /// off first; a selector is named by the menu entry that picks each value.
+        /// </summary>
+        public List<string> ChoiceNames = new List<string>();
+
+        /// <summary>The parameter value each choice corresponds to.</summary>
+        public List<int> ChoiceValues = new List<int>();
+
+        public int ChoiceCount => ChoiceNames.Count > 0 ? ChoiceNames.Count : 2;
+
         /// <summary>Which choice the control starts in.</summary>
         public bool DefaultOn;
 

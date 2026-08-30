@@ -49,11 +49,7 @@ namespace yuna0x0.Basis.Convert.Writers
             Undo.SetCurrentGroupName(undoName);
 
             // choices and defaultValue are public; everything else here is not.
-            component.choices = new[]
-            {
-                new HVRVixxyChoiceControl { title = "OFF", value = 0f },
-                new HVRVixxyChoiceControl { title = "ON", value = 1f },
-            };
+            component.choices = ChoicesOf(plan);
             component.defaultValue = plan.DefaultOn ? 1f : 0f;
 
             SerializedObject serialized = new SerializedObject(component);
@@ -73,10 +69,13 @@ namespace yuna0x0.Basis.Convert.Writers
                 SerializedProperty entry = activations.GetArrayElementAtIndex(written);
                 entry.FindPropertyRelative("component").objectReferenceValue = target;
 
+                bool[] states = plan.Activations[i].Choices;
                 SerializedProperty choices = entry.FindPropertyRelative("choices");
-                choices.arraySize = 2;
-                choices.GetArrayElementAtIndex(0).boolValue = plan.Activations[i].Choices[0];
-                choices.GetArrayElementAtIndex(1).boolValue = plan.Activations[i].Choices[1];
+                choices.arraySize = states.Length;
+                for (int c = 0; c < states.Length; c++)
+                {
+                    choices.GetArrayElementAtIndex(c).boolValue = states[c];
+                }
 
                 written++;
             }
@@ -147,9 +146,11 @@ namespace yuna0x0.Basis.Convert.Writers
                     };
 
                     SerializedProperty choices = entry.FindPropertyRelative("choices");
-                    choices.arraySize = 2;
-                    choices.GetArrayElementAtIndex(0).floatValue = shape.Choices[0];
-                    choices.GetArrayElementAtIndex(1).floatValue = shape.Choices[1];
+                    choices.arraySize = shape.Choices.Length;
+                    for (int c = 0; c < shape.Choices.Length; c++)
+                    {
+                        choices.GetArrayElementAtIndex(c).floatValue = shape.Choices[c];
+                    }
                 }
 
                 foreach (VixxyMaterialPropertyPlan property in planned[i].MaterialProperties)
@@ -185,9 +186,12 @@ namespace yuna0x0.Basis.Convert.Writers
                     };
 
                     SerializedProperty choices = entry.FindPropertyRelative("choices");
-                    choices.arraySize = 2;
-                    choices.GetArrayElementAtIndex(0).colorValue = property.Choices[0];
-                    choices.GetArrayElementAtIndex(1).colorValue = property.Choices[1];
+                    choices.arraySize = property.Choices.Length;
+                    for (int c = 0; c < property.Choices.Length; c++)
+                    {
+                        choices.GetArrayElementAtIndex(c).colorValue = property.Choices[c];
+                    }
+
                     break;
                 }
 
@@ -201,9 +205,12 @@ namespace yuna0x0.Basis.Convert.Writers
                     };
 
                     SerializedProperty choices = entry.FindPropertyRelative("choices");
-                    choices.arraySize = 2;
-                    choices.GetArrayElementAtIndex(0).vector4Value = property.Choices[0];
-                    choices.GetArrayElementAtIndex(1).vector4Value = property.Choices[1];
+                    choices.arraySize = property.Choices.Length;
+                    for (int c = 0; c < property.Choices.Length; c++)
+                    {
+                        choices.GetArrayElementAtIndex(c).vector4Value = property.Choices[c];
+                    }
+
                     break;
                 }
 
@@ -217,12 +224,45 @@ namespace yuna0x0.Basis.Convert.Writers
                     };
 
                     SerializedProperty choices = entry.FindPropertyRelative("choices");
-                    choices.arraySize = 2;
-                    choices.GetArrayElementAtIndex(0).floatValue = property.Choices[0].x;
-                    choices.GetArrayElementAtIndex(1).floatValue = property.Choices[1].x;
+                    choices.arraySize = property.Choices.Length;
+                    for (int c = 0; c < property.Choices.Length; c++)
+                    {
+                        choices.GetArrayElementAtIndex(c).floatValue = property.Choices[c].x;
+                    }
+
                     break;
                 }
             }
+        }
+
+        /// <summary>
+        /// The control's choices, titled by the menu entries that select them. A toggle keeps
+        /// the OFF and ON titles it always had; a selector is named per value.
+        /// </summary>
+        private static HVRVixxyChoiceControl[] ChoicesOf(VixxyControlPlan plan)
+        {
+            if (plan.ChoiceNames.Count == 0)
+            {
+                return new[]
+                {
+                    new HVRVixxyChoiceControl {title = "OFF", value = 0f},
+                    new HVRVixxyChoiceControl {title = "ON", value = 1f},
+                };
+            }
+
+            HVRVixxyChoiceControl[] choices =
+                new HVRVixxyChoiceControl[plan.ChoiceNames.Count];
+
+            for (int i = 0; i < choices.Length; i++)
+            {
+                choices[i] = new HVRVixxyChoiceControl
+                {
+                    title = plan.ChoiceNames[i],
+                    value = i < plan.ChoiceValues.Count ? plan.ChoiceValues[i] : i,
+                };
+            }
+
+            return choices;
         }
 
         private static void WriteMenuItem(

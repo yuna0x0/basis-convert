@@ -4,16 +4,51 @@ using UnityEngine;
 
 namespace yuna0x0.Basis.Convert.Sources
 {
-    /// <summary>One animator layer that behaves as an on/off switch for a single parameter.</summary>
+    /// <summary>One state a layer holds, and the parameter value that selects it.</summary>
+    public sealed class FxParameterState
+    {
+        /// <summary>Value of the layer's parameter that selects this state.</summary>
+        public int Value;
+
+        public AnimationClip Clip;
+    }
+
+    /// <summary>
+    /// One animator layer steered by a single parameter.
+    /// <para>
+    /// A bool parameter gives the two states of an on/off toggle. An int parameter gives one
+    /// state per value, which is what a menu with several controls sharing a parameter produces:
+    /// a hairstyle picker, an outfit set, a facial expression.
+    /// </para>
+    /// </summary>
     public sealed class FxToggleLayer
     {
         public string LayerName = string.Empty;
         public string Parameter = string.Empty;
-        public AnimationClip WhenOff;
-        public AnimationClip WhenOn;
 
-        /// <summary>States found beyond the two an on/off switch needs.</summary>
-        public int ExtraStates;
+        /// <summary>The states, ordered by the value that selects them.</summary>
+        public List<FxParameterState> States = new List<FxParameterState>();
+
+        public bool IsSelector => States.Count > 2;
+
+        /// <summary>The clip for a parameter value of 0, which a toggle calls off.</summary>
+        public AnimationClip WhenOff => ClipFor(0);
+
+        /// <summary>The clip for a parameter value of 1, which a toggle calls on.</summary>
+        public AnimationClip WhenOn => ClipFor(1);
+
+        public AnimationClip ClipFor(int value)
+        {
+            foreach (FxParameterState state in States)
+            {
+                if (state.Value == value)
+                {
+                    return state.Clip;
+                }
+            }
+
+            return null;
+        }
     }
 
     /// <summary>
@@ -113,11 +148,19 @@ namespace yuna0x0.Basis.Convert.Sources
             }
         }
 
+        /// <summary>
+        /// Reads a layer as one state per value of its parameter.
+        /// <para>
+        /// A bool parameter yields two: whatever an <c>If</c> transition points at is value 1,
+        /// and the state the layer starts in is value 0. An int parameter yields one state per
+        /// <c>Equals</c> value, which is how a menu offers several controls that share it.
+        /// </para>
+        /// </summary>
         private static FxToggleLayer ReadLayer(
             AnimatorControllerLayer layer, AnimatorStateMachine machine, string parameter)
         {
-            AnimatorState on = null;
-            AnimatorState off = null;
+            Dictionary<int, AnimatorState> byValue = new Dictionary<int, AnimatorState>();
+            AnimatorState whenOff = null;
             bool mentionsParameter = false;
 
             foreach (ChildAnimatorState child in machine.states)
@@ -125,20 +168,20 @@ namespace yuna0x0.Basis.Convert.Sources
                 foreach (AnimatorStateTransition transition in child.state.transitions)
                 {
                     Classify(transition.conditions, transition.destinationState, parameter,
-                        ref mentionsParameter, ref on, ref off);
+                        ref mentionsParameter, byValue, ref whenOff);
                 }
             }
 
             foreach (AnimatorStateTransition transition in machine.anyStateTransitions)
             {
                 Classify(transition.conditions, transition.destinationState, parameter,
-                    ref mentionsParameter, ref on, ref off);
+                    ref mentionsParameter, byValue, ref whenOff);
             }
 
             foreach (AnimatorTransition transition in machine.entryTransitions)
             {
                 Classify(transition.conditions, transition.destinationState, parameter,
-                    ref mentionsParameter, ref on, ref off);
+                    ref mentionsParameter, byValue, ref whenOff);
             }
 
             if (!mentionsParameter)
@@ -146,32 +189,60 @@ namespace yuna0x0.Basis.Convert.Sources
                 return null;
             }
 
-            // Whatever the layer starts in is the off state unless a transition said otherwise.
-            off ??= machine.defaultState;
+            // Whatever the layer starts in covers the value no transition named, which for a
+            // toggle is the off side and for a selector is usually its first entry.
+            AnimatorState fallback = whenOff ?? machine.defaultState;
+            if (fallback != null && !byValue.ContainsValue(fallback))
+            {
+                byValue[byValue.ContainsKey(0) ? LowestUnusedValue(byValue) : 0] = fallback;
+            }
 
-            if (on == null || off == null || on == off)
+            if (byValue.Count < 2)
             {
                 return null;
             }
 
-            return new FxToggleLayer
+            List<int> values = new List<int>(byValue.Keys);
+            values.Sort();
+
+            FxToggleLayer read = new FxToggleLayer
             {
                 LayerName = layer.name,
                 Parameter = parameter,
-                WhenOn = on.motion as AnimationClip,
-                WhenOff = off.motion as AnimationClip,
-                ExtraStates = Mathf.Max(0, machine.states.Length - 2),
             };
+
+            foreach (int value in values)
+            {
+                read.States.Add(new FxParameterState
+                {
+                    Value = value,
+                    Clip = byValue[value].motion as AnimationClip,
+                });
+            }
+
+            return read;
+        }
+
+        private static int LowestUnusedValue(Dictionary<int, AnimatorState> byValue)
+        {
+            int value = 0;
+            while (byValue.ContainsKey(value))
+            {
+                value++;
+            }
+
+            return value;
         }
 
         /// <summary>
-        /// A condition that turns the parameter on points at the on state, one that turns it off
-        /// points at the off state. Equals and NotEqual cover int parameters, where a menu
-        /// control selects one value out of several.
+        /// Which value of the parameter each transition selects. <c>Equals</c> names the value
+        /// outright, which is how a selector is written; <c>If</c> means 1 and <c>IfNot</c> means
+        /// 0, which is how a bool toggle is written.
         /// </summary>
         private static void Classify(
             AnimatorCondition[] conditions, AnimatorState destination, string parameter,
-            ref bool mentionsParameter, ref AnimatorState on, ref AnimatorState off)
+            ref bool mentionsParameter, Dictionary<int, AnimatorState> byValue,
+            ref AnimatorState whenOff)
         {
             if (destination == null || conditions == null)
             {
@@ -189,16 +260,30 @@ namespace yuna0x0.Basis.Convert.Sources
 
                 switch (condition.mode)
                 {
-                    case AnimatorConditionMode.If:
                     case AnimatorConditionMode.Equals:
+                    {
+                        int value = Mathf.RoundToInt(condition.threshold);
+                        if (!byValue.ContainsKey(value))
+                        {
+                            byValue[value] = destination;
+                        }
+
+                        break;
+                    }
+
+                    case AnimatorConditionMode.If:
                     case AnimatorConditionMode.Greater:
-                        on ??= destination;
+                        if (!byValue.ContainsKey(1))
+                        {
+                            byValue[1] = destination;
+                        }
+
                         break;
 
                     case AnimatorConditionMode.IfNot:
                     case AnimatorConditionMode.NotEqual:
                     case AnimatorConditionMode.Less:
-                        off ??= destination;
+                        whenOff ??= destination;
                         break;
                 }
             }
