@@ -33,7 +33,16 @@ namespace yuna0x0.Basis.Convert.Sources
                 throw new ArgumentException("path is required", nameof(path));
             }
 
-            return Scan(File.ReadLines(path));
+            // Not every asset worth planning is text. An FBX is a perfectly good avatar and is
+            // binary, so reading one yields no documents rather than failing the conversion.
+            try
+            {
+                return Scan(File.ReadLines(path));
+            }
+            catch (System.Exception)
+            {
+                return new List<UnityYamlDocument>();
+            }
         }
 
         public static List<UnityYamlDocument> Scan(IEnumerable<string> lines)

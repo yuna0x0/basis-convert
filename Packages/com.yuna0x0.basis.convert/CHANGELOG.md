@@ -8,6 +8,10 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- Avatars that never came from VRChat convert too. Dynamic Bone is an ordinary Unity asset, and
+  an avatar using it now gets a `BasisAvatar` component created from its humanoid rig, with the
+  report saying what was left for Basis to fill in.
+
 - The expression menu tree and parameter list are read and described: how many controls of each
   kind, across how many menus. Submenus are separate assets and are followed. Nothing is
   converted yet; this is what a Vixxy rebuild has to cover.

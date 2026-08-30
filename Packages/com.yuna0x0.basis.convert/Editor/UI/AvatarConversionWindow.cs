@@ -41,7 +41,7 @@ namespace yuna0x0.Basis.Convert.UI
         /// </summary>
         private readonly JiggleMappingProfile _profile = JiggleMappingProfile.Default;
 
-        [MenuItem(ProductInfo.ToolsMenu + "Convert VRChat Avatar")]
+        [MenuItem(ProductInfo.ToolsMenu + "Convert Avatar")]
         public static void Open()
         {
             AvatarConversionWindow window = GetWindow<AvatarConversionWindow>();
@@ -50,7 +50,7 @@ namespace yuna0x0.Basis.Convert.UI
             window.Show();
         }
 
-        [MenuItem(ProductInfo.GameObjectMenu + "Convert VRChat Avatar", false, 30)]
+        [MenuItem(ProductInfo.GameObjectMenu + "Convert Avatar", false, 30)]
         private static void OpenFromHierarchy(MenuCommand command)
         {
             Open();
@@ -76,9 +76,9 @@ namespace yuna0x0.Basis.Convert.UI
 
         private void OnGUI()
         {
-            EditorGUILayout.LabelField("VRChat avatar to Basis", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Avatar to Basis", EditorStyles.boldLabel);
             EditorGUILayout.LabelField(
-                "Reads the avatar's prefab directly, so the VRChat SDK is not needed.",
+                "Reads the avatar's prefab directly, so no source SDK needs installing.",
                 EditorStyles.wordWrappedMiniLabel);
 
             EditorGUILayout.Space();
@@ -517,9 +517,11 @@ namespace yuna0x0.Basis.Convert.UI
 
             if (_plan.TotalPlanned == 0)
             {
-                _blocker = "No convertible VRChat components were found in this avatar's "
-                    + "prefab. If they were already stripped, or the avatar came from somewhere "
-                    + "other than VRChat, there is nothing here to convert yet.";
+                _blocker = "Nothing convertible was found in this prefab. Supported sources are "
+                    + "VRChat PhysBones, colliders and constraints, the VRChat avatar "
+                    + "descriptor, and Dynamic Bone, which plenty of avatars use without VRChat "
+                    + "being involved. If the components were already stripped, there is nothing "
+                    + "left to read.";
             }
         }
 
@@ -546,7 +548,7 @@ namespace yuna0x0.Basis.Convert.UI
             }
 
             blocker = "This object is not linked to a prefab, so there is no file to read the "
-                + "VRChat data from. That usually means the prefab was unpacked. Re-import the "
+                + "source data from. That usually means the prefab was unpacked. Re-import the "
                 + "avatar and convert it before unpacking, or drag the original prefab in here "
                 + "instead.";
             return null;

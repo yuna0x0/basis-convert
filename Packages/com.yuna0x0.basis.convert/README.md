@@ -11,7 +11,8 @@ result editable.
 ## What it does today
 
 - **Physics.** VRChat PhysBones and legacy Dynamic Bone, with their colliders, become Basis
-  Jiggle Physics rigs. Per-bone falloff curves, collider shapes, ignored transforms and grab
+  Jiggle Physics rigs. Dynamic Bone is an ordinary Unity asset, so an avatar using it converts
+  whether or not VRChat was ever involved. Per-bone falloff curves, collider shapes, ignored transforms and grab
   settings all carry over.
 - **Constraints.** All six VRChat constraint types become their Basis equivalents. A constraint
   driving a transform other than its own object is moved onto the transform it drives, since
@@ -30,7 +31,7 @@ reading, mapping and writing are separate stages.
 1. Import your avatar into a Basis project. Its VRChat components will show as missing scripts,
    which is expected and is what this reads.
 2. Drag the avatar into a scene.
-3. Open **Tools > Basis Convert > Convert VRChat Avatar**, or right-click the avatar in the
+3. Open **Tools > Basis Convert > Convert Avatar**, or right-click the avatar in the
    hierarchy and pick the same entry.
 4. Read the summary. Nothing is written until you press Convert, and the report lists everything
    that will be approximated or dropped.

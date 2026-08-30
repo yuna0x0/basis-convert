@@ -25,7 +25,7 @@ reader, a new content type is a new mapper and writer, and neither disturbs the 
 
 Early: names, APIs and the package id are all still subject to change.
 
-Working, from **Tools > Basis Convert > Convert VRChat Avatar**:
+Working, from **Tools > Basis Convert > Convert Avatar**:
 
 - VRChat PhysBones and their colliders, to Basis Jiggle Physics
 - Legacy Dynamic Bone components and their colliders, to the same

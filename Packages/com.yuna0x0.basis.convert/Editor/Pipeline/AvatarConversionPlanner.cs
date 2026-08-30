@@ -119,6 +119,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     + "has no contact system, so anything driven by touch does not come across.");
             }
 
+            EnsureAvatarComponent(plan);
             LoadExpressions(plan);
 
             // Only meaningful once the descriptor is known: a prop has physics but no rig, and
@@ -303,6 +304,46 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     $"{planned.Colliders.Count} colliders were referenced but a jiggle rig "
                     + $"supports {JiggleRigDataLimits.MaxColliders}. The extras were dropped.");
             }
+        }
+
+        /// <summary>
+        /// An avatar that never came from VRChat has no descriptor, but if it has a humanoid rig
+        /// it still needs a Basis Avatar component to be usable. Dynamic Bone in particular is an
+        /// ordinary Unity asset that plenty of avatars use without VRChat ever being involved.
+        /// <para>
+        /// Nothing is known about visemes or blink in that case, so the component is created
+        /// empty and Basis fills what it can when its inspector is first opened.
+        /// </para>
+        /// </summary>
+        private static void EnsureAvatarComponent(AvatarConversionPlan plan)
+        {
+            if (plan.Descriptor != null || plan.SourceRoot == null)
+            {
+                return;
+            }
+
+            Animator animator = plan.SourceRoot.GetComponentInChildren<Animator>(true);
+            if (animator == null || animator.avatar == null || !animator.avatar.isHuman)
+            {
+                return;
+            }
+
+            BasisAvatarPlan descriptorPlan = new BasisAvatarPlan
+            {
+                AvatarRootFileId = 0L,
+            };
+
+            descriptorPlan.Diagnostics.Add(DiagnosticSeverity.Mapped, "descriptor.noSource",
+                "This avatar has a humanoid rig but no VRChat descriptor, so a Basis Avatar "
+                + "component was added empty. Open its inspector once and Basis fills in the "
+                + "animator, scale, renderers, eye and mouth positions itself. Visemes and blink "
+                + "have to be assigned by hand, since there was nothing to read them from.");
+
+            plan.Descriptor = new PlannedAvatarDescriptor
+            {
+                Plan = descriptorPlan,
+                SourceRoot = plan.SourceRoot.transform,
+            };
         }
 
         /// <summary>
