@@ -167,22 +167,7 @@ namespace yuna0x0.Basis.Convert.UI
             return count;
         }
 
-        /// <summary>
-        /// Components of the kinds a conversion produces that are already on the target,
-        /// whether written by an earlier conversion or added by hand.
-        /// </summary>
-        private static List<Component> ExistingConverted(GameObject target)
-        {
-            List<Component> existing = new List<Component>();
-            if (target == null || PrefabUtility.IsPartOfPrefabAsset(target))
-            {
-                return existing;
-            }
 
-            existing.AddRange(target.GetComponentsInChildren<JiggleRig>(true));
-            existing.AddRange(target.GetComponentsInChildren<BasisConstraintBase>(true));
-            return existing;
-        }
 
         private void DrawTuning()
         {
@@ -483,17 +468,22 @@ namespace yuna0x0.Basis.Convert.UI
         /// per-component bookkeeping there is no way to tell a previous conversion's output from
         /// components added by hand.
         /// </summary>
-        private static bool ConfirmReplacement(GameObject destination)
+        /// <summary>
+        /// Converting twice would otherwise stack a second set of components on top of the
+        /// first. Offers to remove the ones sitting where this conversion is about to write, and
+        /// leaves the rest of the avatar alone.
+        /// </summary>
+        private bool ConfirmReplacement(GameObject destination)
         {
-            List<Component> existing = ExistingConverted(destination);
-            if (existing.Count == 0)
+            List<Component> replaceable = AvatarConverter.FindReplaceable(_plan, destination);
+            if (replaceable.Count == 0)
             {
                 return true;
             }
 
             int rigs = 0;
             int constraints = 0;
-            foreach (Component component in existing)
+            foreach (Component component in replaceable)
             {
                 if (component is JiggleRig)
                 {
@@ -506,11 +496,10 @@ namespace yuna0x0.Basis.Convert.UI
             }
 
             bool replace = EditorUtility.DisplayDialog(
-                "Replace existing components?",
+                "Convert again?",
                 $"{destination.name} already has {rigs} jiggle rigs and {constraints} Basis "
-                + "constraints.\n\nConverting again would add a second set on top of them. "
-                + "Replacing removes every jiggle rig and Basis constraint under this avatar "
-                + "first, including any you added or edited by hand.\n\nThis is undoable.",
+                + "constraints on the bones this conversion writes to.\n\nThey will be replaced. "
+                + "Anything elsewhere on the avatar is left alone.\n\nThis is undoable.",
                 "Replace",
                 "Cancel");
 
@@ -519,17 +508,8 @@ namespace yuna0x0.Basis.Convert.UI
                 return false;
             }
 
-            Undo.IncrementCurrentGroup();
-            Undo.SetCurrentGroupName($"{ProductInfo.Name}: replace converted components");
-
-            foreach (Component component in existing)
-            {
-                if (component != null)
-                {
-                    Undo.DestroyObjectImmediate(component);
-                }
-            }
-
+            AvatarConverter.RemoveReplaceable(_plan, destination,
+                $"{ProductInfo.Name}: replace converted components");
             return true;
         }
 

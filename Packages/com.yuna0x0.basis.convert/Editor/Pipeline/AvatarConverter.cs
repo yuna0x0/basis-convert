@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Basis.Scripts.BasisSdk.Constraints;
 using GatorDragonGames.JigglePhysics;
 using UnityEditor;
 using UnityEngine;
@@ -133,6 +134,74 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             Undo.CollapseUndoOperations(group);
             return result;
+        }
+
+        /// <summary>
+        /// Components of the kinds a conversion writes, on exactly the transforms this plan
+        /// would write to.
+        /// <para>
+        /// This is how converting twice avoids stacking a second set on top of the first. It
+        /// needs no stored state: the plan already knows every transform it targets, so the
+        /// previous output can be found by looking there. Anything on a transform the plan does
+        /// not touch is left alone, which is what protects rigs added by hand elsewhere on the
+        /// avatar.
+        /// </para>
+        /// </summary>
+        public static List<Component> FindReplaceable(
+            AvatarConversionPlan plan, GameObject targetRoot)
+        {
+            List<Component> found = new List<Component>();
+            if (plan == null || targetRoot == null || plan.SourceRoot == null)
+            {
+                return found;
+            }
+
+            Transform source = plan.SourceRoot.transform;
+            Transform target = targetRoot.transform;
+            HashSet<Transform> seen = new HashSet<Transform>();
+
+            foreach (PlannedJiggleRig planned in plan.Rigs)
+            {
+                if (TryTranslate(source, target, planned.SourceHost, out Transform host)
+                    && seen.Add(host))
+                {
+                    found.AddRange(host.GetComponents<JiggleRig>());
+                }
+            }
+
+            seen.Clear();
+            foreach (PlannedConstraint planned in plan.Constraints)
+            {
+                if (TryTranslate(source, target, planned.SourceHost, out Transform host)
+                    && seen.Add(host))
+                {
+                    found.AddRange(host.GetComponents<BasisConstraintBase>());
+                }
+            }
+
+            return found;
+        }
+
+        /// <summary>Removes what <see cref="FindReplaceable"/> finds, under one undo step.</summary>
+        public static int RemoveReplaceable(
+            AvatarConversionPlan plan, GameObject targetRoot, string undoName)
+        {
+            List<Component> replaceable = FindReplaceable(plan, targetRoot);
+
+            Undo.IncrementCurrentGroup();
+            Undo.SetCurrentGroupName(undoName);
+
+            int removed = 0;
+            foreach (Component component in replaceable)
+            {
+                if (component != null)
+                {
+                    Undo.DestroyObjectImmediate(component);
+                    removed++;
+                }
+            }
+
+            return removed;
         }
 
         private static bool TryTranslate(

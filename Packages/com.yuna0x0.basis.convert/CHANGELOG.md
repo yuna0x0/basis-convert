@@ -8,6 +8,10 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- Converting an avatar again replaces the previous output instead of stacking a second set of
+  components on it, after a confirmation. Only the bones the conversion writes to are touched, so
+  components added by hand elsewhere on the avatar survive.
+
 - VRChat constraints convert to their Basis equivalents, covering all six types. A constraint
   that drove a transform other than its own object is moved onto the transform it drives, since
   Basis constraints always drive their own.
