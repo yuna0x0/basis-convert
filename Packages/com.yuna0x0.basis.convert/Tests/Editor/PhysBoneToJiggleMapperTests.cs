@@ -111,6 +111,23 @@ namespace yuna0x0.Basis.Convert.Tests
         }
 
         [Test]
+        public void ALimitWiderThanJiggleCanExpressIsRemovedRatherThanTightened()
+        {
+            // Jiggle's angle limit stops at 90 degrees. A PhysBone allowing 180 is effectively
+            // unconstrained, so clamping to 90 would hold the bones tighter than the original.
+            PhysBoneData source = Bone();
+            source.LimitType = PhysBoneLimitType.Angle;
+            source.MaxAngleX = new PhysBoneCurvedFloat(180f);
+
+            JiggleRigPlan plan = PhysBoneToJiggleMapper.Map(source);
+
+            Assert.That(plan.Parameters.AngleLimitToggle, Is.False);
+            Assert.That(plan.Diagnostics.HasCode("physbone.limitType.tooWide"), Is.True);
+            Assert.That(plan.Diagnostics.HasCode("mapping.clamped"), Is.False,
+                "Reporting this as a clamp would misdescribe what happened.");
+        }
+
+        [Test]
         public void NoLimitTypeTurnsTheAngleLimitOff()
         {
             PhysBoneData source = Bone();

@@ -8,15 +8,32 @@ bone chains, the same colliders, the same constraint relationships, expressed wi
 set of components. This does that part, reports what it could not carry over, and leaves the
 result editable.
 
-## Status
+## What it does today
 
-Not usable yet. VRChat PhysBones are read and mapped onto jiggle parameters, falloff curves and
-colliders included, but nothing is written into a scene yet, so there is no command to run. That
-is the next piece of work.
+Converts VRChat PhysBones and their colliders into Basis Jiggle Physics rigs, carrying over
+per-bone falloff curves, collider shapes, ignored transforms and grab settings.
 
-After that: constraints, avatar descriptors, legacy Dynamic Bone and Magica Cloth, and toggle
-systems. Props and worlds are in scope later, and so are source platforms other than VRChat,
-which is why reading, mapping and writing are separate stages.
+Early, and the package name may still change. Constraints, avatar descriptors, legacy Dynamic
+Bone and Magica Cloth, and toggle systems come next. Props and worlds are in scope later, and so
+are source platforms other than VRChat, which is why reading, mapping and writing are separate
+stages.
+
+## Using it
+
+1. Import your avatar into a Basis project. Its VRChat components will show as missing scripts,
+   which is expected and is what this reads.
+2. Drag the avatar into a scene.
+3. Open **Tools > Basis Convert > Convert VRChat PhysBones**, or right-click the avatar in the
+   hierarchy and pick the same entry.
+4. Read the summary. Nothing is written until you press Convert, and the report lists everything
+   that will be approximated or dropped.
+5. Convert, then tune the resulting Jiggle Rigs by hand. One undo reverts the whole conversion.
+
+To check the result, use the `Basis Avatar` component's **Test in Editor** button. Jiggle physics
+only starts once an avatar is calibrated, so plain Play mode will not show it moving.
+
+The avatar has to still be linked to its prefab, since that file is where the VRChat data is
+read from. Convert before unpacking the prefab.
 
 ## Installing
 

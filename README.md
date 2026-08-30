@@ -23,11 +23,11 @@ reader, a new content type is a new mapper and writer, and neither disturbs the 
 
 ## Status
 
-Not usable yet, and names, APIs and the package id are all still subject to change.
+Early: names, APIs and the package id are all still subject to change.
 
-Built so far: reading VRChat component data out of prefabs whose scripts are missing, resolving
-each component to the transform that carries it, and mapping PhysBones onto jiggle parameters.
-Writing components into a scene is next, and until it exists there is nothing to run.
+Working: VRChat PhysBones and their colliders convert to Basis Jiggle Physics rigs, from
+**Tools > Basis Convert > Convert VRChat PhysBones**. Nothing is written until you confirm, and
+one undo reverts a whole conversion.
 
 ## Contributing
 

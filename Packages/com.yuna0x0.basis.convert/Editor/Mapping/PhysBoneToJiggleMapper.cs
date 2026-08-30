@@ -203,9 +203,22 @@ namespace yuna0x0.Basis.Convert.Mapping
                     break;
             }
 
-            float normalized = Clamp01(
-                degrees / profile.AngleLimitDegreesAtOne, "jiggle.angleLimit", log);
-            parameters.AngleLimit = new JiggleCurvedFloatPlan(normalized, source.MaxAngleX.Curve);
+            // Jiggle's angle limit tops out at AngleLimitDegreesAtOne, so a wider PhysBone limit
+            // cannot be expressed. Clamping would make the result tighter than the source, which
+            // is worse than having no limit, so drop the limit instead and say so.
+            if (degrees >= profile.AngleLimitDegreesAtOne)
+            {
+                parameters.AngleLimitToggle = false;
+                log.Add(DiagnosticSeverity.Approximated, "physbone.limitType.tooWide",
+                    $"The limit of {degrees} degrees is wider than jiggle's angle limit can "
+                    + $"express, which stops at {profile.AngleLimitDegreesAtOne}. Keeping it "
+                    + "would have constrained the bones more than the original did, so the "
+                    + "limit was left off.");
+                return;
+            }
+
+            parameters.AngleLimit = new JiggleCurvedFloatPlan(
+                degrees / profile.AngleLimitDegreesAtOne, source.MaxAngleX.Curve);
 
             if (source.LimitRotation != Vector3.zero)
             {

@@ -19,6 +19,9 @@ Notable changes to this package. The format follows
   and a profile for the parts of the mapping that are judgement calls.
 - Collider mapping, covering sphere, capsule and plane. A rotated capsule is snapped to the
   nearest axis, since jiggle orients capsules by axis rather than by rotation.
+- Editor window under Tools > Basis Convert, and a hierarchy context menu entry. Scans an
+  avatar, shows what a conversion would produce, converts on confirmation, and writes a report.
+- Conversion report grouping diagnostics by code, since they repeat per component.
 - End to end pipeline: plan an avatar from its prefab without changing anything, then apply the
   plan to a hierarchy. Transforms are located in the target by sibling-index path, so a plan read
   from a prefab asset applies exactly to a scene instance of it.

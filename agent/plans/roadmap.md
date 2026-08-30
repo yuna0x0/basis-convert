@@ -19,21 +19,19 @@ Only writers touch Unity objects, which is what keeps the rest testable without 
 
 ## Where things stand
 
-**Done.** Reading VRChat components out of prefabs whose scripts are missing, resolving each to
-the bone that carries it, and mapping PhysBones onto jiggle parameters. See
+**Done.** The whole PhysBone path: reading components out of prefabs whose scripts are missing,
+resolving each to the bone that carries it, mapping onto jiggle parameters and colliders, writing
+the rigs, and an editor window that scans, reports and converts. See
 `../research/physbone-to-jiggle-mapping.md`.
+
+Chain splitting turned out to be unnecessary, see `../decisions/0006`.
 
 **Next, to finish avatar physics.**
 
-1. **Chain splitting.** One PhysBone whose root has several child chains must become one
-   `JiggleRig` per chain. Basis is explicit that a left and right pair needs separate rigs or
-   only one side moves. Needs hierarchy, so it sits between the mapper and the writer.
-2. **The writer.** Add `JiggleRig` via `Undo.AddComponent`, copy the chosen preset's
-   `jiggleRigData`, then overwrite only the fields the source actually determined. Writing goes
-   through `SerializedObject` because `jiggleRigData` is private. `ApplyModifiedProperties`
-   triggers `OnValidate`, which regenerates the cache; then `ResampleRestPose`.
-3. **The window.** Dry run first, always: what was found, what it will produce, and every
-   diagnostic, before anything is written. Then convert under one undo group, and keep a report.
+1. **Tune the two heuristic mappings** against avatars compared side by side in motion. Nothing
+   else here is guesswork; these two are.
+2. **Re-running should update rather than duplicate.** Needs bookkeeping tying each rig to the
+   component it came from, on an `EditorOnly` GameObject per decision 0004.
 
 ## After that
 
