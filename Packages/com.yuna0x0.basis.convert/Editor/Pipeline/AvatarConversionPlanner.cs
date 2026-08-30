@@ -119,6 +119,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     + "has no contact system, so anything driven by touch does not come across.");
             }
 
+            LoadExpressions(plan);
+
             // Only meaningful once the descriptor is known: a prop has physics but no rig, and
             // asking it for a humanoid mapping would be noise.
             plan.RigDiagnostics = RigReadiness.Inspect(plan.SourceRoot, plan.Descriptor != null);
@@ -303,6 +305,62 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
         }
 
+        /// <summary>
+        /// Reads the expression menu tree and parameters, and says what rebuilding them means.
+        /// None of it converts: Basis has no menu format and no synced parameter list.
+        /// </summary>
+        private static void LoadExpressions(AvatarConversionPlan plan)
+        {
+            if (plan.Descriptor == null)
+            {
+                return;
+            }
+
+            VrcAvatarDescriptorData source = plan.Descriptor.Source;
+            if (source == null)
+            {
+                return;
+            }
+
+            plan.Expressions = ExpressionInventoryLoader.Load(
+                source.ExpressionsMenuGuid, source.ExpressionParametersGuid);
+
+            VrcExpressionInventory inventory = plan.Expressions;
+            if (inventory.ControlCount == 0 && inventory.Parameters.Count == 0)
+            {
+                return;
+            }
+
+            int toggles = inventory.CountOf(VrcExpressionControlType.Toggle);
+            int buttons = inventory.CountOf(VrcExpressionControlType.Button);
+            int subMenus = inventory.CountOf(VrcExpressionControlType.SubMenu);
+            int puppets = inventory.CountOf(VrcExpressionControlType.TwoAxisPuppet)
+                + inventory.CountOf(VrcExpressionControlType.FourAxisPuppet)
+                + inventory.CountOf(VrcExpressionControlType.RadialPuppet);
+
+            plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "expressions.menu",
+                $"The expression menu has {inventory.ControlCount} controls across "
+                + $"{inventory.Menus.Count} menus: {toggles} toggles, {buttons} buttons, "
+                + $"{subMenus} submenus, {puppets} puppets. Basis has no menu format, so each of "
+                + "these is rebuilt as an HVR Vixxy control with a menu item.");
+
+            if (inventory.Parameters.Count > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "expressions.parameters",
+                    $"{inventory.Parameters.Count} expression parameters were declared. Vixxy "
+                    + "controls hold their own state, so there is no parameter list to recreate, "
+                    + "but anything driven by these has to be rebuilt control by control.");
+            }
+
+            if (puppets > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "expressions.puppets",
+                    $"{puppets} of the controls are puppets. Vixxy offers a slider for a control "
+                    + "with several choices, which covers a radial puppet; the two and four axis "
+                    + "ones have no direct equivalent.");
+            }
+        }
+
         private static PlannedAvatarDescriptor PlanDescriptor(
             UnityYamlDocument document, PrefabObjectResolver resolver, AvatarConversionPlan plan)
         {
@@ -319,6 +377,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             PlannedAvatarDescriptor planned = new PlannedAvatarDescriptor
             {
                 Plan = descriptorPlan,
+                Source = source,
                 SourceRoot = root,
                 SourceVisemeMesh = ResolveRenderer(
                     resolver, descriptorPlan.VisemeMeshFileId, descriptorPlan.Diagnostics,

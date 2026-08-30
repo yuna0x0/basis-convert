@@ -1,0 +1,192 @@
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using yuna0x0.Basis.Convert.Model;
+
+namespace yuna0x0.Basis.Convert.Sources
+{
+    /// <summary>
+    /// Reads VRChat expression menu and parameter assets.
+    /// <para>
+    /// Both are ScriptableObjects from the VRChat SDK, so in a Basis project their scripts are
+    /// missing and the data is read from the asset's YAML, the same way components are.
+    /// </para>
+    /// </summary>
+    public static class VrcExpressionReader
+    {
+        private static readonly Regex FieldPattern = new Regex(
+            @"^(?<indent>\s*)-?\s*(?<key>[A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?<value>.*?)\s*$",
+            RegexOptions.Compiled);
+
+        private static readonly Regex GuidPattern = new Regex(
+            @"guid:\s*(?<guid>[0-9a-fA-F]{32})", RegexOptions.Compiled);
+
+        public static VrcExpressionMenu ReadMenu(UnityYamlDocument document, string guid)
+        {
+            VrcExpressionMenu menu = new VrcExpressionMenu
+            {
+                Guid = guid,
+                Name = document.GetTopLevelValue("m_Name") ?? string.Empty,
+            };
+
+            if (!document.TryGetTopLevelBlock("controls", out List<string> block))
+            {
+                return menu;
+            }
+
+            VrcExpressionControl current = null;
+            bool inParameterBlock = false;
+
+            foreach (string line in block)
+            {
+                bool startsEntry = line.TrimStart().StartsWith("-");
+                if (startsEntry)
+                {
+                    current = new VrcExpressionControl();
+                    menu.Controls.Add(current);
+                    inParameterBlock = false;
+                }
+
+                if (current == null)
+                {
+                    continue;
+                }
+
+                Match match = FieldPattern.Match(line);
+                if (!match.Success)
+                {
+                    continue;
+                }
+
+                string key = match.Groups["key"].Value;
+                string value = match.Groups["value"].Value;
+
+                // "parameter:" opens a nested map whose only field is also called "name", so the
+                // two have to be told apart by which block is currently open.
+                if (key == "parameter" && string.IsNullOrEmpty(value))
+                {
+                    inParameterBlock = true;
+                    continue;
+                }
+
+                switch (key)
+                {
+                    case "name":
+                        if (inParameterBlock)
+                        {
+                            current.Parameter = value;
+                            inParameterBlock = false;
+                        }
+                        else
+                        {
+                            current.Name = value;
+                        }
+
+                        break;
+
+                    case "type":
+                        if (UnityYamlValues.TryParseInt(value, out int type))
+                        {
+                            current.Type = (VrcExpressionControlType)type;
+                        }
+
+                        inParameterBlock = false;
+                        break;
+
+                    case "value":
+                        if (UnityYamlValues.TryParseFloat(value, out float number))
+                        {
+                            current.Value = number;
+                        }
+
+                        inParameterBlock = false;
+                        break;
+
+                    case "icon":
+                        current.HasIcon = GuidPattern.IsMatch(value);
+                        inParameterBlock = false;
+                        break;
+
+                    case "subMenu":
+                        Match guidMatch = GuidPattern.Match(value);
+                        if (guidMatch.Success)
+                        {
+                            current.SubMenuGuid = guidMatch.Groups["guid"].Value;
+                        }
+
+                        inParameterBlock = false;
+                        break;
+
+                    default:
+                        inParameterBlock = false;
+                        break;
+                }
+            }
+
+            return menu;
+        }
+
+        public static List<VrcExpressionParameter> ReadParameters(UnityYamlDocument document)
+        {
+            List<VrcExpressionParameter> parameters = new List<VrcExpressionParameter>();
+
+            if (!document.TryGetTopLevelBlock("parameters", out List<string> block))
+            {
+                return parameters;
+            }
+
+            VrcExpressionParameter current = null;
+
+            foreach (string line in block)
+            {
+                if (line.TrimStart().StartsWith("-"))
+                {
+                    current = new VrcExpressionParameter();
+                    parameters.Add(current);
+                }
+
+                if (current == null)
+                {
+                    continue;
+                }
+
+                Match match = FieldPattern.Match(line);
+                if (!match.Success)
+                {
+                    continue;
+                }
+
+                string value = match.Groups["value"].Value;
+                switch (match.Groups["key"].Value)
+                {
+                    case "name":
+                        current.Name = value;
+                        break;
+                    case "valueType":
+                        if (UnityYamlValues.TryParseInt(value, out int type))
+                        {
+                            current.Type = (VrcExpressionParameterType)type;
+                        }
+
+                        break;
+                    case "saved":
+                        current.Saved = UnityYamlValues.TryParseInt(value, out int saved)
+                            && saved != 0;
+                        break;
+                    case "defaultValue":
+                        if (UnityYamlValues.TryParseFloat(value, out float number))
+                        {
+                            current.DefaultValue = number;
+                        }
+
+                        break;
+                    case "networkSynced":
+                        current.NetworkSynced =
+                            !UnityYamlValues.TryParseInt(value, out int synced) || synced != 0;
+                        break;
+                }
+            }
+
+            return parameters;
+        }
+    }
+}

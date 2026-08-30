@@ -8,6 +8,10 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- The expression menu tree and parameter list are read and described: how many controls of each
+  kind, across how many menus. Submenus are separate assets and are followed. Nothing is
+  converted yet; this is what a Vixxy rebuild has to cover.
+
 - The report now names the systems that do not convert at all: expression menus, expression
   parameters, custom animation layers and VRChat contacts. None of them have a Basis equivalent,
   and a report that stayed silent about them read as though nothing was lost.

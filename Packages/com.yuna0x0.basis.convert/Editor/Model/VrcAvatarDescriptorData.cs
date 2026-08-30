@@ -83,9 +83,14 @@ namespace yuna0x0.Basis.Convert.Model
         /// exist and will not come across. Basis has no playable layers and no expression menu
         /// format; HVR Vixxy replaces both, and is authored by hand.
         /// </summary>
-        public bool HasExpressionsMenu;
+        public bool HasExpressionsMenu => !string.IsNullOrEmpty(ExpressionsMenuGuid);
 
-        public bool HasExpressionParameters;
+        public bool HasExpressionParameters => !string.IsNullOrEmpty(ExpressionParametersGuid);
+
+        /// <summary>Asset guid of the root expression menu, when there is one.</summary>
+        public string ExpressionsMenuGuid;
+
+        public string ExpressionParametersGuid;
 
         public List<VrcAnimationLayerEntry> AnimationLayers =
             new List<VrcAnimationLayerEntry>();

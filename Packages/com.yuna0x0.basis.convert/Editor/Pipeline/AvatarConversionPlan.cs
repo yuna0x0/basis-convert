@@ -38,6 +38,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
     public sealed class PlannedAvatarDescriptor
     {
         public BasisAvatarPlan Plan;
+
+        /// <summary>Kept so the expression assets it references can be followed.</summary>
+        public VrcAvatarDescriptorData Source;
         public Transform SourceRoot;
         public SkinnedMeshRenderer SourceVisemeMesh;
         public SkinnedMeshRenderer SourceBlinkMesh;
@@ -88,6 +91,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         /// <summary>The avatar descriptor, when the source had one.</summary>
         public PlannedAvatarDescriptor Descriptor;
+
+        /// <summary>
+        /// The expression menu tree and parameters. Nothing here converts; it is read so the
+        /// report can describe what rebuilding it in HVR Vixxy involves.
+        /// </summary>
+        public VrcExpressionInventory Expressions = new VrcExpressionInventory();
 
         /// <summary>Diagnostics about the avatar as a whole, rather than one component.</summary>
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();

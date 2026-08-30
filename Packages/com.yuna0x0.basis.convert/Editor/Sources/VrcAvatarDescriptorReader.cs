@@ -50,8 +50,8 @@ namespace yuna0x0.Basis.Convert.Sources
             data.VisemeBlendShapes = ReadStringSequence(document, "VisemeBlendShapes");
             ReadEyeLookSettings(document, data);
 
-            data.HasExpressionsMenu = HasAssetReference(document, "expressionsMenu");
-            data.HasExpressionParameters = HasAssetReference(document, "expressionParameters");
+            data.ExpressionsMenuGuid = AssetGuidOf(document, "expressionsMenu");
+            data.ExpressionParametersGuid = AssetGuidOf(document, "expressionParameters");
             ReadAnimationLayers(document, "baseAnimationLayers", data);
             ReadAnimationLayers(document, "specialAnimationLayers", data);
 
@@ -128,10 +128,16 @@ namespace yuna0x0.Basis.Convert.Sources
             }
         }
 
-        private static bool HasAssetReference(UnityYamlDocument document, string key)
+        private static string AssetGuidOf(UnityYamlDocument document, string key)
         {
             string raw = document.GetTopLevelValue(key);
-            return !string.IsNullOrEmpty(raw) && Regex.IsMatch(raw, @"guid:\s*[0-9a-fA-F]{32}");
+            if (string.IsNullOrEmpty(raw))
+            {
+                return null;
+            }
+
+            Match match = Regex.Match(raw, @"guid:\s*(?<guid>[0-9a-fA-F]{32})");
+            return match.Success ? match.Groups["guid"].Value : null;
         }
 
         /// <summary>
