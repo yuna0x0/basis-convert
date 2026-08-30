@@ -13,11 +13,15 @@ namespace yuna0x0.Basis.Convert.Model
         public bool[] Choices = new bool[2];
 
         /// <summary>
-        /// False when only one side of the toggle animated this object. The other side leaves it
-        /// at whatever the avatar was authored with, so that state is read from the hierarchy
-        /// rather than guessed.
+        /// Whether each side of the toggle actually animated this object. A side that did not
+        /// leaves it at whatever the avatar was authored with, read from the hierarchy later.
+        /// Which side was animated has to be recorded rather than inferred from the values: a
+        /// clip that switches an object off looks exactly like a side that said nothing.
         /// </summary>
-        public bool BothSidesAnimated = true;
+        public bool SetWhenOff = true;
+        public bool SetWhenOn = true;
+
+        public bool BothSidesAnimated => SetWhenOff && SetWhenOn;
     }
 
     /// <summary>One blendshape a control sets, and its value in each choice.</summary>
@@ -28,8 +32,11 @@ namespace yuna0x0.Basis.Convert.Model
         /// <summary>Weight per choice, index 0 being off and 1 being on.</summary>
         public float[] Choices = new float[2];
 
-        /// <summary>False when only one side of the toggle set this shape.</summary>
-        public bool BothSidesAnimated = true;
+        /// <summary>Whether each side of the toggle actually set this shape.</summary>
+        public bool SetWhenOff = true;
+        public bool SetWhenOn = true;
+
+        public bool BothSidesAnimated => SetWhenOff && SetWhenOn;
     }
 
     /// <summary>How a material property is held, which decides the Vixxy property type.</summary>

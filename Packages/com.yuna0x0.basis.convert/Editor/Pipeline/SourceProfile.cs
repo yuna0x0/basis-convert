@@ -38,7 +38,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 if (HasVrchatComponents || HasDynamicBone)
                 {
-                    return "Prop or clothing";
+                    // Not "prop": in Basis that names BasisProp, a spawnable content type this
+                    // does not produce.
+                    return "Clothing or accessory";
                 }
 
                 return "Nothing recognised";

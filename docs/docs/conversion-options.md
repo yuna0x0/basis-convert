@@ -34,7 +34,7 @@ choice rather than an absence.
 
 - **Colliders**, under Physics. Rigs are still written without them, and their bones pass through
   the body instead of resting on it.
-- **A checkbox per prefab**, so a prop parented onto an avatar is not converted with it. Prefabs
+- **A checkbox per prefab**, so an accessory parented onto an avatar is not converted with it. Prefabs
   that hold nothing convertible are summarised rather than listed.
 - **A checkbox per rig, constraint and toggle**, each with what it affects.
 - **The tuning weights** described in [Physics](what-converts/physics.md).

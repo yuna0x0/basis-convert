@@ -51,7 +51,8 @@ namespace yuna0x0.Basis.Convert.Mapping
                 {
                     Path = path,
                     Choices = new[] { offState, onState },
-                    BothSidesAnimated = hasOn && hasOff,
+                    SetWhenOff = hasOff,
+                    SetWhenOn = hasOn,
                 });
             }
 
@@ -92,7 +93,8 @@ namespace yuna0x0.Basis.Convert.Mapping
                 {
                     ShapeName = shape,
                     Choices = new[] { offValue, onValue },
-                    BothSidesAnimated = hasOn && hasOff,
+                    SetWhenOff = hasOff,
+                    SetWhenOn = hasOn,
                 });
             }
         }

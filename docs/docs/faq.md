@@ -48,5 +48,13 @@ reporting what it does not yet know.
 
 ### Does this work for props and worlds?
 
-Props and clothing convert: they carry physics and constraints like anything else. Worlds are not
-supported.
+"Prop" means two different things here, so both answers:
+
+- **An object worn on an avatar**, a piece of clothing, an accessory, a gimmick: yes. It is a
+  prefab with physics and constraints like any other, and it converts with the avatar it is
+  attached to, or on its own if you select it.
+- **A Basis prop**, meaning the `BasisProp` content type that players spawn and that is
+  networked: no. Nothing here writes one, and no `BasisProp` component is created.
+
+Worlds, meaning `BasisScene`, are not supported either. Avatars are the only Basis content type
+this produces.

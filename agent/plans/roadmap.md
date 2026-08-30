@@ -4,7 +4,9 @@
 
 Bring content from other social VR platforms into Basis. Two axes, both open:
 
-- **Content**: avatars first, then props, then worlds.
+- **Content**: avatars first, then props, then worlds, meaning Basis's own content types
+  `BasisAvatar`, `BasisProp` and `BasisScene`. Only the first is written today. Clothing and
+  accessories are not a content type: they are objects on an avatar, and they convert with it.
 - **Source platform**: VRChat first, because that is where the content and the demand are.
   Nothing in the architecture assumes it. A different source is a new reader.
 

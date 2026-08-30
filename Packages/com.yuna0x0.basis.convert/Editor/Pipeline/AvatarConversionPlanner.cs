@@ -690,12 +690,21 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     }
 
                     // Whatever the toggle did not animate stays as the avatar was authored.
+                    // Only the side that said nothing is filled in: a clip switching an object
+                    // off is indistinguishable from silence if you look at the value alone,
+                    // which inverted every one-sided toggle.
                     if (!activation.BothSidesAnimated)
                     {
                         bool authored = target.gameObject.activeSelf;
-                        if (activation.Choices[0] == activation.Choices[1])
+
+                        if (!activation.SetWhenOff)
                         {
-                            activation.Choices[activation.Choices[1] ? 0 : 1] = authored;
+                            activation.Choices[0] = authored;
+                        }
+
+                        if (!activation.SetWhenOn)
+                        {
+                            activation.Choices[1] = authored;
                         }
                     }
 
@@ -785,9 +794,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 float authored = index >= 0 ? renderer.GetBlendShapeWeight(index) : 0f;
 
                 // Whichever side the clip did not set keeps the authored weight.
-                if (Mathf.Approximately(shape.Choices[0], shape.Choices[1]))
+                if (!shape.SetWhenOff)
                 {
-                    shape.Choices[shape.Choices[1] != 0f ? 0 : 1] = authored;
+                    shape.Choices[0] = authored;
+                }
+
+                if (!shape.SetWhenOn)
+                {
+                    shape.Choices[1] = authored;
                 }
             }
         }

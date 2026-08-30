@@ -6,6 +6,14 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Menu toggles that animate one side only came out inverted: turning a toggle named `Tail_OFF`
+  on showed the tail instead of hiding it. Which side of a toggle animated an object is now
+  recorded rather than inferred from the value, since a clip switching an object off looks
+  identical to a side that animated nothing. Blendshapes had the same fault. **Re-convert to pick
+  up the corrected toggles.**
+
 ## [0.1.1] - 2026-08-31
 
 ### Changed

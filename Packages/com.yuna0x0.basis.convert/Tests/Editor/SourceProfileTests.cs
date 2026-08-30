@@ -41,7 +41,7 @@ namespace yuna0x0.Basis.Convert.Tests
 
             TestContext.WriteLine(profile.Describe());
 
-            Assert.That(profile.Kind, Is.EqualTo("Prop or clothing"));
+            Assert.That(profile.Kind, Is.EqualTo("Clothing or accessory"));
             Assert.That(profile.HasDynamicBone, Is.True);
             Assert.That(profile.HasHumanoidRig, Is.False);
         }
