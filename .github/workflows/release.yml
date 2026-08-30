@@ -58,6 +58,34 @@ jobs:
           package-path: ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.unitypackage
           include-files: unitypackage-files.txt
 
+      # Unity 6.3 and later check tarball packages for a signature, and OpenUPM publishes a
+      # pre-signed tarball rather than signing anything itself. Unity holds the certificate; a
+      # service account with the "Package Manager Package Signer" role authenticates. The steps
+      # below do nothing until those secrets exist, so a release works either way.
+      - name: Check for signing credentials
+        id: signing
+        run: |
+          if [ -n "${{ secrets.UPM_ORG_ID }}" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sign a UPM tarball
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          UPM_SERVICE_ACCOUNT_KEY_ID: ${{ secrets.UPM_SERVICE_ACCOUNT_KEY_ID }}
+          UPM_SERVICE_ACCOUNT_KEY_SECRET: ${{ secrets.UPM_SERVICE_ACCOUNT_KEY_SECRET }}
+        run: |
+          curl -fsSL https://cdn.packages.unity.com/upm-cli/install.sh | bash
+          export PATH="$HOME/.upm-cli/bin:$PATH"
+          upm --version
+          mkdir -p dist
+          upm pack "$PACKAGE_PATH" --organization-id "${{ secrets.UPM_ORG_ID }}" --destination dist
+          tarball=$(ls dist/*.tgz)
+          tar -tzf "$tarball" | grep -q 'package/.attestation.p7m' \
+            || { echo "The tarball carries no attestation." >&2; exit 1; }
+
       - name: Publish the release
         uses: softprops/action-gh-release@v2
         with:
@@ -67,3 +95,4 @@ jobs:
             ${{ env.PACKAGE_PATH }}/package.json
             ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip
             ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.unitypackage
+            dist/*.tgz
