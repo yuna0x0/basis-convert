@@ -105,11 +105,32 @@ jobs:
             exit 1
           fi
 
+      # The notes are the changelog section for this version. GitHub's generated list of commits
+      # is not what releases in this ecosystem look like, and is not written for a reader.
+      - name: Take the release notes from the changelog
+        env:
+          VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          python3 - <<'PY' > release-notes.md
+          import os, re
+          version = os.environ["VERSION"]
+          text = open(os.environ["PACKAGE_PATH"] + "/CHANGELOG.md").read()
+          match = re.search(
+              r"^## \[" + re.escape(version) + r"\][^\n]*\n(.*?)(?=^## \[|\Z)",
+              text, re.S | re.M)
+          print(match.group(1).strip() if match else "", end="")
+          PY
+          if [ ! -s release-notes.md ]; then
+            echo "The changelog has no section for $VERSION." >&2
+            exit 1
+          fi
+          cat release-notes.md
+
       - name: Publish the release
         uses: softprops/action-gh-release@v3
         with:
           draft: false
-          generate_release_notes: true
+          body_path: release-notes.md
           files: |
             ${{ env.PACKAGE_PATH }}/package.json
             ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip
