@@ -12,10 +12,11 @@ result editable.
 
 Converts VRChat PhysBones and their colliders into Basis Jiggle Physics rigs, carrying over
 per-bone falloff curves, collider shapes, ignored transforms and grab settings. Converts all six
-VRChat constraint types into their Basis equivalents.
+VRChat constraint types into their Basis equivalents. Sets up the `BasisAvatar` component from
+the VRChat avatar descriptor: view position, visemes and blink.
 
-Early, and the package name may still change. Avatar descriptors, legacy Dynamic Bone and Magica
-Cloth, and toggle systems come next. Props and worlds are in scope later, and so
+Early, and the package name may still change. Legacy Dynamic Bone and Magica Cloth, and toggle
+systems, come next. Props and worlds are in scope later, and so
 are source platforms other than VRChat, which is why reading, mapping and writing are separate
 stages.
 

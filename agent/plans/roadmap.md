@@ -41,8 +41,10 @@ Chain splitting turned out to be unnecessary, see `../decisions/0006`.
   `SolveInLocalSpace` / `FreezeToWorld` are reported as dropped. Basis's own
   `BasisConstraintConversion` still covers Unity and Animation Rigging constraints, which this
   does not duplicate.
-- **Avatar descriptor.** Viseme, blink and eye settings onto `BasisAvatar`. The viseme ordering
-  is identical, so it is positional. NDMF's `CommonAvatarInfo` already covers part of this.
+- **Avatar descriptor. Done.** View position, the fifteen visemes and blink map onto
+  `BasisAvatar`. The viseme ordering is identical between the two, so it is positional. The
+  animator, human scale, renderer list and mouth position are deliberately left for Basis's own
+  automatic setup, which fills empty values when its inspector is first opened.
 - **Legacy physics.** Dynamic Bone, whose fields map onto jiggle almost directly, and Magica
   Cloth. Same pipeline, new readers.
 - **Toggles and animation.** Expression menus and FX layers onto HVR Vixxy, ambient motion onto

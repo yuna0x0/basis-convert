@@ -124,8 +124,9 @@ namespace yuna0x0.Basis.Convert.UI
 
             string summary = $"Found {_plan.PhysBonesFound} PhysBones, {_plan.CollidersFound} "
                 + $"colliders and {_plan.ConstraintsFound} constraints.\n"
-                + $"Would create {_plan.Rigs.Count} jiggle rigs and "
-                + $"{_plan.Constraints.Count} Basis constraints.";
+                + $"Would create {_plan.Rigs.Count} jiggle rigs, "
+                + $"{_plan.Constraints.Count} Basis constraints"
+                + (_plan.Descriptor != null ? " and set up the Basis Avatar component." : ".");
 
             EditorGUILayout.HelpBox(summary,
                 _plan.TotalPlanned > 0 ? MessageType.Info : MessageType.Warning);
@@ -358,13 +359,15 @@ namespace yuna0x0.Basis.Convert.UI
             Separator();
             EditorGUILayout.Space(4f);
 
-            string headline = _result.TotalSkipped > 0
+            bool trouble = _result.TotalSkipped > 0;
+            string headline = trouble
                 ? $"Converted {_result.TotalWritten} components, skipped {_result.TotalSkipped}"
                 : $"Converted {_result.TotalWritten} components";
 
-            EditorGUILayout.LabelField(headline, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(headline, HeadlineStyle(trouble));
             EditorGUILayout.LabelField(
-                $"{_result.RigsWritten} jiggle rigs, {_result.ConstraintsWritten} constraints.",
+                $"{_result.RigsWritten} jiggle rigs, {_result.ConstraintsWritten} constraints"
+                + (_result.DescriptorWritten ? ", Basis Avatar component." : "."),
                 EditorStyles.miniLabel);
 
             EditorGUILayout.Space(2f);
@@ -372,6 +375,31 @@ namespace yuna0x0.Basis.Convert.UI
                 "To see the jiggle move, press Test in Editor on the Basis Avatar component. "
                 + "Play mode alone does not calibrate the avatar.",
                 EditorStyles.wordWrappedMiniLabel);
+        }
+
+        /// <summary>
+        /// Green when the conversion came out clean, red when something was skipped. Both tones
+        /// are picked per skin: the colours that read on the dark theme are washed out on the
+        /// light one.
+        /// </summary>
+        private static GUIStyle HeadlineStyle(bool trouble)
+        {
+            GUIStyle style = new GUIStyle(EditorStyles.boldLabel);
+
+            if (trouble)
+            {
+                style.normal.textColor = EditorGUIUtility.isProSkin
+                    ? new Color(0.94f, 0.42f, 0.40f)
+                    : new Color(0.65f, 0.10f, 0.10f);
+            }
+            else
+            {
+                style.normal.textColor = EditorGUIUtility.isProSkin
+                    ? new Color(0.40f, 0.83f, 0.45f)
+                    : new Color(0.10f, 0.50f, 0.15f);
+            }
+
+            return style;
         }
 
         private static void Separator()
@@ -403,7 +431,7 @@ namespace yuna0x0.Basis.Convert.UI
             _plan = AvatarConversionPlanner.Plan(_sourceAssetPath, _profile);
             _groups = ConversionReport.Group(_plan);
 
-            if (_plan.PhysBonesFound == 0 && _plan.ConstraintsFound == 0)
+            if (_plan.TotalPlanned == 0)
             {
                 _blocker = "No convertible VRChat components were found in this avatar's "
                     + "prefab. If they were already stripped, or the avatar came from somewhere "

@@ -34,6 +34,15 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public Transform SourceTransform;
     }
 
+    /// <summary>The avatar descriptor the conversion intends to produce.</summary>
+    public sealed class PlannedAvatarDescriptor
+    {
+        public BasisAvatarPlan Plan;
+        public Transform SourceRoot;
+        public SkinnedMeshRenderer SourceVisemeMesh;
+        public SkinnedMeshRenderer SourceBlinkMesh;
+    }
+
     /// <summary>One Basis constraint the conversion intends to produce, and where it will go.</summary>
     public sealed class PlannedConstraint
     {
@@ -77,6 +86,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         public List<PlannedConstraint> Constraints = new List<PlannedConstraint>();
 
+        /// <summary>The avatar descriptor, when the source had one.</summary>
+        public PlannedAvatarDescriptor Descriptor;
+
         /// <summary>Diagnostics about the avatar as a whole, rather than one component.</summary>
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
 
@@ -87,7 +99,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>Components identified in the file but not tied to a live transform.</summary>
         public int Unresolved;
 
-        public int TotalPlanned => Rigs.Count + Constraints.Count;
+        public int TotalPlanned =>
+            Rigs.Count + Constraints.Count + (Descriptor != null ? 1 : 0);
 
         public IEnumerable<ConversionDiagnostic> AllDiagnostics()
         {
@@ -116,6 +129,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
             foreach (PlannedConstraint constraint in Constraints)
             {
                 foreach (ConversionDiagnostic diagnostic in constraint.Plan.Diagnostics)
+                {
+                    yield return diagnostic;
+                }
+            }
+
+            if (Descriptor != null)
+            {
+                foreach (ConversionDiagnostic diagnostic in Descriptor.Plan.Diagnostics)
                 {
                     yield return diagnostic;
                 }

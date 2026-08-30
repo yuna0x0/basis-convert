@@ -25,8 +25,9 @@ reader, a new content type is a new mapper and writer, and neither disturbs the 
 
 Early: names, APIs and the package id are all still subject to change.
 
-Working: VRChat PhysBones, their colliders and all six VRChat constraint types convert to their
-Basis equivalents, from **Tools > Basis Convert > Convert VRChat Avatar**. Nothing is written
+Working: VRChat PhysBones, their colliders, all six VRChat constraint types and the avatar
+descriptor convert to their Basis equivalents, from
+**Tools > Basis Convert > Convert VRChat Avatar**. Nothing is written
 until you confirm, and one undo reverts a whole conversion.
 
 ## Contributing

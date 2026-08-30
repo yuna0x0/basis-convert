@@ -8,6 +8,10 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- The VRChat avatar descriptor converts to a `BasisAvatar` component: view position, the fifteen
+  viseme blendshapes and the blink blendshape. The component is updated in place on a re-convert
+  rather than replaced, so anything Basis filled in itself survives.
+
 - Converting an avatar again replaces the previous output instead of stacking a second set of
   components on it, after a confirmation. Only the bones the conversion writes to are touched, so
   components added by hand elsewhere on the avatar survive.

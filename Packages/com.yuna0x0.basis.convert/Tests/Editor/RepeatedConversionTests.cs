@@ -5,6 +5,7 @@ using GatorDragonGames.JigglePhysics;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using Basis.Scripts.BasisSdk;
 using yuna0x0.Basis.Convert.Pipeline;
 
 namespace yuna0x0.Basis.Convert.Tests
@@ -60,8 +61,9 @@ namespace yuna0x0.Basis.Convert.Tests
             ConversionResult result = AvatarConverter.Apply(plan, instance);
 
             List<Component> replaceable = AvatarConverter.FindReplaceable(plan, instance);
-            Assert.That(replaceable.Count, Is.EqualTo(result.TotalWritten),
-                "Everything the conversion wrote should be found again by the scoped lookup.");
+            Assert.That(replaceable.Count,
+                Is.EqualTo(result.RigsWritten + result.ConstraintsWritten),
+                "Every rig and constraint written should be found again by the scoped lookup.");
         }
 
         [Test]
@@ -80,6 +82,30 @@ namespace yuna0x0.Basis.Convert.Tests
                 "A second conversion should not stack another set of rigs.");
             Assert.That(instance.GetComponentsInChildren<BasisConstraintBase>(true).Length,
                 Is.EqualTo(second.ConstraintsWritten));
+        }
+
+        [Test]
+        public void TheAvatarDescriptorIsUpdatedInPlaceRatherThanReplaced()
+        {
+            // BasisAvatar is not swept up by a replace on purpose. Basis fills in the animator,
+            // human scale, renderer list and mouth position itself the first time its inspector
+            // is opened, and removing the component would throw that away every re-convert.
+            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(FixturePath);
+            GameObject instance = Instantiate();
+
+            AvatarConverter.Apply(plan, instance);
+            BasisAvatar first = instance.GetComponent<BasisAvatar>();
+            Assert.That(first, Is.Not.Null, "The descriptor should have been written.");
+
+            Assert.That(AvatarConverter.FindReplaceable(plan, instance),
+                Has.No.InstanceOf<BasisAvatar>(),
+                "A replace must not remove the Basis Avatar component.");
+
+            AvatarConverter.RemoveReplaceable(plan, instance, "replace");
+            AvatarConverter.Apply(plan, instance);
+
+            Assert.That(instance.GetComponents<BasisAvatar>().Length, Is.EqualTo(1),
+                "Converting again should reuse the existing Basis Avatar, not add a second.");
         }
 
         [Test]

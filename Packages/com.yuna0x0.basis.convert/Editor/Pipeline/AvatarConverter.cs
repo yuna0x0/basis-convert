@@ -14,10 +14,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public int RigsSkipped;
         public int ConstraintsWritten;
         public int ConstraintsSkipped;
+        public bool DescriptorWritten;
         public List<JiggleRig> Written = new List<JiggleRig>();
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
 
-        public int TotalWritten => RigsWritten + ConstraintsWritten;
+        public int TotalWritten =>
+            RigsWritten + ConstraintsWritten + (DescriptorWritten ? 1 : 0);
         public int TotalSkipped => RigsSkipped + ConstraintsSkipped;
     }
 
@@ -132,8 +134,52 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 result.ConstraintsWritten++;
             }
 
+            WriteDescriptor(plan, source, target, undoName, result);
+
             Undo.CollapseUndoOperations(group);
             return result;
+        }
+
+        private static void WriteDescriptor(
+            AvatarConversionPlan plan, Transform source, Transform target, string undoName,
+            ConversionResult result)
+        {
+            if (plan.Descriptor == null)
+            {
+                return;
+            }
+
+            if (!TryTranslate(source, target, plan.Descriptor.SourceRoot, out Transform root))
+            {
+                result.Diagnostics.Add(DiagnosticSeverity.Warning, "apply.descriptorUnresolved",
+                    "The avatar descriptor has no counterpart in the target hierarchy and was "
+                    + "skipped.");
+                return;
+            }
+
+            ResolvedBasisAvatar resolved = new ResolvedBasisAvatar
+            {
+                Plan = plan.Descriptor.Plan,
+                Root = root.gameObject,
+                VisemeMesh = TranslateRenderer(source, target, plan.Descriptor.SourceVisemeMesh),
+                BlinkMesh = TranslateRenderer(source, target, plan.Descriptor.SourceBlinkMesh),
+            };
+
+            BasisAvatarWriter.Write(resolved, undoName);
+            result.DescriptorWritten = true;
+        }
+
+        private static SkinnedMeshRenderer TranslateRenderer(
+            Transform source, Transform target, SkinnedMeshRenderer renderer)
+        {
+            if (renderer == null)
+            {
+                return null;
+            }
+
+            return TryTranslate(source, target, renderer.transform, out Transform translated)
+                ? translated.GetComponent<SkinnedMeshRenderer>()
+                : null;
         }
 
         /// <summary>

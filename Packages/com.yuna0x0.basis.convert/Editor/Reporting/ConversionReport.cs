@@ -75,6 +75,8 @@ namespace yuna0x0.Basis.Convert.Reporting
             text.AppendLine($"- Constraints found: {plan.ConstraintsFound}");
             text.AppendLine($"- Jiggle rigs planned: {plan.Rigs.Count}");
             text.AppendLine($"- Basis constraints planned: {plan.Constraints.Count}");
+            text.AppendLine($"- Avatar descriptor: "
+                + (plan.Descriptor != null ? "converted" : "none found"));
 
             if (plan.Unresolved > 0)
             {

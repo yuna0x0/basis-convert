@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 using yuna0x0.Basis.Convert.Mapping;
 using yuna0x0.Basis.Convert.Model;
 using yuna0x0.Basis.Convert.Sources;
@@ -70,6 +71,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
                         plan.Constraints.Add(constraint);
                     }
 
+                    continue;
+                }
+
+                if (kind == SourceComponentKind.VrcAvatarDescriptor)
+                {
+                    plan.Descriptor = PlanDescriptor(document, resolver, plan);
                     continue;
                 }
 
@@ -153,6 +160,54 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
 
             return colliders;
+        }
+
+        private static PlannedAvatarDescriptor PlanDescriptor(
+            UnityYamlDocument document, PrefabObjectResolver resolver, AvatarConversionPlan plan)
+        {
+            VrcAvatarDescriptorData source = VrcAvatarDescriptorReader.Read(document);
+            BasisAvatarPlan descriptorPlan = VrcAvatarDescriptorToBasisMapper.Map(source);
+
+            if (!resolver.TryResolveTransform(descriptorPlan.AvatarRootFileId, out Transform root))
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "descriptor.unresolved",
+                    "The avatar descriptor could not be tied to a transform and was skipped.");
+                return null;
+            }
+
+            PlannedAvatarDescriptor planned = new PlannedAvatarDescriptor
+            {
+                Plan = descriptorPlan,
+                SourceRoot = root,
+                SourceVisemeMesh = ResolveRenderer(
+                    resolver, descriptorPlan.VisemeMeshFileId, descriptorPlan.Diagnostics,
+                    "viseme"),
+                SourceBlinkMesh = ResolveRenderer(
+                    resolver, descriptorPlan.BlinkMeshFileId, descriptorPlan.Diagnostics,
+                    "blink"),
+            };
+
+            return planned;
+        }
+
+        private static SkinnedMeshRenderer ResolveRenderer(
+            PrefabObjectResolver resolver, long fileId,
+            List<ConversionDiagnostic> diagnostics, string role)
+        {
+            if (fileId == 0L)
+            {
+                return null;
+            }
+
+            if (resolver.TryResolve(fileId, out Object resolved)
+                && resolved is SkinnedMeshRenderer renderer)
+            {
+                return renderer;
+            }
+
+            diagnostics.Add(DiagnosticSeverity.Warning, $"descriptor.{role}Mesh.unresolved",
+                $"The {role} mesh could not be resolved, so it was left unset.");
+            return null;
         }
 
         private static PlannedConstraint PlanConstraint(

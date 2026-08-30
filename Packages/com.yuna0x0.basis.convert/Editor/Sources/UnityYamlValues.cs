@@ -90,6 +90,49 @@ namespace yuna0x0.Basis.Convert.Sources
         }
 
         /// <summary>
+        /// An int array Unity wrote as a hex byte blob rather than a sequence, which is how it
+        /// serializes some small fixed arrays. Little-endian, four bytes per value, so
+        /// "1d000000ffffffffffffffff" is 29, -1, -1.
+        /// </summary>
+        public static List<int> ParseHexInt32Blob(string raw)
+        {
+            List<int> values = new List<int>();
+            if (string.IsNullOrEmpty(raw))
+            {
+                return values;
+            }
+
+            string hex = raw.Trim();
+            for (int i = 0; i + 8 <= hex.Length; i += 8)
+            {
+                int value = 0;
+                bool ok = true;
+
+                // Little-endian: the first byte pair is the least significant.
+                for (int b = 3; b >= 0; b--)
+                {
+                    if (!byte.TryParse(hex.Substring(i + (b * 2), 2), NumberStyles.HexNumber,
+                            CultureInfo.InvariantCulture, out byte parsed))
+                    {
+                        ok = false;
+                        break;
+                    }
+
+                    value = (value << 8) | parsed;
+                }
+
+                if (!ok)
+                {
+                    break;
+                }
+
+                values.Add(value);
+            }
+
+            return values;
+        }
+
+        /// <summary>
         /// Keyframes out of an AnimationCurve block's m_Curve sequence. An absent or empty
         /// m_Curve yields a curve with no keys, which is how Unity writes "no falloff".
         /// </summary>
