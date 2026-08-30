@@ -91,7 +91,11 @@ jobs:
           UPM_ORG_ID: ${{ secrets.UPM_ORG_ID }}
         run: |
           curl -fsSL https://cdn.packages.unity.com/upm-cli/install.sh | bash
-          export PATH="$HOME/.upm-cli/bin:$PATH"
+          # The installer puts the binary in ~/.upm/bin and edits ~/.bashrc, which a job step
+          # does not read, so the directory goes on PATH here.
+          echo "$HOME/.upm/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.upm/bin:$PATH"
+          command -v upm
           upm --version
           mkdir -p dist
           upm pack "$PACKAGE_PATH" --organization-id "$UPM_ORG_ID" --destination dist
