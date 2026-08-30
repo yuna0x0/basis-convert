@@ -1,4 +1,4 @@
-# Basis Convert
+# Watari
 
 Bring an avatar you already own into [Basis](https://basisvr.org/), with its physics, constraints
 and menus intact.
@@ -10,7 +10,7 @@ and menus intact.
 
 Clothing and accessories convert with the avatar they are worn on.
 
-Open **Tools > Basis Convert > Convert Avatar**, pick your avatar, and read what it found.
+Open **Tools > Watari > Convert Avatar**, pick your avatar, and read what it found.
 Nothing is written until you press Convert.
 
 Documentation: **https://yuna0x0.github.io/basis-convert/**

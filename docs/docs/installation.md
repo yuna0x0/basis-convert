@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Installing
 
-Basis Convert installs into a Basis project as a Unity package. It builds against the Basis SDK,
+Watari installs into a Basis project as a Unity package. It builds against the Basis SDK,
 Jiggle Physics and HVR Basis Comms, all of which ship with the Basis framework, so a Basis
 project already has everything it needs.
 
@@ -19,7 +19,7 @@ works with any Unity project.
 1. Add the repository `https://vpm.yuna0x0.com/index.json` under Packages, using
    **Add Repository**.
 2. Open your Basis project under Manage Project.
-3. Add **Basis Convert** and apply.
+3. Add **Watari** and apply.
 
 Updates appear in the same place, as a version to move to.
 
@@ -39,7 +39,7 @@ vpm add package com.yuna0x0.basis.convert
 ```
 
 {/*
-  IMAGE PLACEHOLDER: ALCOM with the listing added and Basis Convert ready to install.
+  IMAGE PLACEHOLDER: ALCOM with the listing added and Watari ready to install.
   Save as docs/static/img/install-alcom.png, then replace this comment with:
   ![Installing through ALCOM](/img/install-alcom.png)
 */}

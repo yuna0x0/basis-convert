@@ -1,7 +1,7 @@
 namespace yuna0x0.Basis.Convert
 {
     /// <summary>
-    /// Names shown in the editor, in one place because the product name is provisional.
+    /// Names shown in the editor, in one place.
     /// <para>
     /// Menus live under our own product name rather than Basis's menu. Basis's trademark policy
     /// asks third parties not to imply affiliation, and the surrounding ecosystem does the same:
@@ -11,7 +11,10 @@ namespace yuna0x0.Basis.Convert
     /// </summary>
     public static class ProductInfo
     {
-        public const string Name = "Basis Convert";
+        public const string Name = "Watari";
+
+        /// <summary>What it is, for anywhere the name alone does not say enough.</summary>
+        public const string Tagline = "Converter for Basis";
 
         public const string ToolsMenu = "Tools/" + Name + "/";
         public const string GameObjectMenu = "GameObject/" + Name + "/";

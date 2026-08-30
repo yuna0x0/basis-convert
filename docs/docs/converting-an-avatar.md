@@ -14,7 +14,7 @@ Drag the avatar into a scene, then add any clothing and accessories you want on 
 
 ## 2. Open the window
 
-**Tools > Basis Convert > Convert Avatar**, or right-click the avatar in the hierarchy and pick
+**Tools > Watari > Convert Avatar**, or right-click the avatar in the hierarchy and pick
 the same entry.
 
 The window scans the avatar as soon as one is selected. It reports what it detected, how many

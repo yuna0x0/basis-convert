@@ -7,8 +7,8 @@ const defaultLocale = 'en';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Basis Convert',
-  tagline: 'Bring the avatar you already own into Basis',
+  title: 'Watari',
+  tagline: 'Converter for Basis',
   favicon: 'img/favicon.ico',
 
   // Set to the GitHub Pages address until a custom domain is pointed at it. With a custom
@@ -62,7 +62,7 @@ const config = {
         respectPrefersColorScheme: true,
       },
       navbar: {
-        title: 'Basis Convert',
+        title: 'Watari',
         items: [
           {
             type: 'docSidebar',

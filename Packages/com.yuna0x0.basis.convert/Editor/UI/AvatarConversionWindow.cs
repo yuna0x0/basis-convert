@@ -63,7 +63,7 @@ namespace yuna0x0.Basis.Convert.UI
         public static void Open()
         {
             AvatarConversionWindow window = GetWindow<AvatarConversionWindow>();
-            window.titleContent = new GUIContent("Basis Convert");
+            window.titleContent = new GUIContent(ProductInfo.Name);
             window.minSize = new Vector2(420f, 360f);
             window.Show();
         }

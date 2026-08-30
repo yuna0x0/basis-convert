@@ -1,4 +1,4 @@
-# Basis Convert
+# Watari
 
 Bring an avatar you already own into [Basis](https://basisvr.org/), with its physics, constraints
 and menus intact.

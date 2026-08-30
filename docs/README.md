@@ -1,6 +1,6 @@
 # Documentation site
 
-[Docusaurus](https://docusaurus.io/) site for Basis Convert, published from `docs/`.
+[Docusaurus](https://docusaurus.io/) site for Watari, published from `docs/`.
 
 ```sh
 pnpm install

@@ -1,6 +1,6 @@
 {
   "name": "com.yuna0x0.basis.convert",
-  "displayName": "Basis Convert",
+  "displayName": "Watari (Converter for Basis)",
   "version": "0.1.0",
   "description": "Convert avatars, clothing and props from other social VR platforms for use with Basis: physics, constraints, the avatar descriptor and menu toggles.",
   "unity": "6000.5",

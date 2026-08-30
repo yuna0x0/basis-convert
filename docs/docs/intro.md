@@ -2,9 +2,9 @@
 sidebar_position: 1
 ---
 
-# Basis Convert
+# Watari
 
-Basis Convert brings an avatar you already own into [Basis](https://basisvr.org/), with its
+Watari brings an avatar you already own into [Basis](https://basisvr.org/), with its
 physics, constraints and menus intact.
 
 You import the avatar into a Basis project, pick it in the scene, and convert:
