@@ -19,6 +19,13 @@ env:
 jobs:
   release:
     runs-on: ubuntu-latest
+
+    # The signing credentials live in this environment rather than in repository secrets, so a
+    # deployment tag rule can limit them to v* tags and a reviewer can be required. A job only
+    # sees an environment's secrets when it declares it, and its protection rules then gate the
+    # whole job, which for a release is what you want anyway.
+    environment: release
+
     steps:
       - uses: actions/checkout@v7
 

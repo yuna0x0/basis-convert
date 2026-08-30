@@ -30,8 +30,11 @@ from the repository it was built from.
 - A Unity organization, and its organization ID from the Unity Cloud Dashboard.
 - A service account in that organization with the **Package Manager Package Signer** role, and a
   key: an id and a secret, the secret shown once.
-- Three secrets in the repository: `UPM_SERVICE_ACCOUNT_KEY_ID`,
-  `UPM_SERVICE_ACCOUNT_KEY_SECRET`, `UPM_ORG_ID`.
+- Three secrets in a GitHub **environment** named `release`: `UPM_SERVICE_ACCOUNT_KEY_ID`,
+  `UPM_SERVICE_ACCOUNT_KEY_SECRET`, `UPM_ORG_ID`. An environment rather than repository secrets,
+  because it can carry a deployment tag rule limiting them to `v*` tags and can require a
+  reviewer. The release job declares `environment: release`, which is what makes them visible to
+  it.
 
 ## The commands
 
