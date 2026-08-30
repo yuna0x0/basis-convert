@@ -51,8 +51,7 @@ namespace yuna0x0.Basis.Convert.Mapping
                 {
                     Path = path,
                     Choices = new[] { offState, onState },
-                    SetWhenOff = hasOff,
-                    SetWhenOn = hasOn,
+                    Set = new[] {hasOff, hasOn},
                 });
             }
 
@@ -93,8 +92,7 @@ namespace yuna0x0.Basis.Convert.Mapping
                 {
                     ShapeName = shape,
                     Choices = new[] { offValue, onValue },
-                    SetWhenOff = hasOff,
-                    SetWhenOn = hasOn,
+                    Set = new[] {hasOff, hasOn},
                 });
             }
         }
@@ -145,8 +143,7 @@ namespace yuna0x0.Basis.Convert.Mapping
                 value[channel] = effect.Value;
                 property.Choices[choice] = value;
 
-                bool[] set = choice == 0 ? property.SetWhenOff : property.SetWhenOn;
-                set[channel] = true;
+                property.Set[choice][channel] = true;
             }
         }
 

@@ -21,14 +21,12 @@ namespace yuna0x0.Basis.Convert.Mapping
                 return;
             }
 
-            if (!activation.SetWhenOff)
+            for (int choice = 0; choice < activation.Choices.Length; choice++)
             {
-                activation.Choices[0] = authored;
-            }
-
-            if (!activation.SetWhenOn)
-            {
-                activation.Choices[1] = authored;
+                if (choice >= activation.Set.Length || !activation.Set[choice])
+                {
+                    activation.Choices[choice] = authored;
+                }
             }
         }
 
@@ -39,14 +37,12 @@ namespace yuna0x0.Basis.Convert.Mapping
                 return;
             }
 
-            if (!shape.SetWhenOff)
+            for (int choice = 0; choice < shape.Choices.Length; choice++)
             {
-                shape.Choices[0] = authored;
-            }
-
-            if (!shape.SetWhenOn)
-            {
-                shape.Choices[1] = authored;
+                if (choice >= shape.Set.Length || !shape.Set[choice])
+                {
+                    shape.Choices[choice] = authored;
+                }
             }
         }
     }

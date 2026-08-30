@@ -771,7 +771,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
         {
             foreach (VixxyBlendShapePlan shape in subject.BlendShapes)
             {
-                if (shape.BothSidesAnimated)
+                if (shape.AllChoicesSet)
                 {
                     continue;
                 }
@@ -798,20 +798,18 @@ namespace yuna0x0.Basis.Convert.Pipeline
             {
                 Vector4 authored = AuthoredValue(material, property);
 
-                for (int channel = 0; channel < property.Channels; channel++)
+                for (int choice = 0; choice < property.Choices.Length; choice++)
                 {
-                    if (!property.SetWhenOff[channel])
+                    for (int channel = 0; channel < property.Channels; channel++)
                     {
-                        Vector4 off = property.Choices[0];
-                        off[channel] = authored[channel];
-                        property.Choices[0] = off;
-                    }
+                        if (property.Set[choice][channel])
+                        {
+                            continue;
+                        }
 
-                    if (!property.SetWhenOn[channel])
-                    {
-                        Vector4 on = property.Choices[1];
-                        on[channel] = authored[channel];
-                        property.Choices[1] = on;
+                        Vector4 value = property.Choices[choice];
+                        value[channel] = authored[channel];
+                        property.Choices[choice] = value;
                     }
                 }
             }

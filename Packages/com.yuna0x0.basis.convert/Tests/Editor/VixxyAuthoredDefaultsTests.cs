@@ -31,8 +31,8 @@ namespace yuna0x0.Basis.Convert.Tests
             VixxyControlPlan plan = ToggleToVixxyMapper.Map(ToggleThatHidesOnTheOnSide("Tail"));
 
             VixxyActivationPlan activation = plan.Activations[0];
-            Assert.That(activation.SetWhenOn, Is.True, "The on side switched the object off.");
-            Assert.That(activation.SetWhenOff, Is.False, "The off side animated nothing.");
+            Assert.That(activation.Set[1], Is.True, "The on side switched the object off.");
+            Assert.That(activation.Set[0], Is.False, "The off side animated nothing.");
             Assert.That(activation.Choices[1], Is.False, "On hides it, as the clip says.");
         }
 
@@ -57,8 +57,7 @@ namespace yuna0x0.Basis.Convert.Tests
             {
                 Path = "Tail",
                 Choices = new[] {true, false},
-                SetWhenOff = true,
-                SetWhenOn = true,
+                Set = new[] {true, true},
             };
 
             VixxyAuthoredDefaults.Apply(activation, authored: false);
@@ -74,8 +73,7 @@ namespace yuna0x0.Basis.Convert.Tests
             {
                 ShapeName = "Corset",
                 Choices = new[] {0f, 0f},
-                SetWhenOff = false,
-                SetWhenOn = true,
+                Set = new[] {false, true},
             };
 
             VixxyAuthoredDefaults.Apply(shape, authored: 100f);

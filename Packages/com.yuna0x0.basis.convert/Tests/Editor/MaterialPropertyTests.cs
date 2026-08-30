@@ -142,10 +142,10 @@ namespace yuna0x0.Basis.Convert.Tests
             VixxyMaterialPropertyPlan property =
                 ToggleToVixxyMapper.Map(toggle).Subjects[0].MaterialProperties[0];
 
-            Assert.That(property.SetWhenOn[0], Is.True);
-            Assert.That(property.SetWhenOff[0], Is.False,
+            Assert.That(property.Set[1][0], Is.True);
+            Assert.That(property.Set[0][0], Is.False,
                 "The off state keeps whatever the material was authored with.");
-            Assert.That(property.SetWhenOn[1], Is.False);
+            Assert.That(property.Set[1][1], Is.False);
         }
 
         [Test]

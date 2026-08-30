@@ -9,19 +9,35 @@ namespace yuna0x0.Basis.Convert.Model
         /// <summary>Transform path relative to the avatar root.</summary>
         public string Path = string.Empty;
 
-        /// <summary>Active state per choice, index 0 being off and 1 being on.</summary>
+        /// <summary>
+        /// Active state per choice. A toggle has two, off first; a selector has one per value of
+        /// its parameter, in the order the menu offers them.
+        /// </summary>
         public bool[] Choices = new bool[2];
 
         /// <summary>
-        /// Whether each side of the toggle actually animated this object. A side that did not
+        /// Whether each choice's clip actually animated this object. A choice that did not
         /// leaves it at whatever the avatar was authored with, read from the hierarchy later.
-        /// Which side was animated has to be recorded rather than inferred from the values: a
-        /// clip that switches an object off looks exactly like a side that said nothing.
+        /// This has to be recorded rather than inferred from the values: a clip that switches an
+        /// object off looks exactly like a clip that said nothing about it.
         /// </summary>
-        public bool SetWhenOff = true;
-        public bool SetWhenOn = true;
+        public bool[] Set = {true, true};
 
-        public bool BothSidesAnimated => SetWhenOff && SetWhenOn;
+        public bool AllChoicesSet
+        {
+            get
+            {
+                foreach (bool set in Set)
+                {
+                    if (!set)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
     }
 
     /// <summary>One blendshape a control sets, and its value in each choice.</summary>
@@ -29,14 +45,27 @@ namespace yuna0x0.Basis.Convert.Model
     {
         public string ShapeName = string.Empty;
 
-        /// <summary>Weight per choice, index 0 being off and 1 being on.</summary>
+        /// <summary>Weight per choice, in the same order as the control's choices.</summary>
         public float[] Choices = new float[2];
 
-        /// <summary>Whether each side of the toggle actually set this shape.</summary>
-        public bool SetWhenOff = true;
-        public bool SetWhenOn = true;
+        /// <summary>Whether each choice's clip actually set this shape.</summary>
+        public bool[] Set = {true, true};
 
-        public bool BothSidesAnimated => SetWhenOff && SetWhenOn;
+        public bool AllChoicesSet
+        {
+            get
+            {
+                foreach (bool set in Set)
+                {
+                    if (!set)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
     }
 
     /// <summary>How a material property is held, which decides the Vixxy property type.</summary>
@@ -55,16 +84,15 @@ namespace yuna0x0.Basis.Convert.Model
 
         public VixxyMaterialPropertyKind Kind = VixxyMaterialPropertyKind.Float;
 
-        /// <summary>Value per choice, index 0 being off and 1 being on. A float uses x only.</summary>
+        /// <summary>Value per choice, in the control's choice order. A float uses x only.</summary>
         public Vector4[] Choices = new Vector4[2];
 
         /// <summary>
-        /// Per channel, whether each side of the toggle set it. A clip commonly sets one channel
-        /// of a colour, or one side of the toggle only; the rest keep what the material was
-        /// authored with, read from the renderer rather than guessed.
+        /// Per choice, per channel, whether that clip set it. A clip commonly sets one channel of
+        /// a colour, or says nothing in one choice; the rest keep what the material was authored
+        /// with, read from the renderer rather than guessed.
         /// </summary>
-        public bool[] SetWhenOff = new bool[4];
-        public bool[] SetWhenOn = new bool[4];
+        public bool[][] Set = {new bool[4], new bool[4]};
 
         public int Channels => Kind == VixxyMaterialPropertyKind.Float ? 1 : 4;
     }

@@ -49,7 +49,7 @@ namespace yuna0x0.Basis.Convert.Tests
                     TestContext.WriteLine(
                         $"    {activation.Path}: choice0(off)={activation.Choices[0]} "
                         + $"choice1(on)={activation.Choices[1]} "
-                        + $"setWhenOff={activation.SetWhenOff} setWhenOn={activation.SetWhenOn}");
+                        + $"set=[{string.Join(", ", activation.Set)}]");
                 }
             }
 
