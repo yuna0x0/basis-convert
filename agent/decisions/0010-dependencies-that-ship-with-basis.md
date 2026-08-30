@@ -30,9 +30,27 @@ dependency as satisfied by what the project already has, which a Basis project d
 
 ## Why UPM `dependencies` stays empty
 
-That field is resolved against a registry. None of these packages is published to one, so naming
-them there would break a git URL or OpenUPM install rather than describe it. `vpmDependencies` is
-the field VPM clients read, and it is the right place for packages that arrive with Basis.
+That field is resolved against a registry, and the registry was checked rather than assumed
+(2026-08-30, `package.openupm.com`):
+
+| Package | On OpenUPM |
+|---|---|
+| `com.basis.sdk` | no (404) |
+| `dev.hai-vr.basis.comms` | no (404) |
+| `com.gator-dragon-games.jigglephysics` | yes, up to 16.0.1 |
+
+Two of the three cannot be resolved at all, so naming them would break a git URL or OpenUPM
+install rather than describe it. The third could be resolved, but only by a project that has the
+OpenUPM scoped registry configured, and a Basis project already embeds that package in its own
+`Packages` folder, so declaring it would at best be redundant and at worst fail resolution for
+someone without the registry.
+
+`vpmDependencies` is the field VPM clients read, and it is the right place for packages that
+arrive with Basis.
+
+This also bounds what publishing to OpenUPM can mean for this package: it can be listed there,
+but OpenUPM cannot express its real requirement, since `com.basis.sdk` is not on that registry.
+Anyone installing it that way needs a Basis project already, which the README states.
 
 ## Why nothing is gated
 
