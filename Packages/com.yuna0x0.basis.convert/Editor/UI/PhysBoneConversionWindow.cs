@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using yuna0x0.Basis.Convert.Mapping;
 using yuna0x0.Basis.Convert.Model;
 using yuna0x0.Basis.Convert.Pipeline;
 using yuna0x0.Basis.Convert.Reporting;
@@ -28,6 +29,13 @@ namespace yuna0x0.Basis.Convert.UI
         private Vector2 _scroll;
         private bool _showRigs = true;
         private bool _showDiagnostics = true;
+        private bool _showTuning;
+
+        /// <summary>
+        /// The two parts of the mapping that are judgement calls rather than conversions.
+        /// Exposed so they can be adjusted and rescanned without editing code.
+        /// </summary>
+        private readonly JiggleMappingProfile _profile = JiggleMappingProfile.Default;
 
         [MenuItem(ProductInfo.ToolsMenu + "Convert VRChat PhysBones")]
         public static void Open()
@@ -97,6 +105,7 @@ namespace yuna0x0.Basis.Convert.UI
             DrawSummary();
 
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
+            DrawTuning();
             DrawDiagnostics();
             DrawRigs();
             EditorGUILayout.EndScrollView();
@@ -126,6 +135,42 @@ namespace yuna0x0.Basis.Convert.UI
                         $"Converted: {_result.RigsWritten} written, {_result.RigsSkipped} skipped",
                         EditorStyles.boldLabel);
                 }
+            }
+        }
+
+        private void DrawTuning()
+        {
+            _showTuning = EditorGUILayout.Foldout(_showTuning, "Tuning", true);
+            if (!_showTuning)
+            {
+                return;
+            }
+
+            using (new EditorGUI.IndentLevelScope())
+            {
+                EditorGUILayout.LabelField(
+                    "Everything else is a direct mapping. These two are fits between settings "
+                    + "that do not have the same meaning or scale, so they are the ones worth "
+                    + "adjusting if the result feels wrong. Rescan to apply.",
+                    EditorStyles.wordWrappedMiniLabel);
+
+                EditorGUILayout.LabelField("Stiffness, from PhysBone pull and stiffness",
+                    EditorStyles.miniBoldLabel);
+                _profile.PullToStiffness = EditorGUILayout.Slider(
+                    "Pull weight", _profile.PullToStiffness, 0f, 2f);
+                _profile.StiffnessToStiffness = EditorGUILayout.Slider(
+                    "Stiffness weight", _profile.StiffnessToStiffness, 0f, 2f);
+
+                EditorGUILayout.LabelField("Drag, from PhysBone spring",
+                    EditorStyles.miniBoldLabel);
+                _profile.DragAtNoSpring = EditorGUILayout.Slider(
+                    "Drag at spring 0", _profile.DragAtNoSpring, 0f, 1f);
+                _profile.DragAtFullSpring = EditorGUILayout.Slider(
+                    "Drag at spring 1", _profile.DragAtFullSpring, 0f, 1f);
+
+                EditorGUILayout.LabelField(
+                    "Higher stiffness holds bones closer to their animated pose. Higher drag "
+                    + "settles them sooner.", EditorStyles.wordWrappedMiniLabel);
             }
         }
 
@@ -239,7 +284,7 @@ namespace yuna0x0.Basis.Convert.UI
                 return;
             }
 
-            _plan = AvatarJigglePlanner.Plan(_sourceAssetPath);
+            _plan = AvatarJigglePlanner.Plan(_sourceAssetPath, _profile);
             _groups = ConversionReport.Group(_plan);
 
             if (_plan.PhysBonesFound == 0)
