@@ -188,11 +188,16 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
-                if (kind == SourceComponentKind.MaMergeAnimator
-                    || kind == SourceComponentKind.MaMenuItem
-                    || kind == SourceComponentKind.MaMenuInstaller)
+                if (KnownScriptIdentities.IsModularAvatarMenuOrAnimator(kind)
+                    || KnownScriptIdentities.IsModularAvatarReactive(kind))
                 {
                     plan.ModularAvatarMenuFound++;
+                    continue;
+                }
+
+                if (KnownScriptIdentities.IsModularAvatarVrchatOnly(kind))
+                {
+                    plan.ModularAvatarVrchatOnlyFound++;
                     continue;
                 }
 
@@ -260,6 +265,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     $"{plan.ModularAvatarMenuFound} Modular Avatar components build menus and "
                     + "merge animator layers. Both target structures VRChat has and Basis does "
                     + "not, so anything they add does nothing on Basis and is not converted yet.");
+            }
+
+            if (plan.ModularAvatarVrchatOnlyFound > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "modularAvatar.vrchatOnly",
+                    $"{plan.ModularAvatarVrchatOnlyFound} Modular Avatar components act on "
+                    + "VRChat's own systems: its colliders, its head chop, its MMD layers. There "
+                    + "is nothing for them to act on under Basis.");
             }
 
             if (plan.ContactsFound > 0)

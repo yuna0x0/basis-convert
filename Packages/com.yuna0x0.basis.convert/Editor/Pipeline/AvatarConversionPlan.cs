@@ -190,6 +190,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// </summary>
         public int ModularAvatarMenuFound;
 
+        /// <summary>
+        /// Modular Avatar components tied to VRChat's own systems, which have nothing to act on
+        /// under Basis.
+        /// </summary>
+        public int ModularAvatarVrchatOnlyFound;
+
         public int PhysBonesFound;
         public int CollidersFound;
         public int ConstraintsFound;

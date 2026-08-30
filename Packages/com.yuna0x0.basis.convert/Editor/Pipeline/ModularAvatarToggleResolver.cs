@@ -50,6 +50,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 return resolved;
             }
 
+            // Entries are grouped by parameter for the same reason the avatar's own menu is:
+            // several of them commonly share one and pick different values from it.
+            Dictionary<string, List<MaMenuItemData>> byParameter =
+                new Dictionary<string, List<MaMenuItemData>>();
+
             foreach (MaMenuItemData item in items)
             {
                 if (!item.IsToggle || string.IsNullOrEmpty(item.Parameter))
@@ -57,31 +62,47 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
+                if (!byParameter.TryGetValue(item.Parameter, out List<MaMenuItemData> shared))
+                {
+                    shared = new List<MaMenuItemData>();
+                    byParameter[item.Parameter] = shared;
+                }
+
+                shared.Add(item);
+            }
+
+            foreach (KeyValuePair<string, List<MaMenuItemData>> group in byParameter)
+            {
                 foreach (MergedAnimator animator in animators)
                 {
                     List<FxToggleLayer> layers = FxControllerReader.FindToggleLayers(
-                        animator.Controller, new[] { item.Parameter });
+                        animator.Controller, new[] {group.Key});
 
                     if (layers.Count == 0)
                     {
                         continue;
                     }
 
-                    resolved.Add(new ModularAvatarToggle
+                    FxToggleLayer layer = layers[0];
+                    ResolvedToggle toggle = new ResolvedToggle
                     {
-                        Source = source,
-                        Toggle = new ResolvedToggle
-                        {
-                            MenuName = NameOf(item, resolver),
-                            Parameter = item.Parameter,
-                            LayerName = layers[0].LayerName,
-                            WhenOff = Rebase(
-                                AnimationClipReader.Read(layers[0].WhenOff), animator.Prefix),
-                            WhenOn = Rebase(
-                                AnimationClipReader.Read(layers[0].WhenOn), animator.Prefix),
-                        },
-                    });
+                        MenuName = NameOf(group.Value, group.Key, resolver),
+                        Parameter = group.Key,
+                        LayerName = layer.LayerName,
+                    };
 
+                    foreach (FxParameterState state in layer.States)
+                    {
+                        toggle.Choices.Add(new ResolvedChoice
+                        {
+                            Name = ChoiceName(group.Value, state.Value, layer),
+                            Value = state.Value,
+                            Effects = Rebase(
+                                AnimationClipReader.Read(state.Clip), animator.Prefix),
+                        });
+                    }
+
+                    resolved.Add(new ModularAvatarToggle {Source = source, Toggle = toggle});
                     break;
                 }
             }
@@ -155,9 +176,20 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 && KnownScriptIdentities.Resolve(guid, fileId) == kind;
         }
 
-        /// <summary>A menu item with no label of its own is named after the object carrying it.</summary>
-        private static string NameOf(MaMenuItemData item, PrefabObjectResolver resolver)
+        /// <summary>
+        /// A menu item with no label of its own is named after the object carrying it. Several
+        /// items sharing a parameter name the choices instead, so the parameter names the
+        /// control.
+        /// </summary>
+        private static string NameOf(
+            List<MaMenuItemData> items, string parameter, PrefabObjectResolver resolver)
         {
+            if (items.Count != 1)
+            {
+                return parameter;
+            }
+
+            MaMenuItemData item = items[0];
             if (!string.IsNullOrEmpty(item.Name))
             {
                 return item.Name;
@@ -165,7 +197,26 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             return resolver.TryResolveTransform(item.OwnerGameObjectFileId, out Transform host)
                 ? host.name
-                : item.Parameter;
+                : parameter;
+        }
+
+        private static string ChoiceName(
+            List<MaMenuItemData> items, int value, FxToggleLayer layer)
+        {
+            foreach (MaMenuItemData item in items)
+            {
+                if (Mathf.RoundToInt(item.Value) == value && !string.IsNullOrEmpty(item.Name))
+                {
+                    return item.Name;
+                }
+            }
+
+            if (!layer.IsSelector)
+            {
+                return value == 0 ? "OFF" : "ON";
+            }
+
+            return $"{layer.Parameter} {value}";
         }
 
         private static string PathWithin(Transform root, Transform target)

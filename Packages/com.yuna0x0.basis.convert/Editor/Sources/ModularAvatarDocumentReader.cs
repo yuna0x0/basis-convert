@@ -34,9 +34,35 @@ namespace yuna0x0.Basis.Convert.Sources
 
         public string Parameter = string.Empty;
 
+        /// <summary>Value of the parameter this entry selects. Several entries commonly share
+        /// one parameter and pick different values from it.</summary>
+        public float Value = 1f;
+
         public bool IsToggle => ControlType == ControlTypeToggle;
 
         public const int ControlTypeToggle = 102;
+    }
+
+    /// <summary>One object an Object Toggle switches, and the state it switches it to.</summary>
+    public sealed class MaToggledObject
+    {
+        /// <summary>Transform path, relative to the avatar root Modular Avatar resolves against.</summary>
+        public string Path = string.Empty;
+
+        public bool Active;
+    }
+
+    /// <summary>
+    /// A Modular Avatar Object Toggle: the objects it switches when its own object is active.
+    /// </summary>
+    public sealed class MaObjectToggleData
+    {
+        public long OwnerGameObjectFileId;
+
+        /// <summary>True when the component acts on its object being inactive instead.</summary>
+        public bool Inverted;
+
+        public List<MaToggledObject> Objects = new List<MaToggledObject>();
     }
 
     /// <summary>
@@ -111,6 +137,14 @@ namespace yuna0x0.Basis.Convert.Sources
                     {
                         data.ControlType = type;
                     }
+                    else if (trimmed.StartsWith("value:")
+                             && float.TryParse(ValueOf(trimmed),
+                                 System.Globalization.NumberStyles.Float,
+                                 System.Globalization.CultureInfo.InvariantCulture,
+                                 out float value))
+                    {
+                        data.Value = value;
+                    }
 
                     continue;
                 }
@@ -119,6 +153,60 @@ namespace yuna0x0.Basis.Convert.Sources
                 if (inParameter && indent == 6 && trimmed.StartsWith("name:"))
                 {
                     data.Parameter = ValueOf(trimmed);
+                }
+            }
+
+            return data;
+        }
+
+        /// <summary>
+        /// Reads an Object Toggle's list. Each entry is an object reference by path and the
+        /// state it is switched to, which is the same shape a menu toggle's clip produces.
+        /// </summary>
+        public static MaObjectToggleData ReadObjectToggle(UnityYamlDocument document)
+        {
+            MaObjectToggleData data = new MaObjectToggleData();
+
+            if (document.TryGetTopLevelFileIdReference("m_GameObject", out long owner))
+            {
+                data.OwnerGameObjectFileId = owner;
+            }
+
+            if (document.TryGetBool("m_inverted", out bool inverted))
+            {
+                data.Inverted = inverted;
+            }
+
+            if (!document.TryGetTopLevelBlock("m_objects", out List<string> block))
+            {
+                return data;
+            }
+
+            MaToggledObject current = null;
+
+            foreach (string line in block)
+            {
+                string trimmed = line.Trim();
+
+                if (trimmed.StartsWith("- Object:") || trimmed == "-")
+                {
+                    current = new MaToggledObject();
+                    data.Objects.Add(current);
+                    continue;
+                }
+
+                if (current == null)
+                {
+                    continue;
+                }
+
+                if (trimmed.StartsWith("referencePath:"))
+                {
+                    current.Path = ValueOf(trimmed);
+                }
+                else if (trimmed.StartsWith("Active:"))
+                {
+                    current.Active = ValueOf(trimmed) == "1";
                 }
             }
 

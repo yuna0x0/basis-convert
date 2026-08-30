@@ -23,17 +23,51 @@ namespace yuna0x0.Basis.Convert.Sources
         DynamicBoneCollider,
         DynamicBonePlaneCollider,
 
-        // Modular Avatar. Its hierarchy components do their job on Basis, so they are
-        // identified in order to be left alone knowingly rather than reported as unknown. The
-        // menu and animator ones target VRChat structures Basis does not have.
+        // Modular Avatar, all of it. Naming every component keeps them out of the unknown
+        // script report, and lets each be reported for what it does on Basis. The GUIDs were
+        // read from Modular Avatar's own .meta files, not derived.
+        //
+        // Rearranges the hierarchy or the meshes, which is platform-independent work that
+        // Modular Avatar does on Basis as well as anywhere else.
         MaMergeArmature,
         MaBoneProxy,
         MaMeshSettings,
         MaBlendshapeSync,
-        MaMergeAnimator,
+        MaParameters,
+        MaMoveTo,
+        MaReplaceObject,
+        MaScaleAdjuster,
+        MaOutfitRoot,
+        MaRemoveVertexColor,
+        MaMeshCutter,
+        MaFloorAdjuster,
+        MaWorldScaleObject,
+        MaPlatformFilter,
+        MaConvertConstraints,
+
+        // Builds menus or merges animator layers, which target structures only VRChat has.
         MaMenuItem,
         MaMenuInstaller,
-        MaParameters,
+        MaMenuGroup,
+        MaMergeAnimator,
+        MaMergeBlendTree,
+
+        // Reacts to a menu item or an object's state by changing something else. Object Toggle
+        // is rebuilt; the rest are reported.
+        MaObjectToggle,
+        MaShapeChanger,
+        MaMaterialSetter,
+        MaMaterialSwap,
+
+        // Specific to VRChat's own systems, and inert on Basis.
+        MaGlobalCollider,
+        MaPBBlocker,
+        MaVisibleHeadAccessory,
+        MaWorldFixedObject,
+        MaMmdLayerControl,
+        MaSyncParameterSequence,
+        MaRenameVRChatCollisionTags,
+        MaVRChatSettings,
     }
 
     /// <summary>
@@ -99,10 +133,37 @@ namespace yuna0x0.Basis.Convert.Sources
                 { ("42581d8044b64899834d3d515ab3a144", LooseScriptFileId), SourceComponentKind.MaBoneProxy },
                 { ("560fdafd46c74b2db6422fdf0e7f2363", LooseScriptFileId), SourceComponentKind.MaMeshSettings },
                 { ("6fd7cab7d93b403280f2f9da978d8a4f", LooseScriptFileId), SourceComponentKind.MaBlendshapeSync },
-                { ("1bb122659f724ebf85fe095ac02dc339", LooseScriptFileId), SourceComponentKind.MaMergeAnimator },
+                { ("71a96d4ea0c344f39e277d82035bf9bd", LooseScriptFileId), SourceComponentKind.MaParameters },
+                { ("4e6bb6a99e499d2489ccf296662fa3cd", LooseScriptFileId), SourceComponentKind.MaMoveTo },
+                { ("7e949680c0864ee7b441d9b2c93b890b", LooseScriptFileId), SourceComponentKind.MaReplaceObject },
+                { ("09a660aa9d4e47d992adcac5a05dd808", LooseScriptFileId), SourceComponentKind.MaScaleAdjuster },
+                { ("1895bf16884f4064f8e9550e7493c205", LooseScriptFileId), SourceComponentKind.MaOutfitRoot },
+                { ("dc5f8bfae24244aeaedcd6c2bb7264f9", LooseScriptFileId), SourceComponentKind.MaRemoveVertexColor },
+                { ("762726b8618cac7419e39bdc2b572b3d", LooseScriptFileId), SourceComponentKind.MaMeshCutter },
+                { ("ba18e6eae93342fd8774b3f3f132928a", LooseScriptFileId), SourceComponentKind.MaFloorAdjuster },
+                { ("e113c01563a14226b5e863befe6fe769", LooseScriptFileId), SourceComponentKind.MaWorldScaleObject },
+                { ("8c8a67d5c01849629fa90c3b2eded93f", LooseScriptFileId), SourceComponentKind.MaPlatformFilter },
+                { ("e362b3df8a3d478c82bf5ffe18f622e6", LooseScriptFileId), SourceComponentKind.MaConvertConstraints },
+
                 { ("3b29d45007c5493d926d2cd45a489529", LooseScriptFileId), SourceComponentKind.MaMenuItem },
                 { ("7ef83cb0c23d4d7c9d41021e544a1978", LooseScriptFileId), SourceComponentKind.MaMenuInstaller },
-                { ("71a96d4ea0c344f39e277d82035bf9bd", LooseScriptFileId), SourceComponentKind.MaParameters },
+                { ("97e46a47dd8a425eb4ce9411defe313d", LooseScriptFileId), SourceComponentKind.MaMenuGroup },
+                { ("1bb122659f724ebf85fe095ac02dc339", LooseScriptFileId), SourceComponentKind.MaMergeAnimator },
+                { ("229dd561ca024a6588e388160921a70f", LooseScriptFileId), SourceComponentKind.MaMergeBlendTree },
+
+                { ("a162bb8ec7e24a5abcf457887f1df3fa", LooseScriptFileId), SourceComponentKind.MaObjectToggle },
+                { ("2db441f589c3407bb6fb5f02ff8ab541", LooseScriptFileId), SourceComponentKind.MaShapeChanger },
+                { ("0adf335711644e34b6c635e94ae61fa7", LooseScriptFileId), SourceComponentKind.MaMaterialSetter },
+                { ("b259b73280ead4e4fbbdafc5e29175d1", LooseScriptFileId), SourceComponentKind.MaMaterialSwap },
+
+                { ("49bb23f95a7baca4186efa68bc5891b6", LooseScriptFileId), SourceComponentKind.MaGlobalCollider },
+                { ("a5bf908a199a4648845ebe2fd3b5a4bd", LooseScriptFileId), SourceComponentKind.MaPBBlocker },
+                { ("33dac8cfeaeb4c399ddd90597f849f70", LooseScriptFileId), SourceComponentKind.MaVisibleHeadAccessory },
+                { ("0e2d9f1d69e34b92a96e6cc162770fad", LooseScriptFileId), SourceComponentKind.MaWorldFixedObject },
+                { ("d1d979d3cedd4ddd969f414e2ea04fb8", LooseScriptFileId), SourceComponentKind.MaMmdLayerControl },
+                { ("934543afe4744213b5621aa13a67e3b4", LooseScriptFileId), SourceComponentKind.MaSyncParameterSequence },
+                { ("04802bf95b218724a9f4b97003067857", LooseScriptFileId), SourceComponentKind.MaRenameVRChatCollisionTags },
+                { ("89c938d7d8a741df99f2eda501b3a6fe", LooseScriptFileId), SourceComponentKind.MaVRChatSettings },
             };
 
         /// <summary>
@@ -111,11 +172,39 @@ namespace yuna0x0.Basis.Convert.Sources
         /// </summary>
         public static bool IsHandledByModularAvatar(SourceComponentKind kind)
         {
-            return kind == SourceComponentKind.MaMergeArmature
-                || kind == SourceComponentKind.MaBoneProxy
-                || kind == SourceComponentKind.MaMeshSettings
-                || kind == SourceComponentKind.MaBlendshapeSync
-                || kind == SourceComponentKind.MaParameters;
+            return kind >= SourceComponentKind.MaMergeArmature
+                && kind <= SourceComponentKind.MaConvertConstraints;
+        }
+
+        /// <summary>
+        /// Modular Avatar components that build menus or merge animator layers. Both target
+        /// structures only VRChat has, so what they add does nothing on Basis unless it is
+        /// rebuilt.
+        /// </summary>
+        public static bool IsModularAvatarMenuOrAnimator(SourceComponentKind kind)
+        {
+            return kind >= SourceComponentKind.MaMenuItem
+                && kind <= SourceComponentKind.MaMergeBlendTree;
+        }
+
+        /// <summary>
+        /// Modular Avatar components that react to a menu item or an object's state. Object
+        /// Toggle is rebuilt as a Vixxy control; the others are reported.
+        /// </summary>
+        public static bool IsModularAvatarReactive(SourceComponentKind kind)
+        {
+            return kind >= SourceComponentKind.MaObjectToggle
+                && kind <= SourceComponentKind.MaMaterialSwap;
+        }
+
+        /// <summary>
+        /// Modular Avatar components tied to VRChat's own systems, which have nothing to act on
+        /// under Basis.
+        /// </summary>
+        public static bool IsModularAvatarVrchatOnly(SourceComponentKind kind)
+        {
+            return kind >= SourceComponentKind.MaGlobalCollider
+                && kind <= SourceComponentKind.MaVRChatSettings;
         }
 
         public static SourceComponentKind Resolve(string guid, long fileId)
