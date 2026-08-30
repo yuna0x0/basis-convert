@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using GatorDragonGames.JigglePhysics;
 using UnityEditor;
 using UnityEngine;
 using yuna0x0.Basis.Convert.Mapping;
@@ -116,26 +117,81 @@ namespace yuna0x0.Basis.Convert.UI
         private void DrawSummary()
         {
             EditorGUILayout.Space();
-            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+
+            int warnings = CountOf(DiagnosticSeverity.Warning);
+            int dropped = CountOf(DiagnosticSeverity.Dropped);
+            int approximated = CountOf(DiagnosticSeverity.Approximated);
+
+            string summary = $"{_plan.PhysBonesFound} PhysBones and {_plan.CollidersFound} "
+                + $"colliders found. {_plan.Rigs.Count} jiggle rigs would be created.";
+
+            EditorGUILayout.HelpBox(summary,
+                _plan.Rigs.Count > 0 ? MessageType.Info : MessageType.Warning);
+
+            if (_plan.Unresolved > 0)
             {
-                EditorGUILayout.LabelField(
-                    $"{_plan.PhysBonesFound} PhysBones, {_plan.CollidersFound} colliders");
-                EditorGUILayout.LabelField($"{_plan.Rigs.Count} jiggle rigs would be created");
+                EditorGUILayout.HelpBox(
+                    $"{_plan.Unresolved} PhysBones could not be tied to a bone and will be "
+                    + "skipped.", MessageType.Warning);
+            }
 
-                if (_plan.Unresolved > 0)
-                {
-                    EditorGUILayout.HelpBox(
-                        $"{_plan.Unresolved} PhysBones could not be tied to a bone and will be "
-                        + "skipped.", MessageType.Warning);
-                }
+            if (warnings > 0)
+            {
+                EditorGUILayout.HelpBox(
+                    $"{warnings} things need attention before you rely on the result.",
+                    MessageType.Warning);
+            }
 
-                if (_result != null)
+            if (dropped + approximated > 0)
+            {
+                EditorGUILayout.HelpBox(
+                    $"{dropped} settings have no Basis equivalent and {approximated} were "
+                    + "approximated. Conversion is not lossless.", MessageType.Info);
+            }
+
+            int existing = CountExistingRigs();
+            if (existing > 0)
+            {
+                EditorGUILayout.HelpBox(
+                    $"This hierarchy already has {existing} jiggle rigs. Converting again adds "
+                    + "more rather than replacing them. Undo the previous conversion first.",
+                    MessageType.Warning);
+            }
+
+            if (_result != null)
+            {
+                EditorGUILayout.HelpBox(
+                    $"Converted: {_result.RigsWritten} written"
+                    + (_result.RigsSkipped > 0 ? $", {_result.RigsSkipped} skipped" : string.Empty)
+                    + ". Use the Basis Avatar component's Test in Editor button to see them "
+                    + "move; plain Play mode does not calibrate the avatar.",
+                    _result.RigsSkipped > 0 ? MessageType.Warning : MessageType.Info);
+            }
+        }
+
+        private int CountOf(DiagnosticSeverity severity)
+        {
+            int count = 0;
+            foreach (DiagnosticGroup group in _groups)
+            {
+                if (group.Severity == severity)
                 {
-                    EditorGUILayout.LabelField(
-                        $"Converted: {_result.RigsWritten} written, {_result.RigsSkipped} skipped",
-                        EditorStyles.boldLabel);
+                    count++;
                 }
             }
+
+            return count;
+        }
+
+        private int CountExistingRigs()
+        {
+            GameObject scanned = _target;
+            if (scanned == null || PrefabUtility.IsPartOfPrefabAsset(scanned))
+            {
+                return 0;
+            }
+
+            return scanned.GetComponentsInChildren<JiggleRig>(true).Length;
         }
 
         private void DrawTuning()
@@ -177,7 +233,7 @@ namespace yuna0x0.Basis.Convert.UI
         private void DrawDiagnostics()
         {
             _showDiagnostics = EditorGUILayout.Foldout(_showDiagnostics,
-                $"What will not come across cleanly ({_groups.Count} kinds)", true);
+                "What will not come across cleanly", true);
             if (!_showDiagnostics)
             {
                 return;
@@ -185,19 +241,58 @@ namespace yuna0x0.Basis.Convert.UI
 
             using (new EditorGUI.IndentLevelScope())
             {
-                foreach (DiagnosticGroup group in _groups)
-                {
-                    if (group.Severity == DiagnosticSeverity.Mapped)
-                    {
-                        continue;
-                    }
+                DrawDiagnosticSection(DiagnosticSeverity.Warning, "Needs attention");
+                DrawDiagnosticSection(DiagnosticSeverity.Dropped, "Not carried over");
+                DrawDiagnosticSection(DiagnosticSeverity.Approximated,
+                    "Approximated, check by eye");
+                DrawDiagnosticSection(DiagnosticSeverity.Mapped, "Mapped directly");
+            }
+        }
 
-                    EditorGUILayout.LabelField($"{Prefix(group.Severity)} {group.Code}",
-                        $"x{group.Count}");
-                    EditorGUILayout.LabelField(group.Example,
-                        EditorStyles.wordWrappedMiniLabel);
+        private void DrawDiagnosticSection(DiagnosticSeverity severity, string heading)
+        {
+            List<DiagnosticGroup> section = _groups.FindAll(group => group.Severity == severity);
+            if (section.Count == 0)
+            {
+                return;
+            }
+
+            EditorGUILayout.Space(2f);
+            EditorGUILayout.LabelField(heading, EditorStyles.miniBoldLabel);
+
+            foreach (DiagnosticGroup group in section)
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    GUILayout.Space(EditorGUI.indentLevel * 15f);
+                    GUILayout.Label(IconFor(severity), GUILayout.Width(20f),
+                        GUILayout.Height(18f));
+                    EditorGUILayout.LabelField($"{group.Code}  x{group.Count}",
+                        EditorStyles.boldLabel);
+                }
+
+                using (new EditorGUI.IndentLevelScope())
+                {
+                    EditorGUILayout.LabelField(group.Example, EditorStyles.wordWrappedMiniLabel);
                 }
             }
+        }
+
+        /// <summary>
+        /// Unity's own console icons, so severity reads the same here as everywhere else in the
+        /// editor. Warnings and losses share the warning icon because both are things the reader
+        /// should notice; the section headings carry the difference between them.
+        /// </summary>
+        private static GUIContent IconFor(DiagnosticSeverity severity)
+        {
+            string icon = severity switch
+            {
+                DiagnosticSeverity.Warning => "console.warnicon.sml",
+                DiagnosticSeverity.Dropped => "console.warnicon.sml",
+                _ => "console.infoicon.sml",
+            };
+
+            return EditorGUIUtility.IconContent(icon);
         }
 
         private void DrawRigs()
@@ -215,7 +310,12 @@ namespace yuna0x0.Basis.Convert.UI
                 {
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        EditorGUILayout.LabelField(rig.Describe(), GUILayout.MinWidth(120f));
+                        if (GUILayout.Button(rig.Describe(), EditorStyles.linkLabel,
+                                GUILayout.MinWidth(120f)))
+                        {
+                            EditorGUIUtility.PingObject(rig.SourceRootBone);
+                        }
+
                         rig.Plan.Preset = (JigglePreset)EditorGUILayout.EnumPopup(
                             rig.Plan.Preset, GUILayout.Width(90f));
                         EditorGUILayout.LabelField(
@@ -354,17 +454,6 @@ namespace yuna0x0.Basis.Convert.UI
             {
                 File.WriteAllText(path, ConversionReport.Write(_plan, _result));
             }
-        }
-
-        private static string Prefix(DiagnosticSeverity severity)
-        {
-            return severity switch
-            {
-                DiagnosticSeverity.Warning => "!",
-                DiagnosticSeverity.Dropped => "-",
-                DiagnosticSeverity.Approximated => "~",
-                _ => "+",
-            };
         }
     }
 }
