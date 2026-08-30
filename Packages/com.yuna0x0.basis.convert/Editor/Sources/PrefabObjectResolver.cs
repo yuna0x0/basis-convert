@@ -6,69 +6,78 @@ using Object = UnityEngine.Object;
 namespace yuna0x0.Basis.Convert.Sources
 {
     /// <summary>
-    /// Ties a YAML document in a prefab file to the live object it describes.
+    /// Ties a file identifier in a prefab's YAML to the live object it refers to.
     /// <para>
     /// Two routes are needed, because a real avatar is built out of nested prefabs. An object
-    /// authored directly in this file is addressable by its own local file identifier. An object
-    /// coming from a nested prefab appears in the file only as a "stripped" back reference, and
-    /// its local file identifier is not registered with the AssetDatabase, so it is instead
-    /// matched through the source object it corresponds to.
+    /// authored directly in the file is addressable by its own local file identifier. An object
+    /// coming from a nested prefab appears in the file only as a "stripped" back reference whose
+    /// identifier the AssetDatabase does not know, and is matched instead through the source
+    /// object it corresponds to, disambiguated by its prefab instance when one nested prefab is
+    /// used more than once.
     /// </para>
     /// <para>
-    /// Measured on a real avatar with 102 VRChat components across 95 stripped GameObjects, the
-    /// stripped route resolved all 95 with no ambiguity while the local identifier route on its
-    /// own reached 1. Neither route matches on names, so duplicate bone names, which avatars
-    /// have constantly, cannot cause a mismatch.
+    /// Measured on an avatar with 102 VRChat components across 95 stripped GameObjects, the
+    /// stripped route resolved all 95 with no ambiguity while local identifiers alone reached 1.
+    /// Neither route matches on names, so the duplicate bone names avatars routinely have cannot
+    /// cause a mismatch.
     /// </para>
     /// </summary>
     public sealed class PrefabObjectResolver
     {
-        private readonly Dictionary<long, GameObject> _byLocalFileId =
-            new Dictionary<long, GameObject>();
+        private readonly Dictionary<long, UnityYamlDocument> _documents =
+            new Dictionary<long, UnityYamlDocument>();
 
-        private readonly Dictionary<SourceIdentity, List<GameObject>> _bySourceIdentity =
-            new Dictionary<SourceIdentity, List<GameObject>>();
+        private readonly Dictionary<long, Object> _byLocalFileId = new Dictionary<long, Object>();
+
+        private readonly Dictionary<SourceIdentity, List<Object>> _bySourceIdentity =
+            new Dictionary<SourceIdentity, List<Object>>();
 
         public GameObject Root { get; private set; }
 
-        /// <summary>Source identities claimed by more than one live object.</summary>
-        public int AmbiguousSourceIdentities { get; private set; }
-
         private readonly struct SourceIdentity
         {
-            public readonly string Guid;
-            public readonly long FileId;
-            public readonly long PrefabInstanceFileId;
+            private readonly string _guid;
+            private readonly long _fileId;
+            private readonly long _prefabInstanceFileId;
 
             public SourceIdentity(string guid, long fileId, long prefabInstanceFileId)
             {
-                Guid = guid;
-                FileId = fileId;
-                PrefabInstanceFileId = prefabInstanceFileId;
+                _guid = guid;
+                _fileId = fileId;
+                _prefabInstanceFileId = prefabInstanceFileId;
             }
 
             public override int GetHashCode()
             {
-                int hash = Guid == null ? 0 : Guid.GetHashCode();
-                hash = (hash * 397) ^ FileId.GetHashCode();
-                return (hash * 397) ^ PrefabInstanceFileId.GetHashCode();
+                int hash = _guid == null ? 0 : _guid.GetHashCode();
+                hash = (hash * 397) ^ _fileId.GetHashCode();
+                return (hash * 397) ^ _prefabInstanceFileId.GetHashCode();
             }
 
             public override bool Equals(object other)
             {
                 return other is SourceIdentity identity
-                    && identity.Guid == Guid
-                    && identity.FileId == FileId
-                    && identity.PrefabInstanceFileId == PrefabInstanceFileId;
+                    && identity._guid == _guid
+                    && identity._fileId == _fileId
+                    && identity._prefabInstanceFileId == _prefabInstanceFileId;
             }
         }
 
-        public static PrefabObjectResolver Create(string assetPath)
+        public static PrefabObjectResolver Create(
+            string assetPath, IReadOnlyList<UnityYamlDocument> documents)
         {
             PrefabObjectResolver resolver = new PrefabObjectResolver
             {
                 Root = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath),
             };
+
+            if (documents != null)
+            {
+                foreach (UnityYamlDocument document in documents)
+                {
+                    resolver._documents[document.FileId] = document;
+                }
+            }
 
             if (resolver.Root == null)
             {
@@ -77,43 +86,53 @@ namespace yuna0x0.Basis.Convert.Sources
 
             foreach (Transform live in resolver.Root.GetComponentsInChildren<Transform>(true))
             {
-                GameObject gameObject = live.gameObject;
+                resolver.Index(live.gameObject);
 
-                if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(
-                        gameObject, out string _, out long localFileId))
+                foreach (Component component in live.GetComponents<Component>())
                 {
-                    resolver._byLocalFileId[localFileId] = gameObject;
-                }
-
-                resolver.IndexBySource(gameObject);
-            }
-
-            foreach (KeyValuePair<SourceIdentity, List<GameObject>> pair in
-                     resolver._bySourceIdentity)
-            {
-                if (pair.Value.Count > 1)
-                {
-                    resolver.AmbiguousSourceIdentities++;
+                    // Null entries are components whose script is missing, which is every
+                    // VRChat component here. They carry no data through the object API, which
+                    // is why the YAML is read instead.
+                    if (component != null)
+                    {
+                        resolver.Index(component);
+                    }
                 }
             }
 
             return resolver;
         }
 
-        /// <summary>
-        /// Resolves the GameObject a document describes. <paramref name="document"/> must be a
-        /// GameObject document; pass the owner document of a component, not the component's own.
-        /// </summary>
-        public bool TryResolveGameObject(UnityYamlDocument document, out GameObject gameObject)
+        public bool TryResolve(long fileId, out Object resolved)
         {
-            gameObject = null;
+            resolved = null;
+            if (fileId == 0L)
+            {
+                return false;
+            }
+
+            if (_byLocalFileId.TryGetValue(fileId, out resolved))
+            {
+                return true;
+            }
+
+            if (!_documents.TryGetValue(fileId, out UnityYamlDocument document))
+            {
+                return false;
+            }
+
+            return TryResolve(document, out resolved);
+        }
+
+        public bool TryResolve(UnityYamlDocument document, out Object resolved)
+        {
+            resolved = null;
             if (document == null)
             {
                 return false;
             }
 
-            if (!document.Stripped
-                && _byLocalFileId.TryGetValue(document.FileId, out gameObject))
+            if (!document.Stripped && _byLocalFileId.TryGetValue(document.FileId, out resolved))
             {
                 return true;
             }
@@ -127,43 +146,93 @@ namespace yuna0x0.Basis.Convert.Sources
 
             document.TryGetTopLevelFileIdReference("m_PrefabInstance", out long instanceFileId);
 
-            SourceIdentity exact = new SourceIdentity(sourceGuid, sourceFileId, instanceFileId);
-            if (_bySourceIdentity.TryGetValue(exact, out List<GameObject> matches)
+            if (_bySourceIdentity.TryGetValue(
+                    new SourceIdentity(sourceGuid, sourceFileId, instanceFileId),
+                    out List<Object> matches)
                 && matches.Count > 0)
             {
-                gameObject = matches[0];
+                resolved = matches[0];
                 return true;
             }
 
-            // The prefab instance handle could not be identified on one side or the other.
-            // Fall back to the source object alone, which is unambiguous unless the same nested
-            // prefab is instantiated more than once.
-            SourceIdentity loose = new SourceIdentity(sourceGuid, sourceFileId, 0L);
-            if (_bySourceIdentity.TryGetValue(loose, out matches) && matches.Count == 1)
+            // The prefab instance could not be identified on one side or the other. The source
+            // object alone is unambiguous unless the same nested prefab is instantiated twice.
+            if (_bySourceIdentity.TryGetValue(
+                    new SourceIdentity(sourceGuid, sourceFileId, 0L), out matches)
+                && matches.Count == 1)
             {
-                gameObject = matches[0];
+                resolved = matches[0];
                 return true;
             }
 
             return false;
         }
 
-        private void IndexBySource(GameObject gameObject)
+        /// <summary>
+        /// Resolves a reference to a Transform. Accepts a Transform or a GameObject identifier,
+        /// since VRChat components reference bones as Transforms while ownership is recorded as
+        /// a GameObject.
+        /// </summary>
+        public bool TryResolveTransform(long fileId, out Transform transform)
         {
-            Object source = PrefabUtility.GetCorrespondingObjectFromSource(gameObject);
-            if (source == null)
+            transform = null;
+            if (!TryResolve(fileId, out Object resolved))
             {
-                return;
+                return false;
             }
 
-            if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(
+            transform = resolved switch
+            {
+                Transform value => value,
+                GameObject value => value.transform,
+                Component value => value.transform,
+                _ => null,
+            };
+
+            return transform != null;
+        }
+
+        public bool TryResolveGameObject(UnityYamlDocument document, out GameObject gameObject)
+        {
+            gameObject = null;
+            if (!TryResolve(document, out Object resolved))
+            {
+                return false;
+            }
+
+            gameObject = resolved switch
+            {
+                GameObject value => value,
+                Component value => value.gameObject,
+                _ => null,
+            };
+
+            return gameObject != null;
+        }
+
+        public bool TryGetDocument(long fileId, out UnityYamlDocument document)
+        {
+            return _documents.TryGetValue(fileId, out document);
+        }
+
+        private void Index(Object live)
+        {
+            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(
+                    live, out string _, out long localFileId))
+            {
+                _byLocalFileId[localFileId] = live;
+            }
+
+            Object source = PrefabUtility.GetCorrespondingObjectFromSource(live);
+            if (source == null
+                || !AssetDatabase.TryGetGUIDAndLocalFileIdentifier(
                     source, out string sourceGuid, out long sourceFileId))
             {
                 return;
             }
 
             long instanceFileId = 0L;
-            Object handle = PrefabUtility.GetPrefabInstanceHandle(gameObject);
+            Object handle = PrefabUtility.GetPrefabInstanceHandle(live);
             if (handle != null
                 && AssetDatabase.TryGetGUIDAndLocalFileIdentifier(
                     handle, out string _, out long handleFileId))
@@ -171,22 +240,22 @@ namespace yuna0x0.Basis.Convert.Sources
                 instanceFileId = handleFileId;
             }
 
-            Add(new SourceIdentity(sourceGuid, sourceFileId, instanceFileId), gameObject);
+            Add(new SourceIdentity(sourceGuid, sourceFileId, instanceFileId), live);
             if (instanceFileId != 0L)
             {
-                Add(new SourceIdentity(sourceGuid, sourceFileId, 0L), gameObject);
+                Add(new SourceIdentity(sourceGuid, sourceFileId, 0L), live);
             }
         }
 
-        private void Add(SourceIdentity identity, GameObject gameObject)
+        private void Add(SourceIdentity identity, Object live)
         {
-            if (!_bySourceIdentity.TryGetValue(identity, out List<GameObject> bucket))
+            if (!_bySourceIdentity.TryGetValue(identity, out List<Object> bucket))
             {
-                bucket = new List<GameObject>();
+                bucket = new List<Object>();
                 _bySourceIdentity[identity] = bucket;
             }
 
-            bucket.Add(gameObject);
+            bucket.Add(live);
         }
     }
 }

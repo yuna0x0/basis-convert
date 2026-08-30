@@ -28,7 +28,7 @@ namespace yuna0x0.Basis.Convert.Tests
             }
 
             List<UnityYamlDocument> documents = UnityYamlScanner.ScanFile(FixturePath);
-            PrefabObjectResolver resolver = PrefabObjectResolver.Create(FixturePath);
+            PrefabObjectResolver resolver = PrefabObjectResolver.Create(FixturePath, documents);
             Assert.That(resolver.Root, Is.Not.Null, "Fixture prefab failed to load.");
 
             Dictionary<long, UnityYamlDocument> gameObjectDocuments =
@@ -87,9 +87,6 @@ namespace yuna0x0.Basis.Convert.Tests
             {
                 TestContext.WriteLine($"{pair.Key}: {pair.Value} resolved");
             }
-
-            TestContext.WriteLine(
-                $"ambiguous source identities: {resolver.AmbiguousSourceIdentities}");
 
             Assert.That(identified, Is.GreaterThan(0), "Nothing was identified in the fixture.");
             Assert.That(failures, Is.Empty,
