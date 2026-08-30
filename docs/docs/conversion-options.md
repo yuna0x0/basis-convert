@@ -1,0 +1,55 @@
+---
+sidebar_position: 4
+---
+
+# Conversion options
+
+A conversion covers the object you pick and its children. What it writes can be narrowed, either
+by kind or one item at a time.
+
+## Basic
+
+Under **What to convert**, each row is a kind of thing a conversion produces, with a count beside
+it:
+
+| Option | What it writes |
+|---|---|
+| Physics | Jiggle physics rigs, from PhysBones and from Dynamic Bone |
+| Constraints | Basis constraints, from VRChat constraints |
+| Avatar descriptor | The `BasisAvatar` component: view position, visemes, blink |
+| Menu toggles | HVR Vixxy controls and their menu items |
+
+A row is greyed out when the avatar has nothing of that kind, so an empty checkbox always means a
+choice rather than an absence.
+
+{/*
+  IMAGE PLACEHOLDER: the What to convert section with its four checkboxes and counts.
+  Save as docs/static/img/options-basic.png, then replace this comment with:
+  ![The basic options](/img/options-basic.png)
+*/}
+
+## Advanced
+
+**Advanced** adds:
+
+- **Colliders**, under Physics. Rigs are still written without them, and their bones pass through
+  the body instead of resting on it.
+- **A checkbox per prefab**, so a prop parented onto an avatar is not converted with it. Prefabs
+  that hold nothing convertible are summarised rather than listed.
+- **A checkbox per rig, constraint and toggle**, each with what it affects.
+- **The tuning weights** described in [Physics](what-converts/physics.md).
+
+{/*
+  IMAGE PLACEHOLDER: the advanced view with the prefab list and per-item checkboxes expanded.
+  Save as docs/static/img/options-advanced.png, then replace this comment with:
+  ![The advanced options](/img/options-advanced.png)
+*/}
+
+## What narrowing does not change
+
+The scan always reads the whole avatar, so the counts and the detected source kind do not move
+with what is ticked. What changes is what gets written, and what is reported: diagnostics follow
+the selection, and whatever you left out is named as left out in the report.
+
+Choices about kinds are remembered between sessions. Choices about individual items reset when
+the avatar is rescanned.

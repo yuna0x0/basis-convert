@@ -1,0 +1,84 @@
+---
+sidebar_position: 2
+---
+
+# Installing
+
+Basis Convert installs into a Basis project as a Unity package. It builds against the Basis SDK,
+Jiggle Physics and HVR Basis Comms, all of which ship with the Basis framework, so a Basis
+project already has everything it needs.
+
+Four ways to install it, in the order most people will want them.
+
+## ALCOM
+
+The package is published to a VPM listing, and [ALCOM](https://vrc-get.anatawa12.com/en/alcom/)
+is the client to use for it: it is an open-source VPM client that works with any Unity project.
+
+1. Add the repository `https://vpm.yuna0x0.com/index.json` under Packages, using
+   **Add Repository**.
+2. Open your Basis project under Manage Project.
+3. Add **Basis Convert** and apply.
+
+Updates appear in the same place, as a version to move to.
+
+The [VPM CLI](https://vcc.docs.vrchat.com/vpm/cli/) works too, if you prefer a terminal:
+
+```sh
+vpm add repo https://vpm.yuna0x0.com/index.json
+vpm add package com.yuna0x0.basis.convert
+```
+
+{/*
+  IMAGE PLACEHOLDER: ALCOM with the listing added and Basis Convert ready to install.
+  Save as docs/static/img/install-alcom.png, then replace this comment with:
+  ![Installing through ALCOM](/img/install-alcom.png)
+*/}
+
+## OpenUPM
+
+For projects managed with plain Unity Package Manager rather than a VPM client.
+
+With the [OpenUPM CLI](https://openupm.com/docs/getting-started-cli.html):
+
+```sh
+openupm add com.yuna0x0.basis.convert
+```
+
+Or add the scoped registry by hand, in **Edit > Project Settings > Package Manager**:
+
+- Name: `OpenUPM`
+- URL: `https://package.openupm.com`
+- Scope: `com.yuna0x0`
+
+Then add `com.yuna0x0.basis.convert` in **Window > Package Manager > + > Install package by
+name**.
+
+## Git URL
+
+No extra tooling, and useful for trying an unreleased version.
+
+**Window > Package Manager > + > Add package from git URL**:
+
+```
+https://github.com/yuna0x0/basis-convert.git?path=/Packages/com.yuna0x0.basis.convert
+```
+
+Add `#v0.1.0` to the end to pin a version. Packages added this way are updated by removing and
+re-adding them, or by changing the version at the end of the URL.
+
+{/*
+  IMAGE PLACEHOLDER: Unity's Package Manager with the git URL field filled in.
+  Save as docs/static/img/install-package-manager.png, then replace this comment with:
+  ![Adding the package by git URL](/img/install-package-manager.png)
+*/}
+
+## Manual
+
+Every release also has a `.unitypackage` attached, for projects that do not use a package manager
+at all.
+
+Download it from the
+[releases page](https://github.com/yuna0x0/basis-convert/releases) and drag it into your project.
+Installed this way the package lives under `Assets`, and updating means deleting the old folder
+first.

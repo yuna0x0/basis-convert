@@ -1,0 +1,42 @@
+---
+sidebar_position: 7
+---
+
+# Limitations
+
+Worth reading before you rely on a conversion. Everything here is reported by the tool as well;
+this is the same information in one place.
+
+## Not converted at all
+
+- **VRChat contacts.** Basis has no contact system, so anything driven by touch is dropped.
+- **Puppets**, and any menu control other than a toggle.
+- **Animation that plays over time.** Toggles that animate rather than switch are reported.
+  Looping ambient motion belongs in `BasisAuthoredMotion`, which is not written yet.
+- **Expression parameters as a system.** Vixxy controls hold their own state, so there is no
+  parameter list to recreate.
+- **Custom animation layers**, gestures, sitting and IK poses.
+
+## Converted with a caveat
+
+- **Two physics settings are fits**, not conversions. See [Physics](what-converts/physics.md).
+- **Wide angle limits are dropped** rather than clamped to something tighter.
+- **Material properties are applied through a property block**, which covers every material on a
+  renderer. A renderer with more than one material is reported.
+- **Modular Avatar toggles** are rebuilt only when a single parameter steers their layer.
+
+## Where the data comes from
+
+Component data is read from prefab files, because in a Basis project the VRChat components are
+missing scripts and only the file still holds their values. Two things follow from that:
+
+- **The avatar has to still be linked to its prefab.** If the prefab was unpacked, there is
+  nothing left to read.
+- **A change made to a prefab instance in the scene, rather than to the prefab, is not seen.**
+  Collider assignments are commonly made that way, and show up as an unresolved collider
+  reference in the report.
+
+## Things a conversion does not touch
+
+Materials and shaders, meshes, the avatar's animator, and anything Basis fills in itself when the
+`BasisAvatar` inspector is first opened.

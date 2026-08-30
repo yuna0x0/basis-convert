@@ -1,0 +1,50 @@
+---
+sidebar_position: 1
+---
+
+# Physics
+
+VRChat PhysBones and legacy Dynamic Bone both become
+[Jiggle Physics](https://github.com/naelstrof/UnityJigglePhysics) rigs, which is what Basis ships
+for secondary motion. Dynamic Bone is an ordinary Unity asset, so an avatar using it converts
+whether or not VRChat was ever involved.
+
+One rig is written per source component. Jiggle physics walks into every child of the bone it is
+rooted at, so a PhysBone covering a whole head of hair stays one rig rather than becoming one per
+strand.
+
+## What carries across exactly
+
+- The root bone, the transforms the source ignored, and grab settings.
+- Per-bone falloff curves. Both VRChat and jiggle physics evaluate them over the normalised
+  distance from the root, so a curve maps onto a curve rather than being flattened to a number.
+- Gravity, radius, stretch, and how immobile the root is.
+- Colliders: sphere, capsule and plane, with the same three shapes on both sides.
+
+## What is fitted
+
+Two settings do not mean the same thing on both sides and are fits rather than conversions:
+
+- **Stiffness**, from VRChat's pull and stiffness.
+- **Drag**, from VRChat's spring.
+
+Both are exposed under **Advanced** in the window, as weights you can adjust before rescanning.
+Everything else is a direct mapping, so these are the ones to reach for if the result feels wrong.
+
+Values the source does not determine are taken from the jiggle physics package's own presets, so
+they start at values its author tuned. The preset per rig is guessed from the bone's name and can
+be changed in the window.
+
+## What does not carry across
+
+- Angle limits wider than jiggle physics can express. No limit is written rather than a tighter
+  one, since a bone that is suddenly more constrained is worse than one that is less.
+- Polar limits, which are approximated to a single angle.
+- Gravity falloff, max squish, endpoint positions, and per-axis limit rotations.
+- `Is Animated`, and anything driven by a PhysBone parameter.
+- A collider inverted to keep bones inside it.
+
+## Checking the result
+
+Press **Test in Editor** on the `BasisAvatar` component. Jiggle physics only runs on a calibrated
+avatar, so plain Play mode shows nothing moving.

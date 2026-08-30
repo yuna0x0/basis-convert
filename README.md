@@ -1,55 +1,37 @@
-# basis-convert
+# Basis Convert
 
-Editor tooling for bringing content from other social VR platforms into
-[Basis](https://basisvr.org/).
+Bring an avatar you already own into [Basis](https://basisvr.org/), with its physics, constraints
+and menus intact.
 
-The package is in [`Packages/com.yuna0x0.basis.convert`](Packages/com.yuna0x0.basis.convert).
-Read [its README](Packages/com.yuna0x0.basis.convert/README.md) to install and use it; this file
-covers the repository itself.
+Import the avatar into a Basis project, pick it in the scene, and convert. VRChat PhysBones and
+legacy Dynamic Bone become Basis jiggle physics, VRChat constraints become Basis constraints, the
+avatar descriptor becomes a `BasisAvatar`, and menu toggles are rebuilt as HVR Vixxy controls.
+Clothing and accessories convert with the avatar they are worn on.
 
-## Layout
+Nothing is written until you press Convert, one undo reverts the lot, and anything that cannot
+come across cleanly is listed rather than dropped quietly.
+
+Documentation: **https://yuna0x0.github.io/basis-convert/**
+
+## Installing
+
+Unity Package Manager, `Add package from git URL`:
 
 ```
-Packages/com.yuna0x0.basis.convert/   the package
-  Editor/Sources/                     read foreign formats into the intermediate model
-  Editor/Model/                       the intermediate model, plain data
-  Editor/Mapping/                     model to Basis component parameters
-  Tests/Editor/
-agent/                                design notes, decisions, research, worklog
+https://github.com/yuna0x0/basis-convert.git?path=/Packages/com.yuna0x0.basis.convert
 ```
 
-Reading, mapping and writing are deliberately separate stages. A new source platform is a new
-reader, a new content type is a new mapper and writer, and neither disturbs the other.
-
-## Status
-
-Early: names, APIs and the package id are all still subject to change.
-
-Working, from **Tools > Basis Convert > Convert Avatar**:
-
-- VRChat PhysBones and their colliders, to Basis Jiggle Physics
-- Legacy Dynamic Bone components and their colliders, to the same
-- All six VRChat constraint types, to their Basis equivalents
-- The VRChat avatar descriptor, to a `BasisAvatar` component
-- A check of the humanoid rig against what Basis's full-body IK needs
-
-Clothing and accessories are prefabs of their own, so a conversion reads every prefab the
-hierarchy is built from rather than the avatar's alone.
-
-Each of those can be switched off, and under Advanced, so can any single rig, constraint or
-toggle.
-
-Nothing is written until you confirm, one undo reverts a whole conversion, and converting again
-replaces what it wrote last time rather than stacking a second set.
+The package needs a Basis project. See the [documentation](https://yuna0x0.github.io/basis-convert/) for
+the other ways to install it.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). [`agent/`](agent/README.md) holds the design notes and
-the reasoning behind past decisions; read it before proposing a change in direction.
+Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers the development
+setup, and [`agent/`](agent/README.md) holds the design notes and past decisions.
 
 ## License
 
-MIT, see [LICENSE](Packages/com.yuna0x0.basis.convert/LICENSE).
+MIT, see [LICENSE](LICENSE).
 
 Basis, BasisVR and Basis Framework are trademarks of the Basis Project. This is an independent
 tool, not affiliated with or endorsed by them.

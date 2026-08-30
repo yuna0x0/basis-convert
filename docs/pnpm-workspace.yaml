@@ -1,0 +1,4 @@
+# pnpm 11 asks whether each dependency may run install scripts. core-js's only prints a
+# funding message, so it is denied. Written by `pnpm approve-builds '!core-js'`.
+allowBuilds:
+  core-js: false

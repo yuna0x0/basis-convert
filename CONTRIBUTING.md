@@ -66,3 +66,17 @@ does. Describe what changed and why; skip tool or process detail.
 
 Include the source component's settings, what the converted result looked like, and what you
 expected. If the source avatar is not yours to share, the settings alone are usually enough.
+
+## Documentation
+
+The documentation site is a Docusaurus project in `docs/`, run with pnpm:
+
+```sh
+cd docs
+pnpm install
+pnpm start
+```
+
+Pages carry `IMAGE PLACEHOLDER` comments where a screenshot belongs, and
+`docs/static/img/PLACEHOLDERS.md` lists what each one should show. Only English is written today;
+`docs/README.md` covers adding a language.
