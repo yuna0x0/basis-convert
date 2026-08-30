@@ -3,9 +3,13 @@
 Bring an avatar you already own into [Basis](https://basisvr.org/), with its physics, constraints
 and menus intact.
 
-Import the avatar into a Basis project, pick it in the scene, and convert. VRChat PhysBones and
-legacy Dynamic Bone become Basis jiggle physics, VRChat constraints become Basis constraints, the
-avatar descriptor becomes a `BasisAvatar`, and menu toggles are rebuilt as HVR Vixxy controls.
+Import the avatar into a Basis project, pick it in the scene, and convert:
+
+- **VRChat PhysBones and legacy Dynamic Bone** become Basis jiggle physics
+- **VRChat constraints** become their Basis equivalents
+- **The avatar descriptor** becomes a `BasisAvatar` component
+- **Menu toggles** become HVR Vixxy controls
+
 Clothing and accessories convert with the avatar they are worn on.
 
 Nothing is written until you press Convert, one undo reverts the lot, and anything that cannot

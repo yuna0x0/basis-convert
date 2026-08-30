@@ -7,9 +7,13 @@ sidebar_position: 1
 Basis Convert brings an avatar you already own into [Basis](https://basisvr.org/), with its
 physics, constraints and menus intact.
 
-You import the avatar into a Basis project, pick it in the scene, and convert. PhysBones and
-Dynamic Bone become Basis jiggle physics, VRChat constraints become their Basis equivalents, the
-avatar descriptor becomes a `BasisAvatar`, and menu toggles are rebuilt as HVR Vixxy controls.
+You import the avatar into a Basis project, pick it in the scene, and convert:
+
+- **VRChat PhysBones and legacy Dynamic Bone** become Basis jiggle physics
+- **VRChat constraints** become their Basis equivalents
+- **The avatar descriptor** becomes a `BasisAvatar` component
+- **Menu toggles** become HVR Vixxy controls
+
 Clothing and accessories convert along with the avatar they are worn on.
 
 Conversion is not lossless, and the tool does not pretend otherwise. Roughly a third of what a
