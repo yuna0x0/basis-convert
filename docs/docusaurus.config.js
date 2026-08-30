@@ -1,6 +1,10 @@
 // @ts-check
 const {themes} = require('prism-react-renderer');
 
+// The version the docs quote comes from the package itself, so a release never leaves a stale
+// number behind. Pages write {{VERSION}} and the preprocessor below fills it in.
+const packageVersion = require('../Packages/com.yuna0x0.basis.convert/package.json').version;
+
 const organizationName = 'yuna0x0';
 const projectName = 'watari-basis';
 const defaultLocale = 'en';
@@ -22,6 +26,7 @@ const config = {
 
   onBrokenLinks: 'throw',
   markdown: {
+    preprocessor: ({fileContent}) => fileContent.replace(/\{\{VERSION\}\}/g, packageVersion),
     hooks: {
       onBrokenMarkdownLinks: 'warn',
     },

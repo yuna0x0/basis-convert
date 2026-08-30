@@ -58,7 +58,10 @@ Or add the scoped registry by hand, in **Edit > Project Settings > Package Manag
 
 - Name: `OpenUPM`
 - URL: `https://package.openupm.com`
-- Scope: `com.yuna0x0`
+- Scope: `com.yuna0x0.basis.convert`
+
+Scoping to the package rather than to `com.yuna0x0` keeps Unity resolving only this package from
+OpenUPM.
 
 Then add `com.yuna0x0.basis.convert` in **Window > Package Manager > + > Install package by
 name**.
@@ -73,7 +76,7 @@ No extra tooling, and useful for trying an unreleased version.
 https://github.com/yuna0x0/watari-basis.git?path=/Packages/com.yuna0x0.basis.convert
 ```
 
-Add `#v0.1.0` to the end to pin a version. Packages added this way are updated by removing and
+Add `#v{{VERSION}}` to the end to pin a version. Packages added this way are updated by removing and
 re-adding them, or by changing the version at the end of the URL.
 
 {/*
