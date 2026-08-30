@@ -33,6 +33,9 @@ Working, from **Tools > Basis Convert > Convert Avatar**:
 - The VRChat avatar descriptor, to a `BasisAvatar` component
 - A check of the humanoid rig against what Basis's full-body IK needs
 
+Clothing and accessories are prefabs of their own, so a conversion reads every prefab the
+hierarchy is built from rather than the avatar's alone.
+
 Each of those can be switched off, and under Advanced, so can any single rig, constraint or
 toggle.
 

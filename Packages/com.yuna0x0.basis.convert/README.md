@@ -24,6 +24,9 @@ result editable.
   Vixxy cannot hold are reported, not half built.
 - **Rig check.** Reports the humanoid rig against what Basis's full-body IK needs, and offers to
   clear the Jaw mapping the Basis setup guide asks to be removed.
+- **Whole avatars, not single prefabs.** Clothing, hair and accessories are prefabs of their own
+  with their own physics. A conversion reads every prefab the hierarchy is built from and places
+  what it finds where that prefab sits, so an assembled avatar converts in one pass.
 - **Convert as much or as little as you want.** Checkboxes for each of those kinds, and, under
   Advanced, one per rig, constraint and toggle. The scan always reads the whole avatar, so the
   counts and the diagnostics do not change with what is ticked; what you leave out is reported
@@ -37,7 +40,8 @@ stages.
 
 1. Import your avatar into a Basis project. Its VRChat components will show as missing scripts,
    which is expected and is what this reads.
-2. Drag the avatar into a scene.
+2. Drag the avatar into a scene, and add the clothing and accessories you want on it. They can
+   be converted together.
 3. Open **Tools > Basis Convert > Convert Avatar**, or right-click the avatar in the
    hierarchy and pick the same entry.
 4. Read the summary, and tick off anything you do not want converted. Nothing is written until

@@ -179,6 +179,12 @@ namespace yuna0x0.Basis.Convert.UI
             EditorGUILayout.LabelField(" ", string.Join(", ", _plan.Profile.Signals()),
                 EditorStyles.miniLabel);
 
+            if (_plan.Sources.Count > 1)
+            {
+                EditorGUILayout.LabelField("Read from",
+                    $"{_plan.Sources.Count} prefabs: {SourceNames()}", EditorStyles.miniLabel);
+            }
+
             if (_plan.Profile.LooksInconsistent)
             {
                 EditorGUILayout.HelpBox(
@@ -227,6 +233,17 @@ namespace yuna0x0.Basis.Convert.UI
                     + "approximated. Conversion is not lossless.", MessageType.Info);
             }
 
+        }
+
+        private string SourceNames()
+        {
+            List<string> names = new List<string>();
+            foreach (ConversionSource source in _plan.Sources)
+            {
+                names.Add(source.Name);
+            }
+
+            return string.Join(", ", names);
         }
 
         private int CountOf(DiagnosticSeverity severity)
@@ -871,14 +888,22 @@ namespace yuna0x0.Basis.Convert.UI
                 return;
             }
 
-            _sourceAssetPath = ResolveSourceAssetPath(_target, out _blocker);
-            if (string.IsNullOrEmpty(_sourceAssetPath))
+            // The whole hierarchy, not just the avatar's own prefab: clothing and accessories
+            // are prefabs of their own and carry their own physics.
+            _plan = AvatarConversionPlanner.Plan(_target, _profile);
+            _plan.Options = _options;
+            _sourceAssetPath = _plan.SourceAssetPath;
+
+            if (_plan.SourceRoot == null)
             {
+                _plan = null;
+                _blocker = "This object is not linked to a prefab, so there is no file to read "
+                    + "the source data from. That usually means the prefab was unpacked. "
+                    + "Re-import the avatar and convert it before unpacking, or drag the "
+                    + "original prefab in here instead.";
                 return;
             }
 
-            _plan = AvatarConversionPlanner.Plan(_sourceAssetPath, _profile);
-            _plan.Options = _options;
             _groups = ConversionReport.Group(_plan);
 
             if (_plan.TotalPlanned == 0)
@@ -889,35 +914,6 @@ namespace yuna0x0.Basis.Convert.UI
                     + "being involved. If the components were already stripped, there is nothing "
                     + "left to read.";
             }
-        }
-
-        /// <summary>
-        /// The prefab whose file holds the source data. The components themselves are missing
-        /// scripts, so the data has to come from the asset on disk rather than from the objects.
-        /// </summary>
-        private static string ResolveSourceAssetPath(GameObject target, out string blocker)
-        {
-            blocker = null;
-
-            if (PrefabUtility.IsPartOfPrefabAsset(target))
-            {
-                return AssetDatabase.GetAssetPath(target);
-            }
-
-            if (PrefabUtility.IsPartOfPrefabInstance(target))
-            {
-                string path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(target);
-                if (!string.IsNullOrEmpty(path))
-                {
-                    return path;
-                }
-            }
-
-            blocker = "This object is not linked to a prefab, so there is no file to read the "
-                + "source data from. That usually means the prefab was unpacked. Re-import the "
-                + "avatar and convert it before unpacking, or drag the original prefab in here "
-                + "instead.";
-            return null;
         }
 
         private void Convert()

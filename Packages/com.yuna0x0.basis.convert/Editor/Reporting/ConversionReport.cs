@@ -72,6 +72,16 @@ namespace yuna0x0.Basis.Convert.Reporting
             text.AppendLine("## Summary");
             text.AppendLine();
             text.AppendLine($"- Detected: {plan.Profile.Describe()}");
+
+            if (plan.Sources.Count > 1)
+            {
+                text.AppendLine($"- Read from {plan.Sources.Count} prefabs:");
+                foreach (ConversionSource source in plan.Sources)
+                {
+                    text.AppendLine($"  - {source.Name} ({source.AssetPath})");
+                }
+            }
+
             text.AppendLine($"- PhysBones found: {plan.PhysBonesFound}");
             text.AppendLine($"- Dynamic Bones found: {plan.DynamicBonesFound}");
             text.AppendLine($"- Colliders found: {plan.CollidersFound}");

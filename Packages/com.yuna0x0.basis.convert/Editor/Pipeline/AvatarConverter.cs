@@ -52,13 +52,15 @@ namespace yuna0x0.Basis.Convert.Pipeline
             Undo.SetCurrentGroupName(undoName);
             int group = Undo.GetCurrentGroup();
 
-            Transform source = plan.SourceRoot.transform;
             Transform target = targetRoot.transform;
+            Dictionary<ConversionSource, Transform> roots = LocateSources(plan, target, result);
 
             foreach (PlannedJiggleRig planned in plan.SelectedRigs())
             {
-                if (!TryTranslate(source, target, planned.SourceHost, out Transform host)
-                    || !TryTranslate(source, target, planned.SourceRootBone, out Transform root))
+                if (!TryTranslate(plan, roots, target, planned.Source, planned.SourceHost,
+                        out Transform host)
+                    || !TryTranslate(plan, roots, target, planned.Source, planned.SourceRootBone,
+                        out Transform root))
                 {
                     result.RigsSkipped++;
                     result.Diagnostics.Add(DiagnosticSeverity.Warning, "apply.unresolved",
@@ -76,7 +78,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 foreach (Transform excluded in planned.SourceExcludedTransforms)
                 {
-                    if (TryTranslate(source, target, excluded, out Transform translated))
+                    if (TryTranslate(plan, roots, target, planned.Source, excluded,
+                            out Transform translated))
                     {
                         resolved.ExcludedTransforms.Add(translated);
                     }
@@ -86,8 +89,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 {
                     foreach (PlannedJiggleCollider collider in planned.Colliders)
                     {
-                        if (!TryTranslate(source, target, collider.SourceTransform,
-                                out Transform translated))
+                        if (!TryTranslate(plan, roots, target, collider.Source ?? planned.Source,
+                                collider.SourceTransform, out Transform translated))
                         {
                             continue;
                         }
@@ -106,7 +109,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (PlannedConstraint planned in plan.SelectedConstraints())
             {
-                if (!TryTranslate(source, target, planned.SourceHost, out Transform host))
+                if (!TryTranslate(plan, roots, target, planned.Source, planned.SourceHost,
+                        out Transform host))
                 {
                     result.ConstraintsSkipped++;
                     result.Diagnostics.Add(DiagnosticSeverity.Warning, "apply.unresolved",
@@ -124,12 +128,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 foreach (Transform sourceTransform in planned.SourceTransforms)
                 {
                     resolved.Sources.Add(
-                        TryTranslate(source, target, sourceTransform, out Transform translated)
+                        TryTranslate(plan, roots, target, planned.Source, sourceTransform,
+                            out Transform translated)
                             ? translated
                             : null);
                 }
 
-                if (TryTranslate(source, target, planned.SourceWorldUpObject,
+                if (TryTranslate(plan, roots, target, planned.Source, planned.SourceWorldUpObject,
                         out Transform worldUp))
                 {
                     resolved.WorldUpObject = worldUp;
@@ -139,23 +144,24 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 result.ConstraintsWritten++;
             }
 
-            WriteDescriptor(plan, source, target, undoName, result);
-            WriteVixxyControls(plan, source, target, undoName, result);
+            WriteDescriptor(plan, roots, target, undoName, result);
+            WriteVixxyControls(plan, roots, target, undoName, result);
 
             Undo.CollapseUndoOperations(group);
             return result;
         }
 
         private static void WriteDescriptor(
-            AvatarConversionPlan plan, Transform source, Transform target, string undoName,
-            ConversionResult result)
+            AvatarConversionPlan plan, Dictionary<ConversionSource, Transform> roots,
+            Transform target, string undoName, ConversionResult result)
         {
             if (!plan.DescriptorSelected)
             {
                 return;
             }
 
-            if (!TryTranslate(source, target, plan.Descriptor.SourceRoot, out Transform root))
+            if (!TryTranslate(plan, roots, target, plan.Descriptor.Source,
+                    plan.Descriptor.SourceRoot, out Transform root))
             {
                 result.Diagnostics.Add(DiagnosticSeverity.Warning, "apply.descriptorUnresolved",
                     "The avatar descriptor has no counterpart in the target hierarchy and was "
@@ -167,8 +173,10 @@ namespace yuna0x0.Basis.Convert.Pipeline
             {
                 Plan = plan.Descriptor.Plan,
                 Root = root.gameObject,
-                VisemeMesh = TranslateRenderer(source, target, plan.Descriptor.SourceVisemeMesh),
-                BlinkMesh = TranslateRenderer(source, target, plan.Descriptor.SourceBlinkMesh),
+                VisemeMesh = TranslateRenderer(plan, roots, target, plan.Descriptor.Source,
+                    plan.Descriptor.SourceVisemeMesh),
+                BlinkMesh = TranslateRenderer(plan, roots, target, plan.Descriptor.Source,
+                    plan.Descriptor.SourceBlinkMesh),
             };
 
             BasisAvatarWriter.Write(resolved, undoName);
@@ -176,8 +184,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
         }
 
         private static void WriteVixxyControls(
-            AvatarConversionPlan plan, Transform source, Transform target, string undoName,
-            ConversionResult result)
+            AvatarConversionPlan plan, Dictionary<ConversionSource, Transform> roots,
+            Transform target, string undoName, ConversionResult result)
         {
             foreach (PlannedVixxyControl planned in plan.SelectedVixxyControls())
             {
@@ -190,7 +198,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 bool ok = true;
                 foreach (Transform sourceTarget in planned.SourceTargets)
                 {
-                    if (!TryTranslate(source, target, sourceTarget, out Transform translated))
+                    if (!TryTranslate(plan, roots, target, planned.Source, sourceTarget,
+                            out Transform translated))
                     {
                         ok = false;
                         break;
@@ -201,7 +210,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 foreach (Renderer renderer in planned.SourceRenderers)
                 {
-                    Renderer translated = TranslateRenderer(source, target, renderer);
+                    Renderer translated =
+                        TranslateRenderer(plan, roots, target, planned.Source, renderer);
                     if (translated == null)
                     {
                         ok = false;
@@ -226,7 +236,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         private static GameObject targetRootOf(Transform target) => target.gameObject;
 
-        private static T TranslateRenderer<T>(Transform source, Transform target, T renderer)
+        private static T TranslateRenderer<T>(
+            AvatarConversionPlan plan, Dictionary<ConversionSource, Transform> roots,
+            Transform target, ConversionSource source, T renderer)
             where T : Renderer
         {
             if (renderer == null)
@@ -234,7 +246,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 return null;
             }
 
-            return TryTranslate(source, target, renderer.transform, out Transform translated)
+            return TryTranslate(plan, roots, target, source, renderer.transform,
+                out Transform translated)
                 ? translated.GetComponent<T>()
                 : null;
         }
@@ -260,13 +273,15 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 return found;
             }
 
-            Transform source = plan.SourceRoot.transform;
             Transform target = targetRoot.transform;
+            Dictionary<ConversionSource, Transform> roots =
+                LocateSources(plan, target, new ConversionResult());
             HashSet<Transform> seen = new HashSet<Transform>();
 
             foreach (PlannedJiggleRig planned in plan.SelectedRigs())
             {
-                if (TryTranslate(source, target, planned.SourceHost, out Transform host)
+                if (TryTranslate(plan, roots, target, planned.Source, planned.SourceHost,
+                        out Transform host)
                     && seen.Add(host))
                 {
                     found.AddRange(host.GetComponents<JiggleRig>());
@@ -276,7 +291,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
             seen.Clear();
             foreach (PlannedConstraint planned in plan.SelectedConstraints())
             {
-                if (TryTranslate(source, target, planned.SourceHost, out Transform host)
+                if (TryTranslate(plan, roots, target, planned.Source, planned.SourceHost,
+                        out Transform host)
                     && seen.Add(host))
                 {
                     found.AddRange(host.GetComponents<BasisConstraintBase>());
@@ -308,14 +324,82 @@ namespace yuna0x0.Basis.Convert.Pipeline
             return removed;
         }
 
+        /// <summary>
+        /// Where each prefab the plan was read from sits in the hierarchy being converted.
+        /// <para>
+        /// The avatar's own prefab is the target root. Clothing and accessories sit somewhere
+        /// under it, at the path they were found at, and their transforms are in their own
+        /// prefab's space, so each needs its own root to translate against.
+        /// </para>
+        /// </summary>
+        private static Dictionary<ConversionSource, Transform> LocateSources(
+            AvatarConversionPlan plan, Transform target, ConversionResult result)
+        {
+            Dictionary<ConversionSource, Transform> roots =
+                new Dictionary<ConversionSource, Transform>();
+
+            foreach (ConversionSource source in plan.Sources)
+            {
+                if (source.IsPrimary)
+                {
+                    roots[source] = target;
+                    continue;
+                }
+
+                if (TransformIndexPath.TryResolve(target, source.PathInHierarchy,
+                        out Transform at))
+                {
+                    roots[source] = at;
+                    continue;
+                }
+
+                result.Diagnostics.Add(DiagnosticSeverity.Warning, "apply.sourceUnresolved",
+                    $"{source.Name} is not where it was when this was scanned, so nothing read "
+                    + "from it was written. Rescan and convert again.");
+            }
+
+            return roots;
+        }
+
+        /// <summary>
+        /// Locates a transform of one source prefab in the hierarchy being converted.
+        /// <para>
+        /// An item with no source recorded belongs to the avatar itself, which is what a plan
+        /// built by hand and everything resolved against the avatar root produces.
+        /// </para>
+        /// </summary>
         private static bool TryTranslate(
-            Transform sourceRoot, Transform targetRoot, Transform sourceTransform,
+            AvatarConversionPlan plan, Dictionary<ConversionSource, Transform> roots,
+            Transform target, ConversionSource source, Transform sourceTransform,
             out Transform translated)
         {
             translated = null;
             if (sourceTransform == null)
             {
                 return false;
+            }
+
+            Transform sourceRoot;
+            Transform targetRoot;
+
+            if (source == null)
+            {
+                if (plan.SourceRoot == null)
+                {
+                    return false;
+                }
+
+                sourceRoot = plan.SourceRoot.transform;
+                targetRoot = target;
+            }
+            else
+            {
+                if (!roots.TryGetValue(source, out targetRoot) || source.Root == null)
+                {
+                    return false;
+                }
+
+                sourceRoot = source.Root.transform;
             }
 
             if (sourceRoot == targetRoot)

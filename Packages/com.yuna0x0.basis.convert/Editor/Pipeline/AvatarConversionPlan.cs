@@ -13,6 +13,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>Whether the conversion will write this one. Cleared from the window.</summary>
         public bool Include = true;
 
+        /// <summary>The prefab this was read from, which its transforms belong to.</summary>
+        public ConversionSource Source;
+
         /// <summary>Bone the rig is rooted at, in the source hierarchy.</summary>
         public Transform SourceRootBone;
 
@@ -35,6 +38,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
     {
         public JiggleColliderPlan Plan;
         public Transform SourceTransform;
+
+        /// <summary>The prefab this was read from, which its transform belongs to.</summary>
+        public ConversionSource Source;
     }
 
     /// <summary>One Vixxy control the conversion intends to produce.</summary>
@@ -44,6 +50,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         /// <summary>Whether the conversion will write this one. Cleared from the window.</summary>
         public bool Include = true;
+
+        /// <summary>The prefab this was read from, which its transforms belong to.</summary>
+        public ConversionSource Source;
 
         public List<Transform> SourceTargets = new List<Transform>();
 
@@ -62,8 +71,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>Whether the conversion will write this one. Cleared from the window.</summary>
         public bool Include = true;
 
+        /// <summary>The prefab this was read from, which its transforms belong to.</summary>
+        public ConversionSource Source;
+
         /// <summary>Kept so the expression assets it references can be followed.</summary>
-        public VrcAvatarDescriptorData Source;
+        public VrcAvatarDescriptorData SourceData;
         public Transform SourceRoot;
         public SkinnedMeshRenderer SourceVisemeMesh;
         public SkinnedMeshRenderer SourceBlinkMesh;
@@ -76,6 +88,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         /// <summary>Whether the conversion will write this one. Cleared from the window.</summary>
         public bool Include = true;
+
+        /// <summary>The prefab this was read from, which its transforms belong to.</summary>
+        public ConversionSource Source;
 
         /// <summary>
         /// The transform the component will sit on, which is the transform the constraint drives.
@@ -101,8 +116,17 @@ namespace yuna0x0.Basis.Convert.Pipeline
     {
         public string SourceAssetPath;
 
-        /// <summary>Root of the hierarchy the plan was read from.</summary>
+        /// <summary>
+        /// Root of the hierarchy the plan was read from, which is the avatar's own prefab.
+        /// Clothing and accessories are prefabs of their own; see <see cref="Sources"/>.
+        /// </summary>
         public GameObject SourceRoot;
+
+        /// <summary>
+        /// Every prefab this plan was read from, the avatar's own first. Each planned item
+        /// records which one it came from, because its transforms are in that prefab's space.
+        /// </summary>
+        public List<ConversionSource> Sources = new List<ConversionSource>();
 
         /// <summary>
         /// Which parts of this plan a conversion will write. Everything, unless the window

@@ -104,9 +104,16 @@ the original. Everything else maps directly.
   still reads the whole avatar, so the counts and the detected source kind do not change with
   what is ticked. Diagnostics follow the selection, and what was left out is stated as left out
   in the window and in the report. See [decision 0008](../decisions/0008-conversion-options.md).
-- **Modular Avatar.** Works on Basis but has no Basis-specific integration. `MergeArmature` and
-  `BoneProxy` mean the authored hierarchy is not the built hierarchy, which is the strongest
-  argument for eventually offering a build-time path alongside the destructive one.
+- **Several source prefabs. Done.** A conversion reads every prefab the hierarchy is built from,
+  not just the avatar's own, because clothing, hair and accessories are prefabs of their own
+  carrying their own physics. See [decision 0009](../decisions/0009-several-source-prefabs.md).
+- **Modular Avatar.** Works on Basis for the hierarchy: `MergeArmature` and `BoneProxy` do their
+  job there. What cannot work is the half that targets VRChat: `MergeAnimator` merges into
+  animator layer slots Basis does not have, and `MenuItem` and `MenuInstaller` build an
+  expression menu Basis does not have. Nothing upstream bridges those to Vixxy, so clothing
+  toggles authored in Modular Avatar do nothing on Basis today. Reading them into Vixxy controls
+  is the same shape as the expression menu work already done, and is the next piece of toggle
+  coverage worth having.
 - **Props and worlds.** Separate content types, same three stages.
 
 ## Constraints that shape all of it

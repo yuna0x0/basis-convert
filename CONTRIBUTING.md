@@ -28,6 +28,11 @@ Run the EditMode tests from the Test Runner window, or headlessly with the
 unity test /path/to/Basis/Basis --mode EditMode --filter "yuna0x0.Basis.Convert*"
 ```
 
+A passing run is not by itself proof that the code compiled. When a script in the package fails
+to compile, the editor keeps the last assemblies that did, and the run reports those tests as
+passing. Check the project's `Logs/Editor.log` for `error CS` before believing a pass, and delete
+the results file first so a stale one cannot be read as a fresh one.
+
 Most of the code is deliberately free of scene and AssetDatabase access so it can be tested
 without an editor open. Keep it that way: readers take text, mappers take plain data, and only
 the writers touch Unity objects.

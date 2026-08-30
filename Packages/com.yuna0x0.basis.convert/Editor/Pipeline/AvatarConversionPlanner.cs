@@ -16,6 +16,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
     /// </summary>
     public static class AvatarConversionPlanner
     {
+        /// <summary>Reads one prefab. What a conversion of a bare avatar reads.</summary>
         public static AvatarConversionPlan Plan(string prefabAssetPath,
             JiggleMappingProfile profile = null)
         {
@@ -31,21 +32,96 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 return plan;
             }
 
-            List<UnityYamlDocument> documents = UnityYamlScanner.ScanFile(prefabAssetPath);
-            PrefabObjectResolver resolver =
-                PrefabObjectResolver.Create(prefabAssetPath, documents);
-
-            plan.SourceRoot = resolver.Root;
-            if (plan.SourceRoot == null)
+            ConversionSource source = ConversionSource.ForAsset(prefabAssetPath);
+            if (source == null)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Warning, "avatar.notLoaded",
                     $"{prefabAssetPath} did not load as a prefab.");
                 return plan;
             }
 
+            plan.Sources.Add(source);
+            plan.SourceRoot = source.Root;
+
+            HashSet<string> unknownIdentities = new HashSet<string>();
+            ReadSource(plan, source, profile, unknownIdentities);
+            Finish(plan, unknownIdentities);
+            return plan;
+        }
+
+        /// <summary>
+        /// Reads a whole hierarchy, which is normally an avatar with clothing and accessories on
+        /// it. Each prefab it is built from is read separately, because that is where each one's
+        /// component data lives, and its results are placed where that prefab sits.
+        /// </summary>
+        public static AvatarConversionPlan Plan(GameObject hierarchyRoot,
+            JiggleMappingProfile profile = null)
+        {
+            profile ??= JiggleMappingProfile.Default;
+
+            AvatarConversionPlan plan = new AvatarConversionPlan();
+            List<ConversionSource> sources = ConversionSourceDiscovery.Discover(hierarchyRoot);
+
+            if (sources.Count == 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "avatar.noPrefab",
+                    "Nothing here is linked to a prefab, so there is no file to read the source "
+                    + "data from.");
+                return plan;
+            }
+
+            plan.Sources.AddRange(sources);
+            plan.SourceAssetPath = sources[0].AssetPath;
+            plan.SourceRoot = sources[0].Root;
+
+            HashSet<string> unknownIdentities = new HashSet<string>();
+            foreach (ConversionSource source in sources)
+            {
+                ReadSource(plan, source, profile, unknownIdentities);
+            }
+
+            if (sources.Count > 1)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "source.severalPrefabs",
+                    $"This avatar is built from {sources.Count} prefabs. Each was read from its "
+                    + "own file and its components placed where that prefab sits: "
+                    + string.Join(", ", Names(sources)) + ".");
+            }
+
+            Finish(plan, unknownIdentities);
+            return plan;
+        }
+
+        private static IEnumerable<string> Names(List<ConversionSource> sources)
+        {
+            foreach (ConversionSource source in sources)
+            {
+                yield return source.Name;
+            }
+        }
+
+        /// <summary>Reads one prefab into a plan, tagging what it finds with where it came from.</summary>
+        private static void ReadSource(AvatarConversionPlan plan, ConversionSource source,
+            JiggleMappingProfile profile, HashSet<string> unknownIdentities)
+        {
+            List<UnityYamlDocument> documents = UnityYamlScanner.ScanFile(source.AssetPath);
+            PrefabObjectResolver resolver =
+                PrefabObjectResolver.Create(source.AssetPath, documents);
+
+            if (resolver.Root == null)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "avatar.notLoaded",
+                    $"{source.AssetPath} did not load as a prefab.");
+                return;
+            }
+
             Dictionary<long, PlannedJiggleCollider> colliders =
                 MapColliders(documents, resolver, plan);
-            HashSet<string> unknownIdentities = new HashSet<string>();
+
+            foreach (PlannedJiggleCollider collider in colliders.Values)
+            {
+                collider.Source = source;
+            }
 
             foreach (UnityYamlDocument document in documents)
             {
@@ -69,6 +145,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                         PlanConstraint(document, constraintKind, resolver, plan);
                     if (constraint != null)
                     {
+                        constraint.Source = source;
                         plan.Constraints.Add(constraint);
                     }
 
@@ -85,13 +162,21 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 if (kind == SourceComponentKind.DynamicBone)
                 {
                     plan.DynamicBonesFound++;
-                    PlanDynamicBone(document, resolver, colliders, profile, plan);
+                    PlanDynamicBone(document, resolver, colliders, profile, plan, source);
                     continue;
                 }
 
                 if (kind == SourceComponentKind.VrcAvatarDescriptor)
                 {
-                    plan.Descriptor = PlanDescriptor(document, resolver, plan);
+                    // The avatar's own descriptor is the one that counts. Clothing prefabs are
+                    // often shipped with a descriptor of their own for previewing.
+                    PlannedAvatarDescriptor descriptor = PlanDescriptor(document, resolver, plan);
+                    if (descriptor != null && plan.Descriptor == null)
+                    {
+                        descriptor.Source = source;
+                        plan.Descriptor = descriptor;
+                    }
+
                     continue;
                 }
 
@@ -109,7 +194,18 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
+                rig.Source = source;
                 plan.Rigs.Add(rig);
+            }
+
+        }
+
+        /// <summary>What is worked out once, after every prefab has been read.</summary>
+        private static void Finish(AvatarConversionPlan plan, HashSet<string> unknownIdentities)
+        {
+            if (plan.SourceRoot == null)
+            {
+                return;
             }
 
             if (plan.ContactsFound > 0)
@@ -136,8 +232,6 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     $"A component with script identity {identity} was not recognised and was "
                     + "skipped.");
             }
-
-            return plan;
         }
 
         /// <summary>
@@ -221,11 +315,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
         private static void PlanDynamicBone(
             UnityYamlDocument document, PrefabObjectResolver resolver,
             IReadOnlyDictionary<long, PlannedJiggleCollider> colliders,
-            JiggleMappingProfile profile, AvatarConversionPlan plan)
+            JiggleMappingProfile profile, AvatarConversionPlan plan, ConversionSource source)
         {
-            DynamicBoneData source = DynamicBoneDocumentReader.ReadBone(document);
+            DynamicBoneData bone = DynamicBoneDocumentReader.ReadBone(document);
 
-            if (!resolver.TryResolveTransform(source.OwnerGameObjectFileId, out Transform host))
+            if (!resolver.TryResolveTransform(bone.OwnerGameObjectFileId, out Transform host))
             {
                 plan.Unresolved++;
                 plan.Diagnostics.Add(DiagnosticSeverity.Warning, "dynamicbone.unresolved",
@@ -234,7 +328,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 return;
             }
 
-            foreach (JiggleRigPlan rigPlan in DynamicBoneToJiggleMapper.Map(source, profile))
+            foreach (JiggleRigPlan rigPlan in DynamicBoneToJiggleMapper.Map(bone, profile))
             {
                 Transform rootBone = host;
                 if (rigPlan.RootBoneFileId != 0L
@@ -257,6 +351,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 };
 
                 AttachExclusionsAndColliders(rigPlan, planned, resolver, colliders);
+                planned.Source = source;
                 plan.Rigs.Add(planned);
             }
         }
@@ -375,7 +470,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 return;
             }
 
-            VrcAvatarDescriptorData source = plan.Descriptor.Source;
+            VrcAvatarDescriptorData source = plan.Descriptor.SourceData;
             if (source == null)
             {
                 return;
@@ -689,7 +784,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             PlannedAvatarDescriptor planned = new PlannedAvatarDescriptor
             {
                 Plan = descriptorPlan,
-                Source = source,
+                SourceData = source,
                 SourceRoot = root,
                 SourceVisemeMesh = ResolveRenderer(
                     resolver, descriptorPlan.VisemeMeshFileId, descriptorPlan.Diagnostics,
