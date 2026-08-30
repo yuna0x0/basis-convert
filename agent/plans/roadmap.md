@@ -126,6 +126,15 @@ the original. Everything else maps directly.
     place in a menu tree, since Vixxy menu items are flat.
 - **Props and worlds.** Separate content types, same three stages.
 
+## Backlog, outside this package
+
+- **A shared documentation domain.** The docs site is built for GitHub Pages at
+  `yuna0x0.github.io/basis-convert/`, which needs no DNS and no extra infrastructure. Hosting all
+  of yuna0x0's project documentation together instead, as `docs.yuna0x0.com/basis-convert/` on
+  Cloudflare Pages, would read better and would be reusable across projects, at the cost of a
+  site that has to be maintained on its own. Out of scope here: moving later is a change to
+  `url`, `baseUrl` and a deployment workflow, and the pages themselves do not care.
+
 ## Constraints that shape all of it
 
 - Everything ships editor-only. See `../decisions/0004-editor-only.md`.

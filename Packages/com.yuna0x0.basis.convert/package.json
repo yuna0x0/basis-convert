@@ -1,8 +1,8 @@
 {
   "name": "com.yuna0x0.basis.convert",
   "displayName": "Basis Convert",
-  "version": "0.0.1",
-  "description": "Editor tooling for bringing content from other social VR platforms into Basis.",
+  "version": "0.1.0",
+  "description": "Convert avatars, clothing and props from other social VR platforms for use with Basis: physics, constraints, the avatar descriptor and menu toggles.",
   "unity": "6000.5",
   "author": {
     "name": "yuna0x0",
@@ -10,8 +10,8 @@
   },
   "license": "MIT",
   "licensesUrl": "https://github.com/yuna0x0/basis-convert/blob/main/LICENSE",
-  "documentationUrl": "https://github.com/yuna0x0/basis-convert",
-  "changelogUrl": "https://github.com/yuna0x0/basis-convert/blob/main/CHANGELOG.md",
+  "documentationUrl": "https://yuna0x0.github.io/basis-convert/",
+  "changelogUrl": "https://github.com/yuna0x0/basis-convert/blob/main/Packages/com.yuna0x0.basis.convert/CHANGELOG.md",
   "repository": {
     "type": "git",
     "url": "https://github.com/yuna0x0/basis-convert.git"
