@@ -22,6 +22,11 @@ result editable.
 - **Menu toggles.** Toggles are rebuilt as HVR Vixxy controls with menu items, covering object
   switching, blendshapes and material properties. Ones that animate over time or drive something
   Vixxy cannot hold are reported, not half built.
+- **Modular Avatar.** Its hierarchy components run on Basis and are left to it. The ones that
+  target VRChat's expression menu and animator layers cannot run there, so a menu item and the
+  animator merged alongside it are read together and rebuilt as a Vixxy control. Modular Avatar
+  does not need to be installed for this: the components are read from the prefab like every
+  other source.
 - **Rig check.** Reports the humanoid rig against what Basis's full-body IK needs, and offers to
   clear the Jaw mapping the Basis setup guide asks to be removed.
 - **Whole avatars, not single prefabs.** A conversion covers the object you pick and its

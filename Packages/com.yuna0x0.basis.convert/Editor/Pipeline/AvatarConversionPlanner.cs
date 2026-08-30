@@ -85,19 +85,39 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "source.severalPrefabs",
                     $"This avatar is built from {sources.Count} prefabs. Each was read from its "
                     + "own file and its components placed where that prefab sits: "
-                    + string.Join(", ", Names(sources)) + ".");
+                    + Names(sources) + ".");
             }
 
             Finish(plan, unknownIdentities);
             return plan;
         }
 
-        private static IEnumerable<string> Names(List<ConversionSource> sources)
+        /// <summary>
+        /// The prefabs by name, capped. A gimmick pack nests the same prefab a dozen times, so
+        /// the whole list is unreadable and mostly repetition.
+        /// </summary>
+        private static string Names(List<ConversionSource> sources)
         {
+            const int limit = 6;
+            List<string> names = new List<string>();
+
             foreach (ConversionSource source in sources)
             {
-                yield return source.Name;
+                if (!names.Contains(source.Name))
+                {
+                    names.Add(source.Name);
+                }
+
+                if (names.Count == limit)
+                {
+                    break;
+                }
             }
+
+            int remaining = sources.Count - names.Count;
+            return remaining > 0
+                ? string.Join(", ", names) + $" and {remaining} more"
+                : string.Join(", ", names);
         }
 
         /// <summary>Reads one prefab into a plan, tagging what it finds with where it came from.</summary>
@@ -122,6 +142,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
             {
                 collider.Source = source;
             }
+
+            plan.ModularAvatarToggles.AddRange(
+                ModularAvatarToggleResolver.Resolve(documents, resolver, source));
 
             foreach (UnityYamlDocument document in documents)
             {
@@ -156,6 +179,20 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     || kind == SourceComponentKind.VrcContactSender)
                 {
                     plan.ContactsFound++;
+                    continue;
+                }
+
+                if (KnownScriptIdentities.IsHandledByModularAvatar(kind))
+                {
+                    plan.ModularAvatarHierarchyFound++;
+                    continue;
+                }
+
+                if (kind == SourceComponentKind.MaMergeAnimator
+                    || kind == SourceComponentKind.MaMenuItem
+                    || kind == SourceComponentKind.MaMenuInstaller)
+                {
+                    plan.ModularAvatarMenuFound++;
                     continue;
                 }
 
@@ -206,6 +243,23 @@ namespace yuna0x0.Basis.Convert.Pipeline
             if (plan.SourceRoot == null)
             {
                 return;
+            }
+
+            if (plan.ModularAvatarHierarchyFound > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "modularAvatar.hierarchy",
+                    $"{plan.ModularAvatarHierarchyFound} Modular Avatar components rearrange the "
+                    + "hierarchy: merged armatures, bone proxies, mesh settings and blendshape "
+                    + "sync. Those run on Basis, so they are left to Modular Avatar rather than "
+                    + "converted.");
+            }
+
+            if (plan.ModularAvatarMenuFound > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "modularAvatar.menus",
+                    $"{plan.ModularAvatarMenuFound} Modular Avatar components build menus and "
+                    + "merge animator layers. Both target structures VRChat has and Basis does "
+                    + "not, so anything they add does nothing on Basis and is not converted yet.");
             }
 
             if (plan.ContactsFound > 0)
@@ -554,7 +608,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 }
             }
 
-            BuildVixxyControls(plan);
+            BuildVixxyControls(plan, plan.Toggles, plan.SourceRoot.transform,
+                plan.Sources.Count > 0 ? plan.Sources[0] : null);
+            BuildModularAvatarControls(plan);
 
             int toggleControls = plan.Expressions.CountOf(VrcExpressionControlType.Toggle);
 
@@ -567,12 +623,42 @@ namespace yuna0x0.Basis.Convert.Pipeline
         }
 
         /// <summary>
-        /// Turns the toggles that can be rebuilt into Vixxy controls, resolving each switched
-        /// object's path against the avatar.
+        /// Turns the toggles Modular Avatar would install into Vixxy controls. Each belongs to
+        /// the prefab it came from, and its paths are resolved inside that prefab.
         /// </summary>
-        private static void BuildVixxyControls(AvatarConversionPlan plan)
+        private static void BuildModularAvatarControls(AvatarConversionPlan plan)
         {
-            foreach (ResolvedToggle toggle in plan.Toggles)
+            int before = plan.VixxyControls.Count;
+
+            foreach (ModularAvatarToggle toggle in plan.ModularAvatarToggles)
+            {
+                if (toggle.Source?.Root == null)
+                {
+                    continue;
+                }
+
+                BuildVixxyControls(plan, new[] { toggle.Toggle },
+                    toggle.Source.Root.transform, toggle.Source);
+            }
+
+            int rebuilt = plan.VixxyControls.Count - before;
+            if (plan.ModularAvatarToggles.Count > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "modularAvatar.togglesRebuilt",
+                    $"{rebuilt} of {plan.ModularAvatarToggles.Count} Modular Avatar menu toggles "
+                    + "were rebuilt as Vixxy controls. They would otherwise do nothing on Basis, "
+                    + "which has no expression menu for Modular Avatar to install them into.");
+            }
+        }
+
+        /// <summary>
+        /// Turns the toggles that can be rebuilt into Vixxy controls, resolving each switched
+        /// object's path against the prefab the toggle belongs to.
+        /// </summary>
+        private static void BuildVixxyControls(AvatarConversionPlan plan,
+            IEnumerable<ResolvedToggle> toggles, Transform root, ConversionSource source)
+        {
+            foreach (ResolvedToggle toggle in toggles)
             {
                 VixxyControlPlan control = ToggleToVixxyMapper.Map(toggle);
 
@@ -593,7 +679,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 foreach (VixxyActivationPlan activation in control.Activations)
                 {
-                    Transform target = plan.SourceRoot.transform.Find(activation.Path);
+                    Transform target = root.Find(activation.Path);
                     if (target == null)
                     {
                         plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vixxy.targetMissing",
@@ -618,13 +704,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 if (resolved)
                 {
-                    resolved = ResolveSubjects(plan, control, planned);
+                    resolved = ResolveSubjects(plan, control, planned, root);
                 }
 
                 if (resolved)
                 {
-                    // Menus belong to the avatar, whose prefab is the first source.
-                    planned.Source = plan.Sources.Count > 0 ? plan.Sources[0] : null;
+                    planned.Source = source;
                     plan.VixxyControls.Add(planned);
                 }
             }
@@ -642,11 +727,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// side of the toggle did not set it from what the avatar was authored with.
         /// </summary>
         private static bool ResolveSubjects(
-            AvatarConversionPlan plan, VixxyControlPlan control, PlannedVixxyControl planned)
+            AvatarConversionPlan plan, VixxyControlPlan control, PlannedVixxyControl planned,
+            Transform root)
         {
             foreach (VixxySubjectPlan subject in control.Subjects)
             {
-                Transform target = plan.SourceRoot.transform.Find(subject.Path);
+                Transform target = root.Find(subject.Path);
                 Renderer renderer = target == null ? null : target.GetComponent<Renderer>();
 
                 if (renderer == null)

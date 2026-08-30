@@ -386,8 +386,19 @@ namespace yuna0x0.Basis.Convert.UI
                     }
                 });
 
+                int quiet = 0;
+
                 foreach (ConversionSource source in _plan.Sources)
                 {
+                    // A gimmick pack nests a dozen prefabs that hold nothing this converts.
+                    // Listing them buries the ones worth a decision.
+                    string detail = Describe(source);
+                    if (detail == null)
+                    {
+                        quiet++;
+                        continue;
+                    }
+
                     using (new EditorGUILayout.HorizontalScope())
                     {
                         source.Include = EditorGUILayout.Toggle(source.Include,
@@ -399,8 +410,15 @@ namespace yuna0x0.Basis.Convert.UI
                             EditorGUIUtility.PingObject(source.Root);
                         }
 
-                        EditorGUILayout.LabelField(Describe(source), EditorStyles.miniLabel);
+                        EditorGUILayout.LabelField(detail, EditorStyles.miniLabel);
                     }
+                }
+
+                if (quiet > 0)
+                {
+                    EditorGUILayout.LabelField(
+                        $"{quiet} more hold nothing this converts.",
+                        EditorStyles.wordWrappedMiniLabel);
                 }
             }
         }
@@ -419,7 +437,10 @@ namespace yuna0x0.Basis.Convert.UI
             return included;
         }
 
-        /// <summary>What one prefab contributes, so leaving it out is an informed choice.</summary>
+        /// <summary>
+        /// What one prefab contributes, so leaving it out is an informed choice, or null when it
+        /// contributes nothing.
+        /// </summary>
         private string Describe(ConversionSource source)
         {
             int rigs = 0;
@@ -457,7 +478,7 @@ namespace yuna0x0.Basis.Convert.UI
                 parts.Add("avatar descriptor");
             }
 
-            return parts.Count > 0 ? string.Join(", ", parts) : "nothing convertible";
+            return parts.Count > 0 ? string.Join(", ", parts) : null;
         }
 
         /// <summary>
@@ -835,8 +856,14 @@ namespace yuna0x0.Basis.Convert.UI
                     {
                         control.Include = EditorGUILayout.Toggle(control.Include,
                             GUILayout.Width(24f));
-                        EditorGUILayout.LabelField(control.Plan.MenuName,
-                            GUILayout.MinWidth(120f));
+
+                        // A toggle from a piece of clothing is worth telling apart from the
+                        // avatar's own, since it came from Modular Avatar rather than a menu.
+                        string label = control.Source != null && !control.Source.IsPrimary
+                            ? $"{control.Plan.MenuName}  ({control.Source.Name})"
+                            : control.Plan.MenuName;
+
+                        EditorGUILayout.LabelField(label, GUILayout.MinWidth(120f));
                         EditorGUILayout.LabelField(Describe(control.Plan),
                             EditorStyles.miniLabel);
                     }

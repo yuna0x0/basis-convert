@@ -160,6 +160,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// </summary>
         public List<ResolvedToggle> Toggles = new List<ResolvedToggle>();
 
+        /// <summary>
+        /// Toggles Modular Avatar would install from a piece of clothing, with the prefab each
+        /// came from. Separate from <see cref="Toggles"/>, which are the avatar's own.
+        /// </summary>
+        public List<ModularAvatarToggle> ModularAvatarToggles = new List<ModularAvatarToggle>();
+
         /// <summary>Menu toggles that can be rebuilt as Vixxy controls, with their targets.</summary>
         public List<PlannedVixxyControl> VixxyControls = new List<PlannedVixxyControl>();
 
@@ -171,6 +177,18 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// are kept apart from the component diagnostics.
         /// </summary>
         public List<ConversionDiagnostic> RigDiagnostics = new List<ConversionDiagnostic>();
+
+        /// <summary>
+        /// Modular Avatar components that rearrange the hierarchy. They work on Basis, so these
+        /// are counted to be reported as left alone rather than as unrecognised.
+        /// </summary>
+        public int ModularAvatarHierarchyFound;
+
+        /// <summary>
+        /// Modular Avatar components that target VRChat's menu and animator layers, which Basis
+        /// does not have.
+        /// </summary>
+        public int ModularAvatarMenuFound;
 
         public int PhysBonesFound;
         public int CollidersFound;

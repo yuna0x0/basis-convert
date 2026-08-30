@@ -107,13 +107,23 @@ the original. Everything else maps directly.
 - **Several source prefabs. Done.** A conversion reads every prefab the hierarchy is built from,
   not just the avatar's own, because clothing, hair and accessories are prefabs of their own
   carrying their own physics. See [decision 0009](../decisions/0009-several-source-prefabs.md).
-- **Modular Avatar.** Works on Basis for the hierarchy: `MergeArmature` and `BoneProxy` do their
-  job there. What cannot work is the half that targets VRChat: `MergeAnimator` merges into
-  animator layer slots Basis does not have, and `MenuItem` and `MenuInstaller` build an
-  expression menu Basis does not have. Nothing upstream bridges those to Vixxy, so clothing
-  toggles authored in Modular Avatar do nothing on Basis today. Reading them into Vixxy controls
-  is the same shape as the expression menu work already done, and is the next piece of toggle
-  coverage worth having.
+- **Modular Avatar. Partly done.** Its components are identified and reported for what they are.
+  The hierarchy ones, `MergeArmature`, `BoneProxy`, `MeshSettings`, `BlendshapeSync` and
+  `Parameters`, do their job on Basis and are left to it. The ones that target VRChat cannot:
+  `MergeAnimator` merges into animator layer slots Basis does not have, and `MenuItem` and
+  `MenuInstaller` build an expression menu it does not have.
+
+  A menu item and a merged animator read together describe a toggle completely, so those are
+  traced and rebuilt as Vixxy controls, with the merged animator's clip paths rebased onto the
+  object it was merged at. What remains:
+
+  - **`ObjectToggle`.** The simplest shape, a toggle with no animator at all. Not implemented,
+    because there is no instance of it in the reference library to check against.
+  - **Gimmick controllers.** A layer is only read as a toggle when a single parameter steers it,
+    which is what keeps false positives out. Gimmick packs commonly combine conditions, so their
+    toggles are reported rather than rebuilt.
+  - Menu items are read per prefab. A menu installed into a submenu keeps its label but not its
+    place in a menu tree, since Vixxy menu items are flat.
 - **Props and worlds.** Separate content types, same three stages.
 
 ## Constraints that shape all of it
