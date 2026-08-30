@@ -63,8 +63,9 @@ read from. Convert before unpacking the prefab.
 
 ## Installing
 
-The package needs a Basis project. It reads Basis SDK types and the Jiggle Physics package, both
-of which ship with the Basis framework.
+The package needs a Basis project. It builds against the Basis SDK, Jiggle Physics and HVR Basis
+Comms, all three of which ship inside the Basis framework, so a Basis project already has them.
+Outside one it will not compile, which is intended: there is nothing for it to convert into.
 
 Add it through the Unity Package Manager, `Add package from git URL`:
 
