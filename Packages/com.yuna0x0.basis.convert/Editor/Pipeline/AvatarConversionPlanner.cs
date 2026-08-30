@@ -275,6 +275,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     planned.Colliders.Add(collider);
                 }
             }
+
+            if (planned.Colliders.Count > JiggleRigDataLimits.MaxColliders)
+            {
+                rigPlan.Diagnostics.Add(DiagnosticSeverity.Warning, "collider.limit",
+                    $"{planned.Colliders.Count} colliders were referenced but a jiggle rig "
+                    + $"supports {JiggleRigDataLimits.MaxColliders}. The extras were dropped.");
+            }
         }
 
         private static PlannedAvatarDescriptor PlanDescriptor(
@@ -411,13 +418,6 @@ namespace yuna0x0.Basis.Convert.Pipeline
             };
 
             AttachExclusionsAndColliders(rigPlan, planned, resolver, colliders);
-
-            if (planned.Colliders.Count > JiggleRigDataLimits.MaxColliders)
-            {
-                rigPlan.Diagnostics.Add(DiagnosticSeverity.Warning, "collider.limit",
-                    $"{planned.Colliders.Count} colliders were referenced but a jiggle rig "
-                    + $"supports {JiggleRigDataLimits.MaxColliders}. The extras were dropped.");
-            }
 
             return planned;
         }
