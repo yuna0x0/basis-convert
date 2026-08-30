@@ -17,3 +17,8 @@ Notable changes to this package. The format follows
 - Reader for VRCPhysBone and VRCPhysBoneCollider, including per-bone falloff curves.
 - PhysBone to Jiggle Physics mapping, with a diagnostic for everything approximated or dropped,
   and a profile for the parts of the mapping that are judgement calls.
+- Collider mapping, covering sphere, capsule and plane. A rotated capsule is snapped to the
+  nearest axis, since jiggle orients capsules by axis rather than by rotation.
+- Writer that produces `JiggleRig` components, starting from the jiggle package's preset rigs so
+  parameters the source does not determine keep values tuned by that package's author. Every
+  mutation is registered with Undo, so one undo reverts a whole conversion.

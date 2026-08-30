@@ -52,6 +52,40 @@ namespace yuna0x0.Basis.Convert.Model
         public bool AdvancedToggle = true;
     }
 
+    public enum JiggleColliderShape
+    {
+        Sphere = 0,
+        Capsule = 1,
+        Plane = 2,
+    }
+
+    public enum JiggleCapsuleAxis
+    {
+        X = 0,
+        Y = 1,
+        Z = 2,
+    }
+
+    /// <summary>
+    /// One collider a rig should be affected by. Mirrors jiggle's serialized collider rather
+    /// than referencing its types, so the model stays independent of the jiggle package.
+    /// </summary>
+    public sealed class JiggleColliderPlan
+    {
+        public long SourceDocumentFileId;
+
+        /// <summary>Transform the collider is placed on. 0 means the source component's own.</summary>
+        public long TransformFileId;
+
+        public JiggleColliderShape Shape;
+        public float Radius;
+        public float Height;
+        public JiggleCapsuleAxis CapsuleAxis = JiggleCapsuleAxis.Y;
+        public Vector3 LocalOffset;
+
+        public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
+    }
+
     public enum JigglePreset
     {
         Hair = 0,
@@ -73,6 +107,7 @@ namespace yuna0x0.Basis.Convert.Model
 
         public List<long> ExcludedTransformFileIds = new List<long>();
         public List<long> ColliderSourceFileIds = new List<long>();
+        public List<JiggleColliderPlan> Colliders = new List<JiggleColliderPlan>();
 
         public bool ExcludeRoot;
         public bool LockFromGrabbing;

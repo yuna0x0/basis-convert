@@ -26,6 +26,30 @@ not `rootBone`, `excludedTransforms` or `jiggleColliders`.
 path and `RegenerateCacheLookup()`. So `ApplyModifiedProperties()` is enough; then call
 `ResampleRestPose()`.
 
+### Writing to it
+
+`jiggleRigData` is private with no setter, so structural fields (`rootBone`, `excludeRoot`,
+`lockFromGrabbing`, `maxGrabStretch`, `excludedTransforms`, `jiggleColliders`) go through
+`SerializedObject` with paths prefixed `jiggleRigData.`.
+
+**Parameters cannot go the same way.** An `AnimationCurve` assigned through
+`SerializedProperty.animationCurveValue` does not survive `ApplyModifiedProperties` on this
+component: the property holds the right curve before the apply and reads back as the unit curve
+afterwards. Measured, on both a bare component and one copied from a preset:
+
+```
+[before apply]                    len=2 (0,1) (1,0.25)
+[after apply, via SerializedObject] len=2 (0,1) (1,1)
+```
+
+`value` and `curveEnabled` survive; only the curve reverts. Since every PhysBone in the
+reference avatar carries falloff curves, going through `SerializedObject` here would flatten all
+of them while looking like it worked.
+
+Use `GetInputParameters()` / `SetInputParameters()` instead, which are public and write the
+parameter block directly. Order matters: `SetInputParameters` has to come **after** the
+`SerializedObject` apply, or the apply's stale snapshot overwrites it.
+
 ## JiggleRigData
 
 ```csharp

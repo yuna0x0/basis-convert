@@ -21,8 +21,8 @@ yours lands in a Basis commit. Work on a branch there and never commit to it.
 
 ## Tests
 
-Run the EditMode tests from the Test Runner window, or headlessly if you have a Unity CLI
-available:
+Run the EditMode tests from the Test Runner window, or headlessly with the
+[Unity CLI](https://docs.unity.com/en-us/unity-cli):
 
 ```sh
 unity test /path/to/Basis/Basis --mode EditMode --filter "yuna0x0.Basis.Convert*"
