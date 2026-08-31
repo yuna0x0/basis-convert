@@ -4,8 +4,8 @@ Orientation for AI agents and for anyone picking this repo up cold.
 
 ## What this is
 
-Editor tooling for bringing avatars and the content worn on them into Basis, whatever they were
-built for. It installs into a Basis project as a UPM package.
+Editor tooling for bringing avatars and the content worn on them into Basis. It installs into a
+Basis project as a UPM package.
 
 Working today: VRChat PhysBones and colliders, VRM spring bones in both formats, legacy Dynamic
 Bone, all six VRChat constraint types, the avatar descriptor, menu toggles, selectors and radial

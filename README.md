@@ -1,7 +1,7 @@
 # Watari
 
 Bring an avatar you already own into [Basis](https://basisvr.org/), with its physics,
-constraints, menus and motion intact, whatever it was built for.
+constraints, menus and motion intact.
 
 Import the avatar into a Basis project, pick it in the scene, and convert:
 

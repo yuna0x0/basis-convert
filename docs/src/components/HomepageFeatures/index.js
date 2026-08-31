@@ -15,12 +15,12 @@ const features = [
     ),
   },
   {
-    title: 'Whatever the avatar was built for',
+    title: 'Read by component, not by platform',
     description: (
       <>
-        Sources are read by what an avatar carries rather than where it came from, so a VRChat
-        avatar, a VRM, and one using nothing but Dynamic Bone all convert. Clothing and
-        accessories are prefabs of their own and are read as such; any of them can be left out.
+        An avatar is read for the components it carries, so one using nothing but Dynamic Bone
+        converts as readily as a VRChat avatar or a VRM. Clothing and accessories are prefabs of
+        their own and are read as such; any of them can be left out.
       </>
     ),
   },

@@ -2,7 +2,7 @@
   "name": "com.yuna0x0.basis.convert",
   "displayName": "Watari (Converter for Basis)",
   "version": "0.1.2",
-  "description": "Convert avatars and the clothing worn on them for use with Basis, whatever they were built for: physics, constraints, the avatar descriptor, menu toggles and authored motion. Reads VRChat, VRM, Dynamic Bone and Modular Avatar components.",
+  "description": "Converts VRChat, VRM and Dynamic Bone components on an avatar into their Basis equivalents: jiggle physics, constraints, the avatar descriptor, HVR Vixxy controls and authored motion.",
   "unity": "6000.5",
   "author": {
     "name": "yuna0x0",
