@@ -32,6 +32,9 @@ namespace yuna0x0.Basis.Convert.Sources
         VrmBlendShapeProxy,
         VrmFirstPerson,
         VrmMeta,
+
+        /// <summary>UniVRM's record of the humanoid bone mapping, which Unity's own avatar holds.</summary>
+        UniHumanoid,
         Vrm10Instance,
         Vrm10SpringBoneJoint,
         Vrm10SpringBoneCollider,
@@ -147,6 +150,7 @@ namespace yuna0x0.Basis.Convert.Sources
                 { ("5b678c1df50cfb547990db24a32856da", LooseScriptFileId), SourceComponentKind.VrmBlendShapeProxy },
                 { ("dedba1309bdf12b42af2362f52eea134", LooseScriptFileId), SourceComponentKind.VrmFirstPerson },
                 { ("690ea0146224b8b4694a1925dddeb352", LooseScriptFileId), SourceComponentKind.VrmMeta },
+                { ("97a39af5b64ede64e86b92b5bf94a0e7", LooseScriptFileId), SourceComponentKind.UniHumanoid },
                 { ("bfba4ccd3f854e64f868ce83553071a9", LooseScriptFileId), SourceComponentKind.Vrm10Instance },
                 { ("0a942e03b39600e41a1b161e958048f7", LooseScriptFileId), SourceComponentKind.Vrm10SpringBoneJoint },
                 { ("35bfb658269b2af478e501de243deda6", LooseScriptFileId), SourceComponentKind.Vrm10SpringBoneCollider },

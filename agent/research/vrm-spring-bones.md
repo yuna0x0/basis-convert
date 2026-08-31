@@ -158,6 +158,32 @@ not is left unstated rather than guessed:
 Converting an avatar changes it, so the licence is read and shown before anything is written.
 Nothing is blocked: what the licence permits is the wearer's to judge.
 
+## Checked against a real avatar, 2026-08-31
+
+UniVRM 0.131.2 installed into the Basis project and a real VRM 1.0 imported through it. Four
+things came out of that, all of which change what the docs say:
+
+- **UniVRM 0.131.0 does not compile on Unity 6000.5.** 45 `CS0619` errors: `TreeView`,
+  `TreeViewItem`, `TreeViewState` and `Object.GetInstanceID()` are obsolete-as-error there, in
+  `com.vrmc.gltf`'s editor code and `com.vrmc.vrm`'s runtime. **0.131.2 compiles cleanly** and
+  the whole suite passes with it installed. It also resolves alongside `com.unity.cloud.gltfast`,
+  which the Basis project already has, without conflict.
+- **An imported `.vrm` is binary, so nothing can be read from it directly.** Saving a scene
+  instance as a prefab is not enough either: that prefab is a `PrefabInstance` document pointing
+  back at the `.vrm`, 2.4 KB of overrides with no components in it. The instance has to be
+  **unpacked completely** first, and then the components are materialised into the prefab.
+- **With that done, spring bones read correctly.** 49 chains became 49 rigs, 28 colliders
+  attached to the chains that name them, and the values match the `.vrm`'s own JSON: stiffness
+  0.75, drag 0.05, radius 0.0279333.
+- **Expressions, the licence and the eye offset still could not be read**, because
+  `Vrm10Instance.Vrm` points at a sub-object inside the binary file. UniVRM's importer has
+  **"Extract Meta And Expressions"**, which writes them into the project as assets; that is the
+  step that makes them readable. `vrm.objectUnreadable` reports when it has not been done.
+
+`UniHumanoid.Humanoid` (guid `97a39af5b64ede64e86b92b5bf94a0e7`, in `com.vrmc.gltf`) sits on an
+imported avatar and was showing up as an unknown script. It records the humanoid bone mapping,
+which Unity's own avatar already holds, so it is named and ignored.
+
 ## The `.vrm` file itself
 
 A `.vrm` is a glTF binary. `extensions.VRMC_springBone` in the JSON chunk holds the same data

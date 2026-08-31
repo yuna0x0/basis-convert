@@ -57,6 +57,13 @@ Notable changes to this package. The format follows
 
 ### Fixed
 
+- `UniHumanoid.Humanoid`, which UniVRM puts on an imported avatar, was reported as an unknown
+  script. It records the humanoid bone mapping Unity's own avatar already holds, so it is named
+  and left alone.
+- A VRM whose expressions and licence are still inside the `.vrm` file is reported as
+  `vrm.objectUnreadable`, naming the import setting that writes them into the project, rather
+  than silently converting no expressions.
+
 - A layer where one value of its parameter led to two different states was read as though the
   first transition were the only one. Something other than the parameter decides between them,
   so the layer is left alone and reported instead.

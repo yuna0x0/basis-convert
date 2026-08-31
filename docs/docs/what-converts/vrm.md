@@ -11,10 +11,25 @@ expressions become HVR Vixxy controls.
 UniVRM does not need to be installed. A VRM avatar imported into a Basis project arrives with its
 components as missing scripts, and the data is read from the prefab file either way.
 
-To bring a `.vrm` file in, install [UniVRM](https://github.com/vrm-c/UniVRM) and drag the file
-into the project: it registers an importer for the extension and writes the prefab. Convert that
-prefab as you would any other avatar. UniVRM's own components are not on the Basis allow-list, so
-Basis strips them when the avatar loads and the converted jiggle physics takes over.
+## Bringing in a `.vrm` file
+
+Install [UniVRM](https://github.com/vrm-c/UniVRM) and drag the file into the project. Use 0.131.2
+or newer: 0.131.0 does not compile on the Unity version Basis targets. Then two steps that are
+easy to miss:
+
+1. **Drag the imported avatar into a scene, unpack it completely** (right click, Prefab, Unpack
+   Completely) **and save it as a prefab.** An imported `.vrm` is a binary file, and a prefab
+   saved without unpacking only points back at it, so there is nothing to read.
+2. **In the `.vrm`'s import settings, press "Extract Meta And Expressions".** Expressions, the
+   licence and the eye offset live inside the binary until you do. Spring bones do not need this;
+   they are components on the prefab.
+
+Convert the prefab as you would any other avatar. UniVRM's own components are not on the Basis
+allow-list, so Basis strips them when the avatar loads and the converted jiggle physics takes
+over.
+
+If the expressions and licence are missing after converting, the report says so as
+`vrm.objectUnreadable`, which means step 2 was skipped.
 
 ## The two formats
 

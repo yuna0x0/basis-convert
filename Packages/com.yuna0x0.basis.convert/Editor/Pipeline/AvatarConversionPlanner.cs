@@ -666,6 +666,19 @@ namespace yuna0x0.Basis.Convert.Pipeline
                         break;
                     case SourceComponentKind.Vrm10Instance:
                         expressions.AddRange(VrmObjectReader.ReadVrm10(document));
+
+                        // A .vrm imported in place keeps its expressions, licence and look at
+                        // inside the binary file, where there is no YAML to read.
+                        if (VrmObjectReader.IsUnreadableSource(document))
+                        {
+                            plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vrm.objectUnreadable",
+                                "This avatar's expressions, licence and eye offset are held "
+                                + "inside the .vrm file itself rather than as assets in the "
+                                + "project, so none of them could be read. In the .vrm's import "
+                                + "settings, press \"Extract Meta And Expressions\", then "
+                                + "convert again. The spring bones are not affected.");
+                        }
+
                         break;
                 }
             }

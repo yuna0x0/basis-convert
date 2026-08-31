@@ -688,6 +688,22 @@ namespace yuna0x0.Basis.Convert.Sources
             return !string.IsNullOrEmpty(guid);
         }
 
+        /// <summary>
+        /// True when a VRM object reference points at a file this cannot read, which is what a
+        /// `.vrm` imported in place is: its expressions, licence and look at are sub-objects of
+        /// a binary file rather than assets in the project.
+        /// </summary>
+        public static bool IsUnreadableSource(UnityYamlDocument instance)
+        {
+            if (instance == null || !instance.TryGetTopLevelObjectReference(
+                    "Vrm", out string guid, out long fileId))
+            {
+                return false;
+            }
+
+            return Load(guid, fileId) == null;
+        }
+
         /// <summary>One object out of an asset file, by the guid of the file and its fileID.</summary>
         private static UnityYamlDocument Load(string guid, long fileId)
         {

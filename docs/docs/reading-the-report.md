@@ -33,6 +33,7 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `motion.baked` | An animator layer that plays on its own was rebuilt as authored motion. |
 | `motion.switched` | A menu toggle animated over time, so it was rebuilt as a motion the control switches on. |
 | `motion.rotationOnly` | That layer also animates something other than rotation, which a baked motion clip cannot hold. |
+| `vrm.objectUnreadable` | The avatar's expressions and licence are still inside the `.vrm` file. Extract them in its import settings. |
 | `vrm.licence` | What the avatar's VRM licence says: its title, author and who may wear it. |
 | `vrm.licence.restricted` | The licence forbids changing the avatar, or limits who may wear it. |
 | `vrm.eyePosition` | The avatar's eye offset became the Basis eye position. |
