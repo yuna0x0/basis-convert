@@ -6,6 +6,27 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Menu controls that share one parameter and each set a different value are rebuilt as a single
+  Vixxy control with a choice per value, rather than being reported as untraceable. This covers
+  outfit and hairstyle selectors, which are common and were the largest remaining gap.
+- Radial puppets become Vixxy sliders, taking the two ends of the blend tree their layer holds
+  as the control's choices. A tree with motions between its ends is reported as
+  `vixxy.puppetEnds`, because a slider interpolates between its choices in a straight line.
+- Modular Avatar `Object Toggle` is read. A menu item and an object toggle on the same object
+  describe a toggle completely without a merged animator, which is how clothing commonly ships
+  a switch.
+
+### Fixed
+
+- A Modular Avatar menu item's toggle was only built when the prefab also installed an
+  expression menu, so a piece of clothing that installs a menu item alone converted nothing.
+- Any list entry in an expression menu asset began a new control, so a radial's `subParameters`
+  entry was read as a control of its own. Controls are now recognised by indentation.
+- Modular Avatar object paths are resolved against the avatar root, which is what Modular Avatar
+  itself does, rather than being rebased onto the component's own object.
+
 ## [0.1.2] - 2026-08-31
 
 ### Fixed

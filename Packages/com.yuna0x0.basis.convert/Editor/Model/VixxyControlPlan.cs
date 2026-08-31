@@ -141,6 +141,12 @@ namespace yuna0x0.Basis.Convert.Model
 
         public int ChoiceCount => ChoiceNames.Count > 0 ? ChoiceNames.Count : 2;
 
+        /// <summary>
+        /// True when the control is continuous. Vixxy shows those as a slider and interpolates
+        /// between the choices rather than snapping between them.
+        /// </summary>
+        public bool IsSlider;
+
         /// <summary>Which choice the control starts in.</summary>
         public bool DefaultOn;
 

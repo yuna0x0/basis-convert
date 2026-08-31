@@ -10,7 +10,7 @@ this is the same information in one place.
 ## Not converted at all
 
 - **VRChat contacts.** Basis has no contact system, so anything driven by touch is dropped.
-- **Puppets**, and any menu control other than a toggle.
+- **Two-axis and four-axis puppets.**
 - **Animation that plays over time.** Toggles that animate rather than switch are reported.
   Looping ambient motion belongs in `BasisAuthoredMotion`, which is not written yet.
 - **Expression parameters as a system.** Vixxy controls hold their own state, so there is no
@@ -24,6 +24,9 @@ this is the same information in one place.
 - **Material properties are applied through a property block**, which covers every material on a
   renderer. A renderer with more than one material is reported.
 - **Modular Avatar toggles** are rebuilt only when a single parameter steers their layer.
+- **A radial puppet becomes a slider between the two ends of its blend tree.** Vixxy interpolates
+  in a straight line between choices, so motions the tree held in between are approximated by
+  that line.
 
 ## Where the data comes from
 

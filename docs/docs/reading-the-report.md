@@ -28,6 +28,7 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `collider.limit` | More colliders were referenced than a jiggle rig can hold. The extras were dropped. |
 | `constraint.solveInLocalSpace` | A VRChat constraint setting with no Basis equivalent. |
 | `vixxy.notSimple` | A menu toggle that animates over time or drives something a Vixxy control cannot hold. |
+| `vixxy.puppetEnds` | A radial puppet blended through motions between its ends. A slider interpolates between its ends in a straight line. |
 | `contacts.dropped` | VRChat contacts were found. Basis has no contact system. |
 | `modularAvatar.menus` | Modular Avatar menu and animator components were found. See [Modular Avatar](what-converts/modular-avatar.md). |
 | `source.unknownScript` | A component whose script this version does not recognise. Please report it. |

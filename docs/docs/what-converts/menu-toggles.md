@@ -26,11 +26,28 @@ toggle as a secondary condition from being read as that toggle's own.
 Where a clip sets something on one side only, the other side keeps the avatar's authored value,
 read from the object rather than assumed to be the opposite.
 
+## Controls with more than two states
+
+An expression menu commonly puts several entries on one parameter, each setting a different
+value, so that picking one clears the rest. Those entries are grouped by their parameter and
+become one Vixxy control with a choice per value, named after the menu entry that selects it.
+
+## Radial puppets
+
+A radial drives a float rather than switching between states: its menu entry names its parameter
+under `subParameters`, and its layer holds a blend tree rather than transitions. It becomes a
+Vixxy control presented as a slider, with the lowest and highest motions in the tree as its two
+choices.
+
+Vixxy interpolates in a straight line between a control's choices, so the two ends carry across
+exactly and the shape of the sweep between them does not. A tree holding motions between its ends
+is reported as `vixxy.puppetEnds`.
+
 ## What cannot
 
 - Anything that animates over time. Vixxy holds a value per choice, not a curve. Looping motion
   belongs in `BasisAuthoredMotion`, which this does not write yet.
-- Radial, two-axis and four-axis puppets.
+- Two-axis and four-axis puppets.
 - Expression parameters as a system. Vixxy controls hold their own state, so there is no
   parameter list to recreate, and anything driven by parameters outside a toggle has to be
   rebuilt by hand.

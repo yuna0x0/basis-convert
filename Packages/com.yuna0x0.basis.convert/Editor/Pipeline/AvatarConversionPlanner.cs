@@ -628,16 +628,17 @@ namespace yuna0x0.Basis.Convert.Pipeline
             BuildVixxyControls(plan, plan.Toggles, plan.SourceRoot.transform,
                 plan.Sources.Count > 0 ? plan.Sources[0] : null);
 
-            int toggleControls = plan.Expressions.CountOf(VrcExpressionControlType.Toggle);
+            int toggleControls = plan.Expressions.CountOf(VrcExpressionControlType.Toggle)
+                + plan.Expressions.CountOf(VrcExpressionControlType.RadialPuppet);
 
             // Counting controls against traced parameters compares unlike things: a menu often
             // has several controls sharing one parameter, each selecting a different value.
             plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "expressions.togglesResolved",
                 $"{plan.Toggles.Count} animator layers were traced from the {toggleControls} "
-                + "menu toggles, which share fewer parameters between them. Of those layers, "
-                + $"{simple} only switch objects on and off, set blendshapes or set material "
-                + "properties, which is what a Vixxy control holds. The rest animate over time "
-                + "or drive something else and need rebuilding by hand.");
+                + "menu toggles and radials, which share fewer parameters between them. Of those "
+                + $"layers, {simple} only switch objects on and off, set blendshapes or set "
+                + "material properties, which is what a Vixxy control holds. The rest animate "
+                + "over time or drive something else and need rebuilding by hand.");
         }
 
         /// <summary>

@@ -30,6 +30,12 @@ namespace yuna0x0.Basis.Convert.Model
 
         public float Value = 1f;
 
+        /// <summary>
+        /// Parameters a puppet drives. A radial names one float here and leaves
+        /// <see cref="Parameter"/> empty; a two axis puppet names two, a four axis four.
+        /// </summary>
+        public List<string> SubParameters = new List<string>();
+
         /// <summary>Asset guid of the submenu, for a SubMenu control.</summary>
         public string SubMenuGuid;
 

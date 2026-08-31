@@ -53,3 +53,14 @@ MonoBehaviour:
     subMenu: {fileID: 0}
     subParameters: []
     labels: []
+  - name: Tail_Size
+    icon: {fileID: 0}
+    type: 203
+    parameter:
+      name:
+    value: 1
+    style: 0
+    subMenu: {fileID: 0}
+    subParameters:
+    - name: TailSize
+    labels: []

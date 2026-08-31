@@ -22,6 +22,7 @@ namespace yuna0x0.Basis.Convert.Mapping
             {
                 MenuName = toggle.MenuName,
                 Parameter = toggle.Parameter,
+                IsSlider = toggle.IsSlider,
             };
 
             foreach (ResolvedChoice choice in toggle.Choices)
@@ -71,6 +72,15 @@ namespace yuna0x0.Basis.Convert.Mapping
 
             MapBlendShapes(toggle, plan);
             MapMaterialProperties(toggle, plan);
+
+            if (toggle.MotionsBetweenEnds > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Approximated, "vixxy.puppetEnds",
+                    $"'{toggle.MenuName}' blends through {toggle.MotionsBetweenEnds} motions "
+                    + "between its ends. A Vixxy slider interpolates in a straight line between "
+                    + "its choices, so the ends carry across and the shape of the sweep between "
+                    + "them does not.");
+            }
 
             if (plan.Activations.Count == 0 && plan.Subjects.Count == 0
                 && plan.Diagnostics.Count == 0)

@@ -10,6 +10,12 @@ namespace yuna0x0.Basis.Convert.Sources
         /// <summary>Value of the layer's parameter that selects this state.</summary>
         public int Value;
 
+        /// <summary>
+        /// Where this sits on a blend tree's axis. Only meaningful for a puppet, where the
+        /// parameter is continuous rather than a set of values.
+        /// </summary>
+        public float Threshold;
+
         public AnimationClip Clip;
     }
 
@@ -30,6 +36,12 @@ namespace yuna0x0.Basis.Convert.Sources
         public List<FxParameterState> States = new List<FxParameterState>();
 
         public bool IsSelector => States.Count > 2;
+
+        /// <summary>
+        /// True when the layer blends continuously between its states rather than switching
+        /// between them, which is what a puppet does.
+        /// </summary>
+        public bool IsBlendTree;
 
         /// <summary>The clip for a parameter value of 0, which a toggle calls off.</summary>
         public AnimationClip WhenOff => ClipFor(0);
@@ -104,6 +116,84 @@ namespace yuna0x0.Basis.Convert.Sources
             }
 
             return found;
+        }
+
+        /// <summary>
+        /// Finds the layers a puppet drives, which hold a blend tree rather than transitions.
+        /// <para>
+        /// A radial puppet is a float from 0 to 1 blending between motions, so the layer has one
+        /// state whose motion is a blend tree keyed on that parameter. There are no conditions to
+        /// read, which is why these are looked for separately.
+        /// </para>
+        /// </summary>
+        public static List<FxToggleLayer> FindBlendTreeLayers(
+            AnimatorController controller, ICollection<string> parameters)
+        {
+            List<FxToggleLayer> found = new List<FxToggleLayer>();
+            if (controller == null || parameters == null || parameters.Count == 0)
+            {
+                return found;
+            }
+
+            foreach (AnimatorControllerLayer layer in controller.layers)
+            {
+                if (layer.stateMachine == null)
+                {
+                    continue;
+                }
+
+                foreach (ChildAnimatorState child in layer.stateMachine.states)
+                {
+                    if (!(child.state.motion is BlendTree tree)
+                        || !parameters.Contains(tree.blendParameter))
+                    {
+                        continue;
+                    }
+
+                    FxToggleLayer read = ReadBlendTree(layer, tree);
+                    if (read != null)
+                    {
+                        found.Add(read);
+                    }
+                }
+            }
+
+            return found;
+        }
+
+        /// <summary>
+        /// The tree's children in threshold order. Vixxy interpolates between the values of its
+        /// choices, so what a slider needs is the motions at each end; anything between them is
+        /// on the line those two describe.
+        /// </summary>
+        private static FxToggleLayer ReadBlendTree(AnimatorControllerLayer layer, BlendTree tree)
+        {
+            List<ChildMotion> children = new List<ChildMotion>(tree.children);
+            if (children.Count < 2)
+            {
+                return null;
+            }
+
+            children.Sort((left, right) => left.threshold.CompareTo(right.threshold));
+
+            FxToggleLayer read = new FxToggleLayer
+            {
+                LayerName = layer.name,
+                Parameter = tree.blendParameter,
+                IsBlendTree = true,
+            };
+
+            foreach (ChildMotion child in children)
+            {
+                read.States.Add(new FxParameterState
+                {
+                    Value = Mathf.RoundToInt(child.threshold),
+                    Threshold = child.threshold,
+                    Clip = child.motion as AnimationClip,
+                });
+            }
+
+            return read;
         }
 
         /// <summary>Every parameter any transition in the layer tests.</summary>

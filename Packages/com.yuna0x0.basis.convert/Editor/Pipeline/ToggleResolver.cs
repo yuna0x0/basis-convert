@@ -28,9 +28,21 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         /// <summary>
         /// What the control offers, in the order it offers them. A toggle has two, off first. A
-        /// selector has one per value of its parameter.
+        /// selector has one per value of its parameter. A puppet has the two ends of its range.
         /// </summary>
         public List<ResolvedChoice> Choices = new List<ResolvedChoice>();
+
+        /// <summary>
+        /// True when the control is continuous rather than a set of states, which is what a
+        /// radial puppet is. Vixxy shows those as a slider and interpolates between the choices.
+        /// </summary>
+        public bool IsSlider;
+
+        /// <summary>
+        /// Motions a puppet's blend tree held between its two ends. Vixxy interpolates in a
+        /// straight line between choices, so anything in between is approximated by that line.
+        /// </summary>
+        public int MotionsBetweenEnds;
 
         public bool IsSelector => Choices.Count > 2;
 
@@ -134,6 +146,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 }
             }
 
+            ResolvePuppets(inventory, controller, resolved);
+
             foreach (FxToggleLayer layer in
                      FxControllerReader.FindToggleLayers(controller, byParameter.Keys))
             {
@@ -160,6 +174,79 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
 
             return resolved;
+        }
+
+        /// <summary>
+        /// Radial puppets, which drive a float rather than switching between states.
+        /// <para>
+        /// The menu entry names its parameter under subParameters rather than as the control's
+        /// own, and the layer holds a blend tree rather than transitions, so neither half is
+        /// found by the path a toggle takes.
+        /// </para>
+        /// </summary>
+        private static void ResolvePuppets(
+            VrcExpressionInventory inventory, AnimatorController controller,
+            List<ResolvedToggle> resolved)
+        {
+            Dictionary<string, VrcExpressionControl> radials =
+                new Dictionary<string, VrcExpressionControl>();
+
+            foreach (VrcExpressionMenu menu in inventory.Menus)
+            {
+                foreach (VrcExpressionControl control in menu.Controls)
+                {
+                    if (control.Type == VrcExpressionControlType.RadialPuppet
+                        && control.SubParameters.Count > 0
+                        && !string.IsNullOrEmpty(control.SubParameters[0])
+                        && !radials.ContainsKey(control.SubParameters[0]))
+                    {
+                        radials[control.SubParameters[0]] = control;
+                    }
+                }
+            }
+
+            if (radials.Count == 0)
+            {
+                return;
+            }
+
+            foreach (FxToggleLayer layer in
+                     FxControllerReader.FindBlendTreeLayers(controller, radials.Keys))
+            {
+                VrcExpressionControl control = radials[layer.Parameter];
+
+                ResolvedToggle toggle = new ResolvedToggle
+                {
+                    MenuName = control.Name,
+                    Parameter = layer.Parameter,
+                    LayerName = layer.LayerName,
+                    IsSlider = true,
+                };
+
+                // The two ends of the range. Vixxy interpolates between a control's choices, so
+                // the ends describe the whole sweep; a tree with motions in between is
+                // approximated by the line through them.
+                FxParameterState low = layer.States[0];
+                FxParameterState high = layer.States[layer.States.Count - 1];
+
+                toggle.MotionsBetweenEnds = layer.States.Count - 2;
+
+                toggle.Choices.Add(new ResolvedChoice
+                {
+                    Name = "Least",
+                    Value = 0,
+                    Effects = AnimationClipReader.Read(low.Clip),
+                });
+
+                toggle.Choices.Add(new ResolvedChoice
+                {
+                    Name = "Most",
+                    Value = 1,
+                    Effects = AnimationClipReader.Read(high.Clip),
+                });
+
+                resolved.Add(toggle);
+            }
         }
 
         /// <summary>

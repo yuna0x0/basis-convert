@@ -882,6 +882,18 @@ namespace yuna0x0.Basis.Convert.UI
             }
 
             List<string> parts = new List<string>();
+
+            // The shape of the control comes first, because a slider and a control with more
+            // than two choices behave differently in the menu than an on/off toggle does.
+            if (plan.IsSlider)
+            {
+                parts.Add("slider");
+            }
+            else if (plan.ChoiceCount > 2)
+            {
+                parts.Add($"{plan.ChoiceCount} choices");
+            }
+
             if (plan.Activations.Count > 0)
             {
                 parts.Add($"{plan.Activations.Count} objects");

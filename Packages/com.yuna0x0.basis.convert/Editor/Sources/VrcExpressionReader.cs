@@ -13,6 +13,20 @@ namespace yuna0x0.Basis.Convert.Sources
     /// </summary>
     public static class VrcExpressionReader
     {
+        /// <summary>Indent of one entry in the menu's own controls list.</summary>
+        private const int ControlIndent = 2;
+
+        private static int IndentOf(string line)
+        {
+            int indent = 0;
+            while (indent < line.Length && line[indent] == ' ')
+            {
+                indent++;
+            }
+
+            return indent;
+        }
+
         private static readonly Regex FieldPattern = new Regex(
             @"^(?<indent>\s*)-?\s*(?<key>[A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?<value>.*?)\s*$",
             RegexOptions.Compiled);
@@ -35,15 +49,35 @@ namespace yuna0x0.Basis.Convert.Sources
 
             VrcExpressionControl current = null;
             bool inParameterBlock = false;
+            bool inSubParameters = false;
 
             foreach (string line in block)
             {
-                bool startsEntry = line.TrimStart().StartsWith("-");
+                // A control starts at the list's own indent. Deeper entries starting with a
+                // dash belong to a nested list, subParameters being the one that matters, and
+                // treating those as controls invents entries the menu does not have.
+                int indent = IndentOf(line);
+                bool startsEntry = indent == ControlIndent && line.TrimStart().StartsWith("-");
+
                 if (startsEntry)
                 {
                     current = new VrcExpressionControl();
                     menu.Controls.Add(current);
                     inParameterBlock = false;
+                    inSubParameters = false;
+                }
+
+                if (inSubParameters && indent > ControlIndent
+                    && line.TrimStart().StartsWith("-"))
+                {
+                    Match sub = FieldPattern.Match(line);
+                    if (sub.Success && sub.Groups["key"].Value == "name"
+                        && current != null)
+                    {
+                        current.SubParameters.Add(sub.Groups["value"].Value);
+                    }
+
+                    continue;
                 }
 
                 if (current == null)
@@ -65,6 +99,14 @@ namespace yuna0x0.Basis.Convert.Sources
                 if (key == "parameter" && string.IsNullOrEmpty(value))
                 {
                     inParameterBlock = true;
+                    inSubParameters = false;
+                    continue;
+                }
+
+                if (key == "subParameters")
+                {
+                    inSubParameters = true;
+                    inParameterBlock = false;
                     continue;
                 }
 

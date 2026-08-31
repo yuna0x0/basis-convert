@@ -168,6 +168,53 @@ namespace yuna0x0.Basis.Convert.Tests
         }
 
         [Test]
+        public void ARadialPuppetBecomesASliderBetweenItsEnds()
+        {
+            // The menu entry names its parameter under subParameters rather than as its own,
+            // and the layer holds a blend tree rather than states to switch between.
+            AvatarConversionPlan plan = Plan();
+
+            ResolvedToggle puppet = plan.Toggles.Find(toggle => toggle.Parameter == "TailSize");
+            Assert.That(puppet, Is.Not.Null, "A radial puppet drives a float through a blend tree.");
+            Assert.That(puppet.IsSlider, Is.True);
+            Assert.That(puppet.Choices.Count, Is.EqualTo(2), "The two ends of the range.");
+            Assert.That(puppet.Choices[0].Effects.Deactivated, Does.Contain("Tail"));
+            Assert.That(puppet.Choices[1].Effects.Activated, Does.Contain("Tail"));
+
+            PlannedVixxyControl control =
+                plan.VixxyControls.Find(c => c.Plan.Parameter == "TailSize");
+            Assert.That(control, Is.Not.Null);
+            Assert.That(control.Plan.IsSlider, Is.True,
+                "Vixxy shows a continuous control as a slider and interpolates between choices.");
+        }
+
+        [Test]
+        public void APuppetsMenuItemIsWrittenAsASlider()
+        {
+            AvatarConversionPlan plan = Plan();
+            _instance = (GameObject)PrefabUtility.InstantiatePrefab(
+                AssetDatabase.LoadAssetAtPath<GameObject>(FixturePath));
+
+            AvatarConverter.Apply(plan, _instance);
+
+            bool foundSlider = false;
+            foreach (HVR.Vixxy.HVRVixxyMenuItem item in
+                     _instance.GetComponentsInChildren<HVR.Vixxy.HVRVixxyMenuItem>(true))
+            {
+                SerializedObject serialized = new SerializedObject(item);
+                if (serialized.FindProperty("presentation").enumValueIndex
+                    == (int)HVR.Vixxy.HVRVixxyControlPresentation.Slider)
+                {
+                    foundSlider = true;
+                }
+
+                serialized.Dispose();
+            }
+
+            Assert.That(foundSlider, Is.True, "The puppet's menu item is shown as a slider.");
+        }
+
+        [Test]
         public void ConvertingWritesTheRigAndTheConstraint()
         {
             AvatarConversionPlan plan = Plan();

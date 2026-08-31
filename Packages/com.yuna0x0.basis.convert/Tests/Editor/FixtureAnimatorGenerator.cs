@@ -82,7 +82,34 @@ namespace yuna0x0.Basis.Convert.Tests
                 transition.canTransitionToSelf = false;
             }
 
-            controller.layers = new[] {tail, hair};
+            // A radial puppet: a float blending between two motions, which is a blend tree with
+            // no transitions rather than states the parameter switches between.
+            controller.AddParameter("TailSize", AnimatorControllerParameterType.Float);
+            controller.AddLayer("TailSize");
+            AnimatorControllerLayer size = controller.layers[2];
+            size.defaultWeight = 1f;
+
+            AnimationClip small = Clip("Tail", active: false);
+            AnimationClip large = Clip("Tail", active: true);
+            Save(small, "TailSmall");
+            Save(large, "TailLarge");
+
+            BlendTree tree = new BlendTree
+            {
+                name = "TailSize",
+                blendParameter = "TailSize",
+                blendType = BlendTreeType.Simple1D,
+            };
+
+            AssetDatabase.AddObjectToAsset(tree, controller);
+            tree.AddChild(small, 0f);
+            tree.AddChild(large, 1f);
+
+            AnimatorState sizeState = size.stateMachine.AddState("Size");
+            sizeState.motion = tree;
+            size.stateMachine.defaultState = sizeState;
+
+            controller.layers = new[] {tail, hair, size};
 
             EditorUtility.SetDirty(controller);
             AssetDatabase.SaveAssets();

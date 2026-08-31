@@ -288,6 +288,14 @@ namespace yuna0x0.Basis.Convert.Writers
                     (int)HVRVixxyTitleSelection.UseCustomTitle;
             }
 
+            // A puppet is continuous, so its menu item is shown as a slider and Vixxy
+            // interpolates between the control's choices.
+            SerializedProperty presentation = serialized.FindProperty("presentation");
+            if (presentation != null && plan.IsSlider)
+            {
+                presentation.enumValueIndex = (int)HVRVixxyControlPresentation.Slider;
+            }
+
             SerializedProperty linked = serialized.FindProperty("control");
             if (linked != null)
             {
