@@ -518,18 +518,19 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 switch (KnownScriptIdentities.Resolve(guid, scriptFileId))
                 {
                     case SourceComponentKind.VrmFirstPerson:
-                        settings = VrmObjectReader.ReadVrm0Settings(document);
+                        settings ??= VrmObjectReader.ReadVrm0Settings(document);
                         break;
                     case SourceComponentKind.Vrm10Instance:
-                        settings = VrmObjectReader.ReadVrm10Settings(document);
+                        settings ??= VrmObjectReader.ReadVrm10Settings(document);
+                        plan.VrmMeta ??= VrmObjectReader.ReadVrm10Meta(document);
+                        break;
+                    case SourceComponentKind.VrmMeta:
+                        plan.VrmMeta ??= VrmObjectReader.ReadVrm0Meta(document);
                         break;
                 }
-
-                if (settings != null)
-                {
-                    break;
-                }
             }
+
+            ReportVrmLicence(plan);
 
             if (settings == null)
             {
@@ -550,9 +551,47 @@ namespace yuna0x0.Basis.Convert.Pipeline
         }
 
         /// <summary>
+        /// Says what the avatar's licence allows, before anything is written.
+        /// <para>
+        /// Every VRM states who may wear it and what may be done to it, and converting one is a
+        /// modification. Nothing here blocks a conversion: the licence is the wearer's to judge,
+        /// and this makes sure they have seen it.
+        /// </para>
+        /// </summary>
+        private static void ReportVrmLicence(AvatarConversionPlan plan)
+        {
+            VrmMetaData meta = plan.VrmMeta;
+            if (meta == null || !meta.HasAnything)
+            {
+                return;
+            }
+
+            string licence = string.IsNullOrEmpty(meta.LicenseName)
+                ? string.Empty
+                : $" Licence: {meta.LicenseName}.";
+
+            string url = string.IsNullOrEmpty(meta.LicenseUrl)
+                ? string.Empty
+                : $" {meta.LicenseUrl}";
+
+            if (meta.ForbidsModification
+                || meta.AvatarPermission == VrmAvatarPermission.OnlyAuthor)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vrm.licence.restricted",
+                    meta.Describe() + licence + " Converting an avatar changes it, and using it "
+                    + "on Basis is a use. Check you are allowed to before you convert." + url);
+                return;
+            }
+
+            plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "vrm.licence",
+                meta.Describe() + licence + " Converting an avatar changes it, so the licence is "
+                + "worth a look before you rely on the result." + url);
+        }
+
+        /// <summary>
         /// Turns a VRM eye offset into the avatar's eye position. VRM measures from the head
         /// bone, and Basis stores the height and depth of the same point relative to the avatar
-        /// root, which is what a VRChat view position holds.
+        /// root, the same point a VRChat view position holds.
         /// </summary>
         private static void ApplyVrmEyePosition(AvatarConversionPlan plan)
         {
@@ -601,9 +640,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>
         /// Rebuilds a VRM avatar's expressions as Vixxy controls.
         /// <para>
-        /// An expression is a named set of blendshape weights, which is what a Vixxy control
-        /// holds once it has two choices. VRM names a blendshape by its position in the mesh, so
-        /// each binding is resolved against the renderer it names before anything is mapped.
+        /// An expression is a named set of blendshape weights, and a Vixxy control with two
+        /// choices holds the same. VRM names a blendshape by its position in the mesh, so each
+        /// binding is resolved against the renderer it names before anything is mapped.
         /// </para>
         /// </summary>
         private static void PlanVrmExpressions(

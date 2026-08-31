@@ -261,6 +261,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>What a VRM avatar says about its eyes and its first person view.</summary>
         public VrmAvatarSettingsData VrmSettings;
 
+        /// <summary>
+        /// The licence a VRM avatar carries. Converting one is a modification, so this is read
+        /// and shown before anything is written.
+        /// </summary>
+        public VrmMetaData VrmMeta;
+
         public int CollidersFound;
         public int ConstraintsFound;
         public int DynamicBonesFound;

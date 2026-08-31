@@ -23,8 +23,8 @@ namespace yuna0x0.Basis.Convert.Sources
     /// One animator layer steered by a single parameter.
     /// <para>
     /// A bool parameter gives the two states of an on/off toggle. An int parameter gives one
-    /// state per value, which is what a menu with several controls sharing a parameter produces:
-    /// a hairstyle picker, an outfit set, a facial expression.
+    /// state per value, the shape a menu with several controls sharing a parameter produces: a
+    /// hairstyle picker, an outfit set, a facial expression.
     /// </para>
     /// </summary>
     public sealed class FxToggleLayer
@@ -39,7 +39,7 @@ namespace yuna0x0.Basis.Convert.Sources
 
         /// <summary>
         /// True when the layer blends continuously between its states rather than switching
-        /// between them, which is what a puppet does.
+        /// between them, as a puppet does.
         /// </summary>
         public bool IsBlendTree;
 
@@ -239,8 +239,8 @@ namespace yuna0x0.Basis.Convert.Sources
         }
 
         /// <summary>
-        /// Finds the layers that play unconditionally, which is what ambient motion is authored
-        /// as: no parameter steers them, and their state runs from the moment the avatar loads.
+        /// Finds the layers that play unconditionally, the shape ambient motion is authored in:
+        /// no parameter steers them, and their state runs from the moment the avatar loads.
         /// <para>
         /// A layer with a single state and no transitions is the usual shape. One with several
         /// states but nothing steering them plays only its default, so that is the state read.
@@ -465,8 +465,8 @@ namespace yuna0x0.Basis.Convert.Sources
 
         /// <summary>
         /// Records the state a value selects. Two transitions into the same state are ordinary;
-        /// two into different states mean the value alone does not decide, which is what makes
-        /// a layer unreadable as this parameter's own.
+        /// two into different states mean the value alone does not decide, so the layer cannot
+        /// be read as this parameter's own.
         /// </summary>
         private static void Claim(
             Dictionary<int, AnimatorState> byValue, int value, AnimatorState destination,

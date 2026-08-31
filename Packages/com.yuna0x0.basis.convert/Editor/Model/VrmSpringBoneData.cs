@@ -94,7 +94,7 @@ namespace yuna0x0.Basis.Convert.Model
         public Vector3 Normal = Vector3.up;
     }
 
-    /// <summary>A named group of colliders, which is what a chain references.</summary>
+    /// <summary>A named group of colliders, which a chain references by name.</summary>
     public sealed class VrmColliderGroupData
     {
         public long DocumentFileId;

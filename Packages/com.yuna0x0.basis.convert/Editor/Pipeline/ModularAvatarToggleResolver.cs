@@ -19,7 +19,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
     /// <para>
     /// Modular Avatar's hierarchy components work on Basis, but these two do not: a menu item
     /// targets VRChat's expression menu and a merged animator targets its animator layer slots,
-    /// neither of which Basis has. Read together they describe a toggle completely, which is what
+    /// neither of which Basis has. Read together they describe a toggle completely, which is all
     /// a Vixxy control needs.
     /// </para>
     /// <para>

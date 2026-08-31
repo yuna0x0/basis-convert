@@ -164,7 +164,7 @@ namespace yuna0x0.Basis.Convert.Sources
         }
 
         /// <summary>
-        /// A binding turning a transform, which is what authored motion replays.
+        /// A binding turning a transform, the one thing authored motion replays.
         /// <para>
         /// Both spellings appear: a clip authored with quaternion keys writes `m_LocalRotation`,
         /// one authored with euler keys writes `localEulerAngles`. Basis bakes either, so both
@@ -238,7 +238,7 @@ namespace yuna0x0.Basis.Convert.Sources
         }
 
         /// <summary>
-        /// True when every key holds the same value, which is what a toggle clip looks like.
+        /// True when every key holds the same value, as a toggle clip does.
         /// </summary>
         private static bool TryGetConstant(AnimationCurve curve, out float value)
         {

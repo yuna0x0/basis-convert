@@ -45,8 +45,8 @@ namespace yuna0x0.Basis.Convert.Mapping
 
         /// <summary>
         /// Motion a menu control switches on. The control enables the component rather than
-        /// holding a value, which is what `BasisAuthoredMotion` being on Vixxy's permitted list
-        /// makes possible. A clip authored not to loop plays once each time it is switched on.
+        /// holding a value, which Vixxy permits for this type. A clip authored not to loop plays
+        /// once each time it is switched on.
         /// </summary>
         public static AuthoredMotionPlan MapSwitched(
             string label, string choiceName, bool loop, ClipEffects effects)

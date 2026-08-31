@@ -39,8 +39,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public List<ResolvedChoice> Choices = new List<ResolvedChoice>();
 
         /// <summary>
-        /// True when the control is continuous rather than a set of states, which is what a
-        /// radial puppet is. Vixxy shows those as a slider and interpolates between the choices.
+        /// True for a continuous control rather than a set of states: a radial puppet. Vixxy
+        /// shows those as a slider and interpolates between the choices.
         /// </summary>
         public bool IsSlider;
 

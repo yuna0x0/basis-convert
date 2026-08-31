@@ -9,7 +9,7 @@ namespace yuna0x0.Basis.Convert.Model
     /// </summary>
     public enum VrmExpressionRole
     {
-        /// <summary>An expression the author added, which is what a menu control is for.</summary>
+        /// <summary>An expression the author added, and the reason a menu control exists.</summary>
         Custom = 0,
 
         /// <summary>Happy, angry, sad, relaxed, surprised, and 0.x's joy, sorrow and fun.</summary>

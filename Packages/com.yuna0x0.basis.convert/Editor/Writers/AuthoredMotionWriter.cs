@@ -101,8 +101,8 @@ namespace yuna0x0.Basis.Convert.Writers
         /// rotation, frame by frame.
         /// <para>
         /// Rotations are recorded as they end up on the transform rather than as the curve
-        /// states them, which is what makes a clip authored against another rest pose replay
-        /// correctly: the runtime writes these straight to the bone.
+        /// states them, so a clip authored against another rest pose replays correctly: the
+        /// runtime writes these straight to the bone.
         /// </para>
         /// </summary>
         private static BasisMotionClip Bake(

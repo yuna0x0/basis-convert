@@ -192,6 +192,27 @@ namespace yuna0x0.Basis.Convert.UI
                     $"{_plan.Sources.Count} prefabs: {SourceNames()}", EditorStyles.label);
             }
 
+            // A VRM states who may wear it and what may be done to it. Converting changes the
+            // avatar, so the licence goes above the summary rather than in the report alone.
+            if (_plan.VrmMeta != null && _plan.VrmMeta.HasAnything)
+            {
+                bool restricted = _plan.VrmMeta.ForbidsModification
+                    || _plan.VrmMeta.AvatarPermission == VrmAvatarPermission.OnlyAuthor;
+
+                string licence = string.IsNullOrEmpty(_plan.VrmMeta.LicenseName)
+                    ? string.Empty
+                    : $"\nLicence: {_plan.VrmMeta.LicenseName}";
+
+                EditorGUILayout.HelpBox(
+                    _plan.VrmMeta.Describe() + licence
+                    + (restricted
+                        ? "\nConverting changes the avatar. Check you are allowed to."
+                        : string.Empty),
+                    restricted ? MessageType.Warning : MessageType.Info);
+
+                EditorGUILayout.Space(2f);
+            }
+
             if (_plan.Profile.LooksInconsistent)
             {
                 EditorGUILayout.HelpBox(

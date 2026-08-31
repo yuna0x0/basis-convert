@@ -47,5 +47,5 @@ is left out is named in the report, per [decision 0008](0008-conversion-options.
   the common case, and they surface as `physics.collider.unresolved`.
 - A clothing prefab shipped with an avatar descriptor of its own for previewing does not
   displace the avatar's: the first descriptor found wins, and the avatar is read first.
-- `AvatarConversionPlanner.Plan(string)` still reads exactly one prefab, which is what the tests
+- `AvatarConversionPlanner.Plan(string)` still reads exactly one prefab, as the tests
   and any caller with an asset path use. `Plan(GameObject)` is the hierarchy entry point.

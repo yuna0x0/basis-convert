@@ -70,7 +70,7 @@ namespace yuna0x0.Basis.Convert.Writers
 
         /// <summary>
         /// Blendshape names to indices on the mesh that carries them. Basis stores indices, so a
-        /// name that is not on the mesh becomes -1, which is what it uses for "no viseme".
+        /// name that is not on the mesh becomes -1, its value for "no viseme".
         /// </summary>
         public static int[] ResolveVisemes(
             SkinnedMeshRenderer mesh, IReadOnlyList<string> names)

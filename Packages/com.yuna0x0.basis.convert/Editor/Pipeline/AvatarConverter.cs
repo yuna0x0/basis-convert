@@ -376,9 +376,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// This is how converting twice avoids stacking a second set on top of the first. It
         /// needs no stored state: the plan already knows every transform it targets, so the
         /// previous output can be found by looking there. Anything on a transform the plan does
-        /// not touch is left alone, which is what protects rigs added by hand elsewhere on the
-        /// avatar, and what leaves an earlier conversion's output intact where the options have
-        /// since narrowed what gets written.
+        /// not touch is left alone, so rigs added by hand elsewhere survive, as does an earlier
+        /// conversion's output where the options have since narrowed what gets written.
         /// </para>
         /// </summary>
         public static List<Component> FindReplaceable(
@@ -549,8 +548,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>
         /// Locates a transform of one source prefab in the hierarchy being converted.
         /// <para>
-        /// An item with no source recorded belongs to the avatar itself, which is what a plan
-        /// built by hand and everything resolved against the avatar root produces.
+        /// An item with no source recorded belongs to the avatar itself. A plan built by hand
+        /// and anything resolved against the avatar root are in that case.
         /// </para>
         /// </summary>
         private static bool TryTranslate(

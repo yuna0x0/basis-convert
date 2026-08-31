@@ -58,6 +58,15 @@ after the expression was authored, is reported rather than guessed at.
 An expression that also changes material colours or UVs keeps the blendshapes and reports the
 rest: VRM names the material to change, while Vixxy acts through a renderer.
 
+## The avatar's licence
+
+Every VRM states who may wear it and what may be done to it. The window shows that before you
+convert, with the title, the author and the licence it names, and warns when the licence forbids
+changing the avatar or limits who may wear it.
+
+Nothing is blocked. Converting changes an avatar and using it on Basis is a use, and both are
+yours to judge; this only makes sure the licence is in front of you first.
+
 ## Where the eyes sit
 
 Both formats record the point the camera sits at as an offset from the head bone. Basis stores

@@ -86,8 +86,8 @@ namespace yuna0x0.Basis.Convert.Mapping
             }
 
             // Elasticity restores the bone to its animated pose and stiffness preserves its
-            // original orientation. Both hold the chain toward the pose, which is what jiggle
-            // calls stiffness, so they combine the same way pull and stiffness do for PhysBones.
+            // original orientation. Both hold the chain toward the pose, jiggle's stiffness, so
+            // they combine the same way pull and stiffness do for PhysBones.
             float stiffness = Mathf.Clamp01(
                 source.Elasticity.Value * profile.PullToStiffness
                 + source.Stiffness.Value * profile.StiffnessToStiffness);

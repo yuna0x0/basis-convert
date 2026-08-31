@@ -33,7 +33,7 @@ from the repository it was built from.
 - Three secrets in a GitHub **environment** named `release`: `UPM_SERVICE_ACCOUNT_KEY_ID`,
   `UPM_SERVICE_ACCOUNT_KEY_SECRET`, `UPM_ORG_ID`. An environment rather than repository secrets,
   because it can carry a deployment tag rule limiting them to `v*` tags and can require a
-  reviewer. The release job declares `environment: release`, which is what makes them visible to
+  reviewer. The release job declares `environment: release`, which makes them visible to
   it.
 
 ## The commands

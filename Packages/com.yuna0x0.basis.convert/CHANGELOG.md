@@ -8,6 +8,10 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- A VRM avatar's licence is read and shown before converting: its title, author, who may wear it
+  and what the licence allows. A licence that forbids changing the avatar, or limits who may wear
+  it, is a warning rather than a block. Converting changes an avatar and using it on Basis is a
+  use, and both are the wearer's to judge.
 - A VRM avatar's eye offset becomes the Basis eye position. Both formats record the point the
   camera sits at as an offset from the head bone, which is what VRChat calls the view position,
   so a converted VRM avatar has a correct eye height rather than one Basis has to guess. The

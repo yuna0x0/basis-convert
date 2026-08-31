@@ -168,6 +168,130 @@ namespace yuna0x0.Basis.Convert.Sources
         }
 
         /// <summary>
+        /// The licence a VRM 0.x avatar carries, followed from its meta component.
+        /// </summary>
+        public static VrmMetaData ReadVrm0Meta(UnityYamlDocument meta)
+        {
+            if (meta == null || !meta.TryGetTopLevelObjectReference(
+                    "Meta", out string guid, out long fileId))
+            {
+                return null;
+            }
+
+            UnityYamlDocument document = Load(guid, fileId);
+            if (document == null)
+            {
+                return null;
+            }
+
+            VrmMetaData data = new VrmMetaData
+            {
+                Title = document.GetTopLevelValue("Title") ?? string.Empty,
+                LicenseUrl = document.GetTopLevelValue("OtherLicenseUrl") ?? string.Empty,
+            };
+
+            string author = document.GetTopLevelValue("Author");
+            if (!string.IsNullOrEmpty(author))
+            {
+                data.Authors.Add(author);
+            }
+
+            if (document.TryGetInt("AllowedUser", out int allowed))
+            {
+                data.AvatarPermission = (VrmAvatarPermission)allowed;
+            }
+
+            if (document.TryGetInt("LicenseType", out int license))
+            {
+                data.LicenseName = Vrm0LicenseNames[
+                    Mathf.Clamp(license, 0, Vrm0LicenseNames.Length - 1)];
+            }
+
+            return data;
+        }
+
+        /// <summary>The licence a VRM 1.0 avatar carries, from its object asset.</summary>
+        public static VrmMetaData ReadVrm10Meta(UnityYamlDocument instance)
+        {
+            if (instance == null || !instance.TryGetTopLevelObjectReference(
+                    "Vrm", out string guid, out long fileId))
+            {
+                return null;
+            }
+
+            UnityYamlDocument vrm = Load(guid, fileId);
+            if (vrm == null || !vrm.TryGetTopLevelBlock("Meta", out List<string> block))
+            {
+                return null;
+            }
+
+            VrmMetaData data = new VrmMetaData();
+            bool inAuthors = false;
+
+            foreach (string line in block)
+            {
+                string trimmed = line.TrimStart();
+
+                if (inAuthors)
+                {
+                    if (trimmed.StartsWith("-"))
+                    {
+                        string name = trimmed.Substring(1).Trim();
+                        if (!string.IsNullOrEmpty(name))
+                        {
+                            data.Authors.Add(name);
+                        }
+
+                        continue;
+                    }
+
+                    inAuthors = false;
+                }
+
+                if (trimmed.StartsWith("Authors:"))
+                {
+                    inAuthors = true;
+                }
+                else if (trimmed.StartsWith("Name:"))
+                {
+                    data.Title = trimmed.Substring("Name:".Length).Trim();
+                }
+                else if (trimmed.StartsWith("OtherLicenseUrl:"))
+                {
+                    data.LicenseUrl = trimmed.Substring("OtherLicenseUrl:".Length).Trim();
+                }
+                else if (trimmed.StartsWith("AvatarPermission:")
+                         && UnityYamlValues.TryParseInt(
+                             trimmed.Substring("AvatarPermission:".Length).Trim(), out int who))
+                {
+                    data.AvatarPermission = (VrmAvatarPermission)who;
+                }
+                else if (trimmed.StartsWith("Modification:")
+                         && UnityYamlValues.TryParseInt(
+                             trimmed.Substring("Modification:".Length).Trim(), out int change))
+                {
+                    data.Modification = (VrmModificationPermission)change;
+                }
+            }
+
+            return data;
+        }
+
+        /// <summary>VRM 0.x's licence types, in the order its own enum declares them.</summary>
+        private static readonly string[] Vrm0LicenseNames =
+        {
+            "Redistribution_Prohibited",
+            "CC0",
+            "CC_BY",
+            "CC_BY_NC",
+            "CC_BY_SA",
+            "CC_BY_NC_SA",
+            "CC_BY_ND",
+            "CC_BY_NC_ND",
+            "Other",
+        };
+
+        /// <summary>
         /// A VRM 0.x avatar's first person settings, which is where its eye offset lives.
         /// </summary>
         public static VrmAvatarSettingsData ReadVrm0Settings(UnityYamlDocument firstPerson)

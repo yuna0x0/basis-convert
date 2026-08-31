@@ -272,6 +272,42 @@ namespace yuna0x0.Basis.Convert.Tests
         }
 
         [Test]
+        public void TheAvatarsLicenceIsReadAndReported()
+        {
+            // Every VRM states who may wear it and what may be done to it. Converting changes
+            // the avatar, so the licence is shown before anything is written.
+            AvatarConversionPlan plan = Plan(Vrm0Path);
+
+            Assert.That(plan.VrmMeta, Is.Not.Null);
+            Assert.That(plan.VrmMeta.Title, Is.EqualTo("Sample Twintails"));
+            Assert.That(plan.VrmMeta.Authors, Is.EqualTo(new[] {"A Sample Author"}));
+            Assert.That(plan.VrmMeta.AvatarPermission,
+                Is.EqualTo(VrmAvatarPermission.Everyone));
+            Assert.That(plan.VrmMeta.LicenseName, Is.EqualTo("CC_BY"));
+            Assert.That(plan.VrmMeta.ForbidsModification, Is.False);
+
+            Assert.That(plan.AllDiagnostics().HasCode("vrm.licence"), Is.True);
+            Assert.That(plan.AllDiagnostics().HasCode("vrm.licence.restricted"), Is.False,
+                "CC BY allows changing it, and anyone may wear this one.");
+        }
+
+        [Test]
+        public void ALicenceThatForbidsChangesIsAWarning()
+        {
+            // Nothing blocks a conversion: the licence is the wearer's to judge. What this has
+            // to do is make sure they saw it.
+            VrmMetaData meta = new VrmMetaData
+            {
+                Title = "Someone Else's Avatar",
+                LicenseName = "CC_BY_ND",
+                AvatarPermission = VrmAvatarPermission.OnlyAuthor,
+            };
+
+            Assert.That(meta.ForbidsModification, Is.True);
+            Assert.That(meta.Describe(), Does.Contain("only its author may wear it"));
+        }
+
+        [Test]
         public void NoVrmComponentIsReportedAsAnUnknownScript()
         {
             foreach (string path in new[] {Vrm10Path, Vrm0Path})

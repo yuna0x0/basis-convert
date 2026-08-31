@@ -131,6 +131,22 @@ bone takes its children with it, so the usual VRM cases, a face skinned to the h
 parented to it, are already covered. Scaling a skinned renderer's own transform would hide
 nothing, so the flags are reported rather than turned into head chop targets.
 
+## The licence
+
+Every VRM carries one. VRM 0.x has a `VRMMeta` component (guid
+`690ea0146224b8b4694a1925dddeb352`) naming a `VRMMetaObject` asset
+(`63b589176a34b344b9ccbee2b7e7114a`) with `Title`, `Author`, `AllowedUser`, `LicenseType` and
+`OtherLicenseUrl`. VRM 1.0 keeps the same in the `VRM10Object` asset's `Meta` block, with
+`Authors` as a list and `Modification` as its own field.
+
+`AllowedUser` and `AvatarPermissionType` share their order: `OnlyAuthor`,
+`ExplicitlyLicensedPerson` / `onlySeparatelyLicensedPerson`, `Everyone`. VRM 1.0's
+`ModificationType` is `prohibited`, `allowModification`, `allowModificationRedistribution`. VRM
+0.x says the same through `LicenseType`, where `CC_BY_ND` and `CC_BY_NC_ND` forbid changes.
+
+Converting an avatar changes it, so the licence is read and shown before anything is written.
+Nothing is blocked: what the licence permits is the wearer's to judge.
+
 ## The `.vrm` file itself
 
 A `.vrm` is a glTF binary. `extensions.VRMC_springBone` in the JSON chunk holds the same data

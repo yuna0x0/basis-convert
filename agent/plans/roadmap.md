@@ -20,7 +20,7 @@ readers  ->  intermediate model  ->  mappers  ->  writers
 (text in)    (plain data)            (pure)       (Unity objects out)
 ```
 
-Only writers touch Unity objects, which is what keeps the rest testable without an editor open.
+Only writers touch Unity objects, so the rest stays testable without an editor open.
 
 ## Where things stand
 
@@ -142,11 +142,11 @@ the original. Everything else maps directly.
   than as an unknown script. What remains:
 
   - **Gimmick controllers.** A layer is only read as a toggle when a single parameter steers it,
-    which is what keeps false positives out. Gimmick packs commonly combine conditions, so their
-    toggles are reported rather than rebuilt.
+    which keeps false positives out. Gimmick packs commonly combine conditions, so their toggles
+    are reported rather than rebuilt.
   - Menu items are read per prefab. A menu installed into a submenu keeps its label but not its
     place in a menu tree, since Vixxy menu items are flat.
-  - Modular Avatar object paths are resolved against the avatar root, which is what
+  - Modular Avatar object paths are resolved against the avatar root, as
     `AvatarObjectReference` does. A path naming something outside the prefab being converted is
     reported rather than guessed at.
   - A layer steered by two of the avatar's own parameters is still left alone. Vixxy has an

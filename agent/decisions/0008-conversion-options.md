@@ -25,7 +25,7 @@ modes to reason about. Filtering a complete plan keeps a narrowed conversion equ
 minus the parts left out.
 
 It is also the shape the plan already had: a list of independent items, each with its own
-diagnostics, which is what the per-rig preset dropdown was already editing in place.
+diagnostics, as the per-rig preset dropdown was already editing in place.
 
 ## Consequence
 

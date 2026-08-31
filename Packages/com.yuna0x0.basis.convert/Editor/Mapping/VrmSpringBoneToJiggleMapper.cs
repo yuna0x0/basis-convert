@@ -105,9 +105,9 @@ namespace yuna0x0.Basis.Convert.Mapping
             if (source.CenterFileId != 0L)
             {
                 log.Add(DiagnosticSeverity.Dropped, "vrm.center.dropped",
-                    "The chain named a centre transform, which is what VRM simulates relative "
-                    + "to so hair does not lag behind a moving avatar. Jiggle has no equivalent, "
-                    + "and its own root motion handling covers some of the same ground.");
+                    "The chain named a centre transform. VRM simulates relative to it so hair "
+                    + "does not lag behind a moving avatar. Jiggle has no equivalent; its own "
+                    + "root motion handling covers some of the same ground.");
             }
 
             return plan;
