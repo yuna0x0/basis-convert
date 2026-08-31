@@ -1,7 +1,7 @@
 # Watari
 
-Bring an avatar you already own into [Basis](https://basisvr.org/), with its physics, constraints
-and menus intact.
+Bring an avatar you already own into [Basis](https://basisvr.org/), with its physics, constraints,
+menus and motion intact.
 
 Import the avatar into a Basis project, pick it in the scene, and convert:
 
@@ -13,8 +13,8 @@ Import the avatar into a Basis project, pick it in the scene, and convert:
 
 Clothing and accessories convert with the avatar they are worn on.
 
-Nothing is written until you press Convert, one undo reverts the lot, and anything that cannot
-come across cleanly is listed rather than dropped quietly.
+Nothing is written until you press Convert, one undo reverts the components it wrote, and
+anything that cannot come across cleanly is listed rather than dropped quietly.
 
 Documentation: **https://yuna0x0.github.io/watari-basis/**
 

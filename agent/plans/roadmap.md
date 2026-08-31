@@ -22,11 +22,11 @@ Only writers touch Unity objects, which is what keeps the rest testable without 
 ## Where things stand
 
 **Done.** VRChat PhysBones and their colliders, legacy Dynamic Bone, all six VRChat constraint
-types, and the avatar descriptor. Reading components out of prefabs whose scripts are missing,
-resolving each to the transform that carries it, mapping, and writing, driven from an editor
-window that scans, reports and converts, over as much or as little of the avatar as is ticked.
-Re-running replaces its own output rather than stacking a second set. The humanoid rig is checked
-against what Basis's IK needs.
+types, the avatar descriptor, menu toggles, and animation that plays on its own. Reading
+components out of prefabs whose scripts are missing, resolving each to the transform that carries
+it, mapping, and writing, driven from an editor window that scans, reports and converts, over as
+much or as little of the avatar as is ticked. Re-running replaces its own output rather than
+stacking a second set. The humanoid rig is checked against what Basis's IK needs.
 
 See `../research/physbone-to-jiggle-mapping.md` for the mapping table, and the decisions folder
 for why chain splitting is unnecessary (0006) and why repeated conversions carry no stored state
@@ -76,24 +76,24 @@ the original. Everything else maps directly.
   not in the `BasisFullIKConstraintJob` the constraints page names, which does not exist in the
   shipped source. The IK itself lives in `com.basis.eeriemovement`.
 - **Toggles and animation. Partly done.** Menu toggles are rebuilt as HVR Vixxy controls with
-  menu items, covering object switching, blendshapes and material properties. On the reference
-  avatar 10 of 26 rebuild; the rest are reported with why. What remains:
+  menu items, covering object switching, blendshapes and material properties. Three menu shapes
+  are read: a two-state toggle, a selector whose entries share one int parameter and each set a
+  different value, and a radial puppet, which becomes a control presented as a slider between the
+  two ends of its blend tree. See [decision 0012](../decisions/0012-controls-with-more-than-two-states.md).
 
-  - **Multi-value selectors.** A menu often has several controls sharing one int parameter, each
-    selecting a value: nine facial expressions on `F_Parts`, five hairstyles on `Hair`, outfit
-    sets on `F_Set`. Their layers hold one state per value, and the reader only understands
-    two-state on/off layers, so they are skipped. Vixxy holds this natively as a control with
-    several choices, so this is the next real coverage win: on the reference avatar it is 3 of
-    the 14 parameters behind its 26 menu toggles, and they are the ones people use most.
-  - **Toggles in merged animators.** Only 11 of the reference avatar's 26 toggles are traced to
-    an animator layer at all, and 10 of those 11 rebuild. The avatar ships several FX
-    controllers and the descriptor names one; Modular Avatar's `MergeAnimator` brings the rest
-    in at build time. Reading those is worth more for coverage than anything below it, and is
-    the first concrete cost of the authored hierarchy not being the built hierarchy.
-  - **Puppets.** A radial puppet maps onto a Vixxy control with several choices and a slider
-    presentation. Two and four axis puppets have no equivalent.
-  - **Ambient motion onto `BasisAuthoredMotion`.** Untouched. Clips that animate over time are
-    currently counted and reported, and this is where they would go.
+  Animation that plays with nothing steering it is rebuilt as `BasisAuthoredMotion`, with the
+  clip baked to a `BasisMotionClip` beside the animation it came from. See
+  [decision 0013](../decisions/0013-baked-motion-assets.md). What remains:
+
+  - **Motion a menu switches on.** A toggle whose clip animates over time is still reported and
+    dropped. It should become an authored motion the control enables:
+    `HVR_VixxyPermitted` lists `BasisAuthoredMotion` among the types a Vixxy activation may
+    toggle, and the component raises `EnabledStateChanged` for exactly that.
+  - **Gimmick layers steered by more than one parameter.** A layer is read only when a single
+    parameter steers it, which is what keeps gesture layers from being mistaken for a toggle's
+    own. Anything combining conditions is reported rather than rebuilt.
+  - **Two and four axis puppets.** They drive two parameters at once, which no single Vixxy
+    control expresses.
 
   Material properties are done. A clip sets one channel at a time, `material._Color.r` and its
   siblings, so the channels are gathered back into one property, typed by how they were named:
@@ -103,10 +103,10 @@ the original. Everything else maps directly.
   the renderer, so a renderer with more than one material gets a diagnostic saying so.
 
 - **Conversion options in the window. Done.** A conversion can be narrowed rather than being all
-  or nothing. Basic is five checkboxes over the kinds of thing a conversion produces: physics,
-  the colliders those rigs rest on, constraints, the avatar descriptor and menu toggles. Advanced
-  adds a checkbox per rig, per constraint and per toggle, with All and None on each list, and the
-  two tuning weights.
+  or nothing. Basic is a checkbox per kind of thing a conversion produces: physics, the colliders
+  those rigs rest on, constraints, the avatar descriptor, menu toggles and authored motion.
+  Advanced adds a checkbox per rig, per constraint, per toggle and per motion, with All and None
+  on each list, and the two tuning weights.
 
   The narrowing is a filter over the plan, not a flag threaded through the readers: every scan
   still reads the whole avatar, so the counts and the detected source kind do not change with
@@ -123,15 +123,19 @@ the original. Everything else maps directly.
 
   A menu item and a merged animator read together describe a toggle completely, so those are
   traced and rebuilt as Vixxy controls, with the merged animator's clip paths rebased onto the
-  object it was merged at. What remains:
+  object it was merged at. `ObjectToggle` needs no animator at all: a menu item and an object
+  toggle on the same object say the same thing between them, and are read that way. All 32
+  Modular Avatar components are named, so anything not handled is reported as what it is rather
+  than as an unknown script. What remains:
 
-  - **`ObjectToggle`.** The simplest shape, a toggle with no animator at all. Not implemented,
-    because there is no instance of it in the reference library to check against.
   - **Gimmick controllers.** A layer is only read as a toggle when a single parameter steers it,
     which is what keeps false positives out. Gimmick packs commonly combine conditions, so their
     toggles are reported rather than rebuilt.
   - Menu items are read per prefab. A menu installed into a submenu keeps its label but not its
     place in a menu tree, since Vixxy menu items are flat.
+  - Modular Avatar object paths are resolved against the avatar root, which is what
+    `AvatarObjectReference` does. A path naming something outside the prefab being converted is
+    reported rather than guessed at.
 - **Props and worlds.** Separate content types, same three stages.
 
 ## Backlog, outside this package
@@ -156,7 +160,10 @@ the original. Everything else maps directly.
 
 ## Open questions
 
-- The display name is provisional, see `../decisions/0002-menu-placement-and-naming.md`.
+- Whether the package id and namespaces should follow the display name. They did not change with
+  the rename to Watari: `basis` is a scope segment rather than a product name, and changing the
+  id would mean a second OpenUPM entry and orphaning what was published. See
+  `../decisions/0002-menu-placement-and-naming.md`.
 - The two heuristic mappings need tuning against avatars compared side by side.
 - Whether to offer a non-destructive build-time path in addition, and if so whether through NDMF
   or Basis's own build hooks.

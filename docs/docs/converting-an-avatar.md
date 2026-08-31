@@ -41,8 +41,8 @@ come across cleanly, grouped by kind:
 ## 4. Choose what to convert
 
 By default everything is converted. Under **What to convert** you can switch off whole kinds:
-physics, colliders, constraints, the avatar descriptor, menu toggles. Turning on **Advanced**
-adds a checkbox for each individual prefab, rig, constraint and toggle.
+physics, colliders, constraints, the avatar descriptor, menu toggles, authored motion. Turning on
+**Advanced** adds a checkbox for each individual prefab, rig, constraint, toggle and motion.
 
 See [Conversion options](conversion-options.md).
 
@@ -54,6 +54,10 @@ step, and the window reports what it wrote.
 If the avatar already carries components from a previous conversion on the same bones, you are
 asked before they are replaced. Anything elsewhere on the avatar is left alone.
 
+If the avatar has animation that plays on its own, a clip is baked into the project beside the
+animation it came from. That is a file rather than a component, so it is the one thing an undo
+leaves behind. See [Authored motion](what-converts/authored-motion.md).
+
 {/*
   IMAGE PLACEHOLDER: the window after a conversion, with the green result line and the summary
   of what was written.
@@ -63,8 +67,8 @@ asked before they are replaced. Anything elsewhere on the avatar is left alone.
 
 ## 6. Check the result
 
-Press **Test in Editor** on the `BasisAvatar` component. Jiggle physics only runs once an avatar
-is calibrated, so plain Play mode will not show anything moving.
+Press **Test in Editor** on the `BasisAvatar` component. Jiggle physics and authored motion both
+run only once an avatar is calibrated, so plain Play mode will not show anything moving.
 
 Watch the hair, tail and skirt next to how they behaved before. Two parts of the physics mapping
 are fits rather than conversions, and are the ones worth adjusting if the result feels wrong:

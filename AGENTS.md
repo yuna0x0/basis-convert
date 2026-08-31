@@ -85,5 +85,11 @@ tens of gigabytes and slow to rebuild.
 ## Trademark
 
 Basis, BasisVR and Basis Framework are trademarks of the Basis Project. Their policy permits
-descriptive reference and asks third parties not to imply affiliation or endorsement. The
-package's display name is provisional for that reason.
+descriptive reference and asks third parties not to imply affiliation or endorsement. The product
+is named Watari for that reason, with the Basis reference kept descriptive: the display name is
+`Watari (Converter for Basis)` and menus are `Tools/Watari/...`. See `agent/decisions/0002`.
+
+The package id and the namespaces still read `com.yuna0x0.basis.convert` and
+`yuna0x0.Basis.Convert`, where `basis` is a scope segment rather than a product name. They did
+not change with the rename, because an id change means a second OpenUPM entry and orphans what
+was published.

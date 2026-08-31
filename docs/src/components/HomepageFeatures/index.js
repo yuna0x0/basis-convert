@@ -4,12 +4,13 @@ import styles from './styles.module.css';
 
 const features = [
   {
-    title: 'Physics, constraints and menus',
+    title: 'Physics, constraints, menus and motion',
     description: (
       <>
         PhysBones and Dynamic Bone become Basis jiggle physics, VRChat constraints become their
-        Basis equivalents, the avatar descriptor becomes a <code>BasisAvatar</code>, and menu
-        toggles are rebuilt as HVR Vixxy controls.
+        Basis equivalents, the avatar descriptor becomes a <code>BasisAvatar</code>, menu toggles
+        are rebuilt as HVR Vixxy controls, and animation that plays on its own becomes authored
+        motion.
       </>
     ),
   },
@@ -27,7 +28,7 @@ const features = [
     description: (
       <>
         Anything approximated or dropped is reported with a reason before you convert. Nothing is
-        written until you confirm, and one undo reverts a whole conversion.
+        written until you confirm, and one undo reverts the components a conversion wrote.
       </>
     ),
   },

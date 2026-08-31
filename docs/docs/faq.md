@@ -30,10 +30,22 @@ component instead.
 Yes. Select the clothing object and convert that. A conversion replaces only components on the
 objects it is about to write to, so anything already converted stays as it is.
 
+### An undo left a file behind.
+
+Baked motion clips are project assets, not components, so an undo does not remove them. Anything
+else a conversion writes disappears. The clip sits in a `Watari Motion` folder beside the
+animation it was baked from, and converting again writes over it rather than adding another.
+
 ### I converted twice by accident.
 
 Converting again offers to replace what the previous conversion wrote on the same objects, and
 one undo reverts the whole thing.
+
+### My avatar's idle animation does not play.
+
+Authored motion runs on a calibrated avatar, the same as jiggle physics: press **Test in Editor**
+on the `BasisAvatar` component. If nothing was converted at all, check the report: only layers
+with no parameter steering them are read as motion, and only the rotation in them is baked.
 
 ### The physics feels wrong compared to the original.
 

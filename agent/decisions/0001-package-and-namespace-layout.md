@@ -32,4 +32,5 @@ casing wins over it.
 
 ## Note
 
-The display name is still provisional. See [0002](0002-menu-placement-and-naming.md).
+The display name was settled later as `Watari (Converter for Basis)`; the id and namespaces
+here did not change with it. See [0002](0002-menu-placement-and-naming.md).
