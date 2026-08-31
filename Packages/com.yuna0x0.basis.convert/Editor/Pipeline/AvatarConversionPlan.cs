@@ -255,6 +255,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>VRM spring chains found, from either VRM format.</summary>
         public int VrmChainsFound;
 
+        /// <summary>VRM expressions found, whether or not each became a control.</summary>
+        public int VrmExpressionsFound;
+
         public int CollidersFound;
         public int ConstraintsFound;
         public int DynamicBonesFound;

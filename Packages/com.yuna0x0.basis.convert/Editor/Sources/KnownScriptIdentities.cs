@@ -29,6 +29,7 @@ namespace yuna0x0.Basis.Convert.Sources
         // releases. See agent/research/vrm-spring-bones.md.
         VrmSpringBone,
         VrmSpringBoneColliderGroup,
+        VrmBlendShapeProxy,
         Vrm10Instance,
         Vrm10SpringBoneJoint,
         Vrm10SpringBoneCollider,
@@ -141,6 +142,7 @@ namespace yuna0x0.Basis.Convert.Sources
                 // UniVRM, read from its own .meta files in the package cache.
                 { ("00ea06e1753e16f4ca870c39c067c86b", LooseScriptFileId), SourceComponentKind.VrmSpringBone },
                 { ("646b65a4a57afd34d8c4ed557efb46a5", LooseScriptFileId), SourceComponentKind.VrmSpringBoneColliderGroup },
+                { ("5b678c1df50cfb547990db24a32856da", LooseScriptFileId), SourceComponentKind.VrmBlendShapeProxy },
                 { ("bfba4ccd3f854e64f868ce83553071a9", LooseScriptFileId), SourceComponentKind.Vrm10Instance },
                 { ("0a942e03b39600e41a1b161e958048f7", LooseScriptFileId), SourceComponentKind.Vrm10SpringBoneJoint },
                 { ("35bfb658269b2af478e501de243deda6", LooseScriptFileId), SourceComponentKind.Vrm10SpringBoneCollider },

@@ -176,6 +176,48 @@ namespace yuna0x0.Basis.Convert.Tests
             Debug.Log($"Wrote the sample avatar's animator to {Folder}.");
         }
 
+        /// <summary>
+        /// A mesh with named blendshapes, for the VRM expression fixtures.
+        /// <para>
+        /// VRM names a blendshape by its position in the mesh, so testing that at all needs a
+        /// real mesh with real shapes on it. Two triangles and two shapes is enough, and a mesh
+        /// is a native Unity asset with no missing script to hand-write.
+        /// </para>
+        /// </summary>
+        [MenuItem(ProductInfo.ToolsMenu + "Development/Regenerate VRM Face Mesh")]
+        public static void GenerateFaceMesh()
+        {
+            const string folder =
+                "Packages/com.yuna0x0.basis.convert/Tests/Editor/Fixtures/SampleVrmAvatar";
+
+            Mesh mesh = new Mesh {name = "SampleFace"};
+            mesh.vertices = new[]
+            {
+                new Vector3(-0.1f, 0f, 0f),
+                new Vector3(0.1f, 0f, 0f),
+                new Vector3(0f, 0.2f, 0f),
+            };
+
+            mesh.triangles = new[] {0, 1, 2};
+            mesh.normals = new[] {Vector3.back, Vector3.back, Vector3.back};
+
+            // The order matters: it is what an expression refers to.
+            mesh.AddBlendShapeFrame("Smile", 100f,
+                new[] {Vector3.up * 0.01f, Vector3.up * 0.01f, Vector3.zero},
+                null, null);
+
+            mesh.AddBlendShapeFrame("BrowUp", 100f,
+                new[] {Vector3.zero, Vector3.zero, Vector3.up * 0.02f},
+                null, null);
+
+            AssetDatabase.CreateAsset(mesh, $"{folder}/SampleFace.mesh");
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log($"Wrote the VRM face mesh to {folder}, guid "
+                + AssetDatabase.AssetPathToGUID($"{folder}/SampleFace.mesh"));
+        }
+
         /// <summary>One clip switching one object, which is the shape a menu toggle animates.</summary>
         private static AnimationClip Clip(string path, bool active)
         {

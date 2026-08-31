@@ -86,6 +86,31 @@ carries `Name` and `Colliders`.
   is how VRM keeps hair from lagging when the avatar moves.
 - **Inside colliders have no equivalent**, the same as VRChat's `insideBounds`.
 
+## Expressions
+
+Both formats keep expressions in assets rather than on the avatar, so the components on the
+prefab are followed off disk.
+
+**VRM 0.x**: `VRMBlendShapeProxy` (guid `5b678c1df50cfb547990db24a32856da`) names a
+`BlendShapeAvatar` (`329dca3bf78fcdd42b2df941673db76f`) whose `Clips` are `BlendShapeClip` assets
+(`37562b39ff933b245ac2f35d87edbcd6`). A clip holds `BlendShapeName`, `Preset`, `Values`
+(`{RelativePath, Index, Weight}`), `MaterialValues` and `IsBinary`.
+
+**VRM 1.0**: `Vrm10Instance.Vrm` names a `VRM10Object` (`88684271e27adb843b6570957c9e7637`) whose
+`Expression` block has one field per preset plus `CustomClips`, each a `VRM10Expression`
+(`8c8b2024ae0d0944eb878d90212bf21b`) holding `MorphTargetBindings`, `MaterialColorBindings`,
+`MaterialUVBindings` and `IsBinary`.
+
+**The weight scales differ, and this is the thing to get right.** VRM 1.0 weights run 0 to 1:
+`MorphTargetBinding.VRM_TO_UNITY` is 100. VRM 0.x weights are already on Unity's 0 to 100 scale,
+which `BlendShapeClipHandler` shows by passing the value straight to `SetBlendShapeWeight`.
+
+**A binding names a blendshape by its index in the mesh**, not by name, so converting one needs
+the mesh to translate.
+
+The 0.x `BlendShapePreset` enum, which the asset stores as an int, is: Unknown, Neutral, A, I, U,
+E, O, Blink, Joy, Angry, Sorrow, Fun, LookUp, LookDown, LookLeft, LookRight, Blink_L, Blink_R.
+
 ## The `.vrm` file itself
 
 A `.vrm` is a glTF binary. `extensions.VRMC_springBone` in the JSON chunk holds the same data

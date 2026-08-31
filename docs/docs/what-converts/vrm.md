@@ -37,6 +37,27 @@ that stiffens toward its tip keeps that shape instead of being averaged.
 rig simulates everything under its root. An accessory hanging off a hair bone would start
 swinging, so it is excluded to leave it as still as VRM left it.
 
+## Expressions
+
+A VRM expression is a named set of blendshape weights, which is what a Vixxy control holds once
+it has two choices. The ones an author added, and the emotion presets, become controls with a
+menu item each: off leaves every shape at the weight the avatar was authored with, on takes the
+expression's.
+
+VRM has no menu of its own, so on VRChat these were driven by whatever was playing the avatar.
+On Basis the wearer picks them.
+
+Not every expression becomes a control. The lip sync shapes, blinking and looking around are
+driven by Basis itself, and offering the wearer a menu item for something already being driven
+would fight it. Those are reported as left to Basis.
+
+VRM refers to a blendshape by its position in the mesh rather than by name, so each one is looked
+up on the renderer it names. A shape that is no longer there, usually because the mesh changed
+after the expression was authored, is reported rather than guessed at.
+
+An expression that also changes material colours or UVs keeps the blendshapes and reports the
+rest: VRM names the material to change, while Vixxy acts through a renderer.
+
 ## What does not
 
 - **The centre transform.** VRM simulates relative to it so hair does not lag behind a moving

@@ -8,6 +8,11 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- VRM expressions become Vixxy controls. An expression is a named set of blendshape weights,
+  which is what a control holds once it has two choices: off leaves every shape as the avatar was
+  authored, on takes the expression's. The lip sync shapes, blinking and looking around are left
+  to Basis, which drives them itself. Both VRM formats are read, including their different weight
+  scales.
 - VRM spring bones are read and become jiggle physics, in both VRM 0.x and VRM 1.0. UniVRM does
   not need to be installed: a VRM avatar in a Basis project carries its spring bones as missing
   scripts, and the data is read from the prefab file the same way every other source is. VRM 1.0

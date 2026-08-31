@@ -151,6 +151,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             // VRM chains are read in a pass of their own: a spring names joint components that
             // sit anywhere in the file, so they cannot be resolved as the documents go past.
             PlanVrmChains(documents, resolver, plan, source);
+            PlanVrmExpressions(documents, plan, source);
 
             foreach (UnityYamlDocument document in documents)
             {
@@ -490,6 +491,136 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     source);
 
                 plan.Rigs.Add(planned);
+            }
+        }
+
+        /// <summary>
+        /// Rebuilds a VRM avatar's expressions as Vixxy controls.
+        /// <para>
+        /// An expression is a named set of blendshape weights, which is what a Vixxy control
+        /// holds once it has two choices. VRM names a blendshape by its position in the mesh, so
+        /// each binding is resolved against the renderer it names before anything is mapped.
+        /// </para>
+        /// </summary>
+        private static void PlanVrmExpressions(
+            List<UnityYamlDocument> documents, AvatarConversionPlan plan, ConversionSource source)
+        {
+            if (plan.SourceRoot == null)
+            {
+                return;
+            }
+
+            List<VrmExpressionData> expressions = new List<VrmExpressionData>();
+
+            foreach (UnityYamlDocument document in documents)
+            {
+                if (document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
+                    || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))
+                {
+                    continue;
+                }
+
+                switch (KnownScriptIdentities.Resolve(guid, scriptFileId))
+                {
+                    case SourceComponentKind.VrmBlendShapeProxy:
+                        expressions.AddRange(VrmExpressionReader.ReadVrm0(document));
+                        break;
+                    case SourceComponentKind.Vrm10Instance:
+                        expressions.AddRange(VrmExpressionReader.ReadVrm10(document));
+                        break;
+                }
+            }
+
+            if (expressions.Count == 0)
+            {
+                return;
+            }
+
+            Transform root = source?.Root != null
+                ? source.Root.transform
+                : plan.SourceRoot.transform;
+
+            int rebuilt = 0;
+            int driven = 0;
+
+            foreach (VrmExpressionData expression in expressions)
+            {
+                plan.VrmExpressionsFound++;
+
+                if (!VrmExpressionToVixxyMapper.IsMenuWorthy(expression))
+                {
+                    if (expression.Role != VrmExpressionRole.Custom
+                        && expression.Role != VrmExpressionRole.Emotion)
+                    {
+                        driven++;
+                    }
+
+                    continue;
+                }
+
+                NameBlendShapes(expression, root);
+
+                VixxyControlPlan control = VrmExpressionToVixxyMapper.Map(expression);
+                foreach (ConversionDiagnostic diagnostic in control.Diagnostics)
+                {
+                    plan.ToggleDiagnostics.Add(diagnostic);
+                }
+
+                if (control.Subjects.Count == 0)
+                {
+                    continue;
+                }
+
+                PlannedVixxyControl planned = new PlannedVixxyControl {Plan = control};
+                if (!ResolveSubjects(plan, control, planned, root))
+                {
+                    continue;
+                }
+
+                planned.Source = source;
+                plan.VixxyControls.Add(planned);
+                rebuilt++;
+            }
+
+            if (rebuilt > 0)
+            {
+                plan.ToggleDiagnostics.Add(DiagnosticSeverity.Mapped, "vrm.expressionsRebuilt",
+                    $"{rebuilt} VRM expressions were rebuilt as Vixxy controls, each with a menu "
+                    + "item. VRM has no menu of its own, so these were driven by whatever was "
+                    + "playing the avatar rather than chosen by the wearer.");
+            }
+
+            if (driven > 0)
+            {
+                plan.ToggleDiagnostics.Add(DiagnosticSeverity.Dropped, "vrm.expressionsDriven",
+                    $"{driven} expressions are ones Basis drives itself: the lip sync shapes, "
+                    + "blinking and looking around. They were left for it rather than turned "
+                    + "into menu controls the wearer would have to hold down.");
+            }
+        }
+
+        /// <summary>
+        /// Fills in each binding's blendshape name. VRM stores the index of a shape within its
+        /// mesh, and Vixxy sets shapes by name, so the mesh is what translates between them.
+        /// </summary>
+        private static void NameBlendShapes(VrmExpressionData expression, Transform root)
+        {
+            foreach (VrmMorphBinding binding in expression.Bindings)
+            {
+                Transform at = string.IsNullOrEmpty(binding.Path)
+                    ? root
+                    : root.Find(binding.Path);
+
+                SkinnedMeshRenderer renderer =
+                    at == null ? null : at.GetComponent<SkinnedMeshRenderer>();
+
+                Mesh mesh = renderer == null ? null : renderer.sharedMesh;
+                if (mesh == null || binding.Index < 0 || binding.Index >= mesh.blendShapeCount)
+                {
+                    continue;
+                }
+
+                binding.ShapeName = mesh.GetBlendShapeName(binding.Index);
             }
         }
 

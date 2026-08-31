@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88684271e27adb843b6570957c9e7637, type: 3}
+  m_Name: SampleVrm10Expressions
+  m_EditorClassIdentifier:
+  Expression:
+    Happy: {fileID: 11400001}
+    Angry: {fileID: 0}
+    Sad: {fileID: 0}
+    Relaxed: {fileID: 0}
+    Surprised: {fileID: 0}
+    Aa: {fileID: 11400002}
+    Ih: {fileID: 0}
+    Ou: {fileID: 0}
+    Ee: {fileID: 0}
+    Oh: {fileID: 0}
+    Blink: {fileID: 0}
+    BlinkLeft: {fileID: 0}
+    BlinkRight: {fileID: 0}
+    LookUp: {fileID: 0}
+    LookDown: {fileID: 0}
+    LookLeft: {fileID: 0}
+    LookRight: {fileID: 0}
+    Neutral: {fileID: 0}
+    CustomClips:
+    - {fileID: 11400003}
+--- !u!114 &11400001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c8b2024ae0d0944eb878d90212bf21b, type: 3}
+  m_Name: Happy
+  m_EditorClassIdentifier:
+  MorphTargetBindings:
+  - RelativePath: Face
+    Index: 0
+    Weight: 1
+  MaterialColorBindings: []
+  MaterialUVBindings: []
+  IsBinary: 0
+  OverrideBlink: 0
+  OverrideLookAt: 0
+  OverrideMouth: 0
+--- !u!114 &11400002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c8b2024ae0d0944eb878d90212bf21b, type: 3}
+  m_Name: Aa
+  m_EditorClassIdentifier:
+  MorphTargetBindings:
+  - RelativePath: Face
+    Index: 1
+    Weight: 1
+  MaterialColorBindings: []
+  MaterialUVBindings: []
+  IsBinary: 0
+  OverrideBlink: 0
+  OverrideLookAt: 0
+  OverrideMouth: 0
+--- !u!114 &11400003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c8b2024ae0d0944eb878d90212bf21b, type: 3}
+  m_Name: Wink
+  m_EditorClassIdentifier:
+  MorphTargetBindings:
+  - RelativePath: Face
+    Index: 1
+    Weight: 0.75
+  MaterialColorBindings:
+  - MaterialName: Face
+    BindType: 1
+    TargetValue: {r: 1, g: 0, b: 0, a: 1}
+  MaterialUVBindings: []
+  IsBinary: 1
+  OverrideBlink: 0
+  OverrideLookAt: 0
+  OverrideMouth: 0
