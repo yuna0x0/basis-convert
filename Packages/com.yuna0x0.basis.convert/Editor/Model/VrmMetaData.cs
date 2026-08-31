@@ -137,7 +137,8 @@ namespace yuna0x0.Basis.Convert.Model
             string author = Authors.Count > 0 ? string.Join(", ", Authors) : "an unnamed author";
             string title = string.IsNullOrEmpty(Title) ? "This VRM avatar" : $"'{Title}'";
 
-            return $"{title} by {author}.";
+            // Studio names commonly end in a full stop of their own, as "VirtualCast, Inc." does.
+            return $"{title} by {author.TrimEnd('.')}.";
         }
 
         /// <summary>The whole licence on one line, for the report.</summary>

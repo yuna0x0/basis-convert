@@ -57,6 +57,8 @@ Notable changes to this package. The format follows
 
 ### Fixed
 
+- VRM 1.0's rotation, aim and roll constraints are named and reported as not converted, rather
+  than showing up as unknown scripts.
 - `UniHumanoid.Humanoid`, which UniVRM puts on an imported avatar, was reported as an unknown
   script. It records the humanoid bone mapping Unity's own avatar already holds, so it is named
   and left alone.

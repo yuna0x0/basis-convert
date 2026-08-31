@@ -190,6 +190,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
+                if (KnownScriptIdentities.IsVrmConstraint(kind))
+                {
+                    plan.VrmConstraintsFound++;
+                    continue;
+                }
+
                 if (KnownScriptIdentities.IsHandledByModularAvatar(kind))
                 {
                     plan.ModularAvatarHierarchyFound++;
@@ -290,6 +296,15 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     $"{plan.ModularAvatarVrchatOnlyFound} Modular Avatar components act on "
                     + "VRChat's own systems: its colliders, its head chop, its MMD layers. There "
                     + "is nothing for them to act on under Basis.");
+            }
+
+            if (plan.VrmConstraintsFound > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vrm.constraints",
+                    $"{plan.VrmConstraintsFound} VRM constraints were found: rotation, aim and "
+                    + "roll constraints that copy one bone's rotation onto another. Basis has "
+                    + "equivalents, but these are not converted yet, so anything they drove "
+                    + "stays still.");
             }
 
             if (plan.ContactsFound > 0)

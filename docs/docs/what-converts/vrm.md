@@ -39,6 +39,10 @@ parameters for all of them. Each root bone it names becomes a jiggle rig.
 **VRM 1.0** puts a joint on each bone and lists which joints make up which chain on the avatar's
 own component. Each chain becomes a jiggle rig rooted at its first joint.
 
+A current UniVRM converts a 0.x file to 1.0 components as it imports, so a `.vrm` brought in
+today reads through the 1.0 path whichever version it was written as. The 0.x path covers prefabs
+made with an older UniVRM.
+
 ## What carries across
 
 | VRM | Basis jiggle |
@@ -106,6 +110,9 @@ camera, add a Basis Head Chop naming it.
 - **Inside colliders**, which hold bones within a shape rather than pushing them out. Basis only
   pushes out, so those are written as ordinary colliders and reported: they now push the opposite
   way, and are worth removing if the result looks wrong.
+- **VRM constraints.** VRM 1.0 has rotation, aim and roll constraints that copy one bone's
+  rotation onto another. Basis has equivalents, but these are not converted yet; they are
+  reported as `vrm.constraints`.
 - **Where the avatar looks.** VRM aims the eyes with curves or an expression per direction;
   Basis drives gaze from the eye bones. Only the eye offset carries across, not the aiming.
 - **The avatar's metadata**: its title, author and permissions.

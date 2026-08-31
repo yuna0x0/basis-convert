@@ -35,6 +35,12 @@ namespace yuna0x0.Basis.Convert.Sources
 
         /// <summary>UniVRM's record of the humanoid bone mapping, which Unity's own avatar holds.</summary>
         UniHumanoid,
+
+        // VRM 1.0's node constraints. Not converted yet, so they are named to be reported for
+        // what they are rather than as unrecognised scripts.
+        Vrm10RotationConstraint,
+        Vrm10AimConstraint,
+        Vrm10RollConstraint,
         Vrm10Instance,
         Vrm10SpringBoneJoint,
         Vrm10SpringBoneCollider,
@@ -151,6 +157,9 @@ namespace yuna0x0.Basis.Convert.Sources
                 { ("dedba1309bdf12b42af2362f52eea134", LooseScriptFileId), SourceComponentKind.VrmFirstPerson },
                 { ("690ea0146224b8b4694a1925dddeb352", LooseScriptFileId), SourceComponentKind.VrmMeta },
                 { ("97a39af5b64ede64e86b92b5bf94a0e7", LooseScriptFileId), SourceComponentKind.UniHumanoid },
+                { ("7a07fbecedce41b4396f286fd7634e1d", LooseScriptFileId), SourceComponentKind.Vrm10RotationConstraint },
+                { ("37b0507e4ae49724898ca17cc3db6f1a", LooseScriptFileId), SourceComponentKind.Vrm10AimConstraint },
+                { ("1e864293edac89b40b9f79c23e7aa547", LooseScriptFileId), SourceComponentKind.Vrm10RollConstraint },
                 { ("bfba4ccd3f854e64f868ce83553071a9", LooseScriptFileId), SourceComponentKind.Vrm10Instance },
                 { ("0a942e03b39600e41a1b161e958048f7", LooseScriptFileId), SourceComponentKind.Vrm10SpringBoneJoint },
                 { ("35bfb658269b2af478e501de243deda6", LooseScriptFileId), SourceComponentKind.Vrm10SpringBoneCollider },
@@ -194,6 +203,13 @@ namespace yuna0x0.Basis.Convert.Sources
                 { ("04802bf95b218724a9f4b97003067857", LooseScriptFileId), SourceComponentKind.MaRenameVRChatCollisionTags },
                 { ("89c938d7d8a741df99f2eda501b3a6fe", LooseScriptFileId), SourceComponentKind.MaVRChatSettings },
             };
+
+        /// <summary>VRM 1.0's node constraints, which are read for counting but not converted.</summary>
+        public static bool IsVrmConstraint(SourceComponentKind kind)
+        {
+            return kind >= SourceComponentKind.Vrm10RotationConstraint
+                && kind <= SourceComponentKind.Vrm10RollConstraint;
+        }
 
         /// <summary>
         /// True for the Modular Avatar components that do their job on Basis, which are the ones

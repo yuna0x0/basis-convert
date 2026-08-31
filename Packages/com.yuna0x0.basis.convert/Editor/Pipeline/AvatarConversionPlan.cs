@@ -258,6 +258,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>VRM expressions found, whether or not each became a control.</summary>
         public int VrmExpressionsFound;
 
+        /// <summary>VRM 1.0 node constraints found. Not converted yet.</summary>
+        public int VrmConstraintsFound;
+
         /// <summary>What a VRM avatar says about its eyes and its first person view.</summary>
         public VrmAvatarSettingsData VrmSettings;
 

@@ -184,6 +184,31 @@ things came out of that, all of which change what the docs say:
 imported avatar and was showing up as an unknown script. It records the humanoid bone mapping,
 which Unity's own avatar already holds, so it is named and ignored.
 
+## Checked again against extracted assets and a second avatar
+
+Two more avatars, after the first run showed what was missing:
+
+- **UniVRM's own `ModelSetup_SeedSan` sample**, which ships extracted: the `VRM10Object` is a real
+  `.asset` and each expression is its own file. Everything read: 9 chains to 9 rigs, 8 colliders,
+  18 expressions of which the 5 emotions became controls and 13 were left to Basis, the full
+  licence ("Seed-san" by VirtualCast, wearing anyone, changes allowed, credit required), and the
+  eye offset `(0, 0.0776, 0.1007)` landing at `(1.41, 0.09)` in the root's space. Its stiffness
+  of 4 exercised the clamp.
+- **Alicia Solid `vrm-0.51`**, from UniVRM's own test models: 18 chains to 18 rigs, 14 colliders,
+  drag 0.7, stiffness 2 clamped, and `vrm.objectUnreadable` correctly raised because it was
+  imported in place.
+
+**A current UniVRM migrates a VRM 0.x file to 1.0 components on import.** Alicia's prefab carries
+a `Vrm10Instance` and 66 `VRM10SpringBoneJoint`, and no 0.x components at all. So the 0.x reader
+covers prefabs authored with an older UniVRM rather than anything a current import produces, and
+it is still only verified against the hand-written fixture.
+
+**VRM 1.0 has node constraints** that nothing here reads: `Vrm10RotationConstraint`
+(`7a07fbecedce41b4396f286fd7634e1d`), `Vrm10AimConstraint` (`37b0507e4ae49724898ca17cc3db6f1a`)
+and `Vrm10RollConstraint` (`1e864293edac89b40b9f79c23e7aa547`), each holding a `Source` transform
+and a `Weight`. Basis has equivalents. They are counted and reported as `vrm.constraints` for
+now.
+
 ## The `.vrm` file itself
 
 A `.vrm` is a glTF binary. `extensions.VRMC_springBone` in the JSON chunk holds the same data
