@@ -4,7 +4,7 @@ Notable changes to this package. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] - 2026-08-31
 
 ### Added
 
@@ -152,7 +152,8 @@ First release.
 - Component data is read from prefab files, so the avatar must still be linked to its prefab,
   and changes made to a prefab instance in a scene rather than to the prefab are not seen.
 
-[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.2.0
 [0.1.2]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.1.2
 [0.1.1]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.1.1
 [0.1.0]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.1.0

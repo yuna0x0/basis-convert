@@ -7,8 +7,8 @@ const features = [
     title: 'Physics, constraints, menus and motion',
     description: (
       <>
-        PhysBones, VRM spring bones and Dynamic Bone become Basis jiggle physics, VRChat
-        constraints become their Basis equivalents, the avatar descriptor becomes a{' '}
+        PhysBones, VRM spring bones and Dynamic Bone become Basis jiggle physics, VRChat and
+        VRM constraints become their Basis equivalents, the avatar descriptor becomes a{' '}
         <code>BasisAvatar</code>, menu toggles and VRM expressions are rebuilt as HVR Vixxy
         controls, and animation that plays on its own becomes authored motion.
       </>

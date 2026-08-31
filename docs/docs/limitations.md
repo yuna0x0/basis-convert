@@ -9,8 +9,11 @@ Everything here is also reported by the tool. This is the same information in on
 ## Not converted at all
 
 - **VRChat contacts.** Basis has no contact system, so anything driven by touch is dropped.
-- **A VRM's look-at, first-person settings and metadata.** Its spring bones and expressions do
-  convert. See [VRM](what-converts/vrm.md).
+- **Where a VRM looks.** Its eye offset carries across as the Basis eye position, but the
+  aiming does not: Basis drives gaze itself. The renderers a VRM hides from its wearer are
+  reported rather than converted. See [VRM](what-converts/vrm.md).
+- **A VRM's metadata.** Its title, author and permissions are shown before you convert, and
+  Basis has nowhere to keep them.
 - **Two-axis and four-axis puppets.**
 - **Animation that moves or scales something over time.** Only rotation is baked, so a toggle
   or a layer that animates anything else over time is reported rather than half converted. See
@@ -37,6 +40,9 @@ Everything here is also reported by the tool. This is the same information in on
 - **A radial puppet becomes a slider between the two ends of its blend tree.** Vixxy interpolates
   in a straight line between choices, so motions the tree held in between are approximated by
   that line.
+- **None of the three VRM constraints is exact.** VRM's rotation constraint copies a delta from
+  the source's rest pose, VRM's aim states no up direction, and nothing in Basis copies rotation
+  about a single axis the way a roll constraint does. See [VRM](what-converts/vrm.md).
 
 ## Where the data comes from
 

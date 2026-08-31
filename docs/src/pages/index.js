@@ -31,7 +31,7 @@ export default function Home() {
   return (
     <Layout
       title={siteConfig.title}
-      description="Convert VRChat avatars, clothing and props for use with Basis.">
+      description="Convert an avatar's VRChat, VRM and Dynamic Bone components into their Basis equivalents.">
       <Hero />
       <main>
         {/*
