@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using yuna0x0.Basis.Convert.Mapping;
@@ -610,6 +611,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 return;
             }
 
+            ResolveAmbientMotion(plan, fxGuid);
+
             plan.Toggles = ToggleResolver.Resolve(plan.Expressions, fxGuid);
             if (plan.Toggles.Count == 0)
             {
@@ -639,6 +642,64 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 + $"layers, {simple} only switch objects on and off, set blendshapes or set "
                 + "material properties, which is what a Vixxy control holds. The rest animate "
                 + "over time or drive something else and need rebuilding by hand.");
+        }
+
+        /// <summary>
+        /// Plans an authored motion for every layer that plays without being switched on.
+        /// <para>
+        /// A Basis avatar carries no animator layers of its own, so animation that runs
+        /// unprompted has nowhere else to go. Only clips that turn transforms are read, because
+        /// that is what a baked Basis motion clip holds.
+        /// </para>
+        /// </summary>
+        private static void ResolveAmbientMotion(AvatarConversionPlan plan, string fxGuid)
+        {
+            AnimatorController controller = ToggleResolver.LoadController(fxGuid);
+            if (controller == null)
+            {
+                return;
+            }
+
+            foreach (AmbientMotionLayer layer in FxControllerReader.FindAmbientLayers(controller))
+            {
+                ClipEffects effects = AnimationClipReader.Read(layer.Clip);
+                if (effects.AnimatedRotationPaths.Count == 0)
+                {
+                    continue;
+                }
+
+                AuthoredMotionPlan motion = AmbientMotionToAuthoredMapper.Map(
+                    layer.LayerName, layer.Loop, effects);
+
+                foreach (ConversionDiagnostic diagnostic in motion.Diagnostics)
+                {
+                    plan.Diagnostics.Add(diagnostic);
+                }
+
+                plan.AuthoredMotions.Add(new PlannedAuthoredMotion
+                {
+                    Plan = motion,
+                    SourceClip = layer.Clip,
+                    OutputFolder = OutputFolderFor(layer.Clip),
+                });
+            }
+        }
+
+        /// <summary>
+        /// Where a baked clip goes: a folder of our own beside the animation it was baked from,
+        /// so it sits with the avatar's assets rather than anywhere in particular, and a second
+        /// conversion writes over it rather than beside it.
+        /// </summary>
+        private static string OutputFolderFor(AnimationClip clip)
+        {
+            string path = AssetDatabase.GetAssetPath(clip);
+            if (string.IsNullOrEmpty(path))
+            {
+                return string.Empty;
+            }
+
+            string folder = System.IO.Path.GetDirectoryName(path)?.Replace('\\', '/');
+            return string.IsNullOrEmpty(folder) ? string.Empty : $"{folder}/{ProductInfo.Name} Motion";
         }
 
         /// <summary>

@@ -45,8 +45,9 @@ is reported as `vixxy.puppetEnds`.
 
 ## What cannot
 
-- Anything that animates over time. Vixxy holds a value per choice, not a curve. Looping motion
-  belongs in `BasisAuthoredMotion`, which this does not write yet.
+- Anything that animates over time. Vixxy holds a value per choice, not a curve. Motion that
+  plays on its own is converted separately, as
+  [authored motion](authored-motion.md).
 - Two-axis and four-axis puppets.
 - Expression parameters as a system. Vixxy controls hold their own state, so there is no
   parameter list to recreate, and anything driven by parameters outside a toggle has to be

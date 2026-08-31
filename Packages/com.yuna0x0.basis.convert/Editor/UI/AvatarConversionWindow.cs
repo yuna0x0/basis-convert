@@ -35,6 +35,7 @@ namespace yuna0x0.Basis.Convert.UI
         private bool _showRigs = true;
         private bool _showConstraints;
         private bool _showToggles;
+        private bool _showMotions;
         private bool _showDiagnostics = true;
         private bool _showTuning;
         private bool _showRig = true;
@@ -96,6 +97,7 @@ namespace yuna0x0.Basis.Convert.UI
             _options.Constraints = EditorPrefs.GetBool(PrefsPrefix + "constraints", true);
             _options.Descriptor = EditorPrefs.GetBool(PrefsPrefix + "descriptor", true);
             _options.Toggles = EditorPrefs.GetBool(PrefsPrefix + "toggles", true);
+            _options.Motion = EditorPrefs.GetBool(PrefsPrefix + "motion", true);
         }
 
         private void SaveOptions()
@@ -106,6 +108,7 @@ namespace yuna0x0.Basis.Convert.UI
             EditorPrefs.SetBool(PrefsPrefix + "constraints", _options.Constraints);
             EditorPrefs.SetBool(PrefsPrefix + "descriptor", _options.Descriptor);
             EditorPrefs.SetBool(PrefsPrefix + "toggles", _options.Toggles);
+            EditorPrefs.SetBool(PrefsPrefix + "motion", _options.Motion);
         }
 
         public void SetTarget(GameObject target)
@@ -160,6 +163,7 @@ namespace yuna0x0.Basis.Convert.UI
                 DrawRigs();
                 DrawConstraints();
                 DrawToggles();
+                DrawAuthoredMotions();
                 DrawTuning();
 
                 if (changed.changed)
@@ -205,8 +209,9 @@ namespace yuna0x0.Basis.Convert.UI
                 + $"{_plan.DynamicBonesFound} Dynamic Bones, {_plan.CollidersFound} colliders "
                 + $"and {_plan.ConstraintsFound} constraints.\n"
                 + $"Would create {_plan.SelectedRigCount} jiggle rigs, "
-                + $"{_plan.SelectedConstraintCount} Basis constraints and "
-                + $"{_plan.SelectedVixxyControlCount} Vixxy controls"
+                + $"{_plan.SelectedConstraintCount} Basis constraints, "
+                + $"{_plan.SelectedVixxyControlCount} Vixxy controls and "
+                + $"{_plan.SelectedAuthoredMotionCount} authored motions"
                 + (_plan.DescriptorSelected
                     ? ", and set up the Basis Avatar component."
                     : ".");
@@ -327,6 +332,11 @@ namespace yuna0x0.Basis.Convert.UI
                     Tally(_plan.SelectedVixxyControlCount, _plan.VixxyControls.Count,
                         "Vixxy controls"),
                     _plan.VixxyControls.Count > 0);
+
+                _options.Motion = Category("Authored motion", _options.Motion,
+                    Tally(_plan.SelectedAuthoredMotionCount, _plan.AuthoredMotions.Count,
+                        "motions, baked to clips in the project"),
+                    _plan.AuthoredMotions.Count > 0);
 
                 if (changed.changed)
                 {
@@ -822,6 +832,62 @@ namespace yuna0x0.Basis.Convert.UI
             }
         }
 
+        /// <summary>
+        /// The animation that plays unprompted, one per row. Advanced only.
+        /// <para>
+        /// Each of these writes a baked clip into the project beside the animation it came from,
+        /// which is the one thing a conversion leaves behind after an undo, so the row says where
+        /// it will go.
+        /// </para>
+        /// </summary>
+        private void DrawAuthoredMotions()
+        {
+            if (!_advanced || _plan.AuthoredMotions.Count == 0)
+            {
+                return;
+            }
+
+            EditorGUILayout.Space();
+            _showMotions = EditorGUILayout.Foldout(_showMotions,
+                $"Authored motion ({Tally(_plan.SelectedAuthoredMotionCount, _plan.AuthoredMotions.Count, "selected")})",
+                true);
+            if (!_showMotions)
+            {
+                return;
+            }
+
+            using (new EditorGUI.IndentLevelScope())
+            using (new EditorGUI.DisabledScope(!_options.Motion))
+            {
+                DrawSelectAll(include =>
+                {
+                    foreach (PlannedAuthoredMotion motion in _plan.AuthoredMotions)
+                    {
+                        motion.Include = include;
+                    }
+                });
+
+                foreach (PlannedAuthoredMotion motion in _plan.AuthoredMotions)
+                {
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        motion.Include = EditorGUILayout.Toggle(motion.Include,
+                            GUILayout.Width(24f));
+
+                        EditorGUILayout.LabelField(motion.Describe(), GUILayout.MinWidth(120f));
+                        EditorGUILayout.LabelField(
+                            $"{motion.Plan.Paths.Count} transforms",
+                            EditorStyles.miniLabel);
+                    }
+                }
+
+                EditorGUILayout.HelpBox(
+                    "Each motion is baked to a clip asset beside the animation it came from. "
+                    + "Unlike the components, a baked clip stays in the project after an undo.",
+                    MessageType.None);
+            }
+        }
+
         /// <summary>The menu toggles that can be rebuilt, one per row. Advanced only.</summary>
         private void DrawToggles()
         {
@@ -977,9 +1043,19 @@ namespace yuna0x0.Basis.Convert.UI
             EditorGUILayout.LabelField(headline, HeadlineStyle(trouble));
             EditorGUILayout.LabelField(
                 $"{_result.RigsWritten} jiggle rigs, {_result.ConstraintsWritten} constraints, "
-                + $"{_result.VixxyControlsWritten} Vixxy controls"
+                + $"{_result.VixxyControlsWritten} Vixxy controls, "
+                + $"{_result.AuthoredMotionsWritten} authored motions"
                 + (_result.DescriptorWritten ? ", Basis Avatar component." : "."),
                 EditorStyles.miniLabel);
+
+            if (_result.MotionAssets.Count > 0)
+            {
+                EditorGUILayout.LabelField(
+                    $"Baked {_result.MotionAssets.Count} motion clips into "
+                    + $"{System.IO.Path.GetDirectoryName(_result.MotionAssets[0])?.Replace('\\', '/')}. "
+                    + "These stay in the project if you undo.",
+                    EditorStyles.wordWrappedMiniLabel);
+            }
 
             EditorGUILayout.Space(2f);
             EditorGUILayout.LabelField(

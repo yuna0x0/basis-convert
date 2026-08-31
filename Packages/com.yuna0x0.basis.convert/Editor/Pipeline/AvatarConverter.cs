@@ -16,11 +16,15 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public int ConstraintsSkipped;
         public bool DescriptorWritten;
         public int VixxyControlsWritten;
+        public int AuthoredMotionsWritten;
+
+        /// <summary>Baked motion clips written to the project, which an undo does not remove.</summary>
+        public List<string> MotionAssets = new List<string>();
         public List<JiggleRig> Written = new List<JiggleRig>();
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
 
         public int TotalWritten =>
-            RigsWritten + ConstraintsWritten + VixxyControlsWritten
+            RigsWritten + ConstraintsWritten + VixxyControlsWritten + AuthoredMotionsWritten
             + (DescriptorWritten ? 1 : 0);
         public int TotalSkipped => RigsSkipped + ConstraintsSkipped;
     }
@@ -146,6 +150,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             WriteDescriptor(plan, roots, target, undoName, result);
             WriteVixxyControls(plan, roots, target, undoName, result);
+            WriteAuthoredMotions(plan, roots, target, undoName, result);
 
             Undo.CollapseUndoOperations(group);
             return result;
@@ -234,6 +239,55 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
         }
 
+        /// <summary>
+        /// Writes the avatar's ambient motion, baking a clip for each one.
+        /// <para>
+        /// The bake poses the hierarchy being converted, which is why this runs against the
+        /// target rather than the prefab the plan was read from: a clip's paths have to resolve
+        /// against a live object for its rotations to be sampled at all.
+        /// </para>
+        /// </summary>
+        private static void WriteAuthoredMotions(
+            AvatarConversionPlan plan, Dictionary<ConversionSource, Transform> roots,
+            Transform target, string undoName, ConversionResult result)
+        {
+            foreach (PlannedAuthoredMotion planned in plan.SelectedAuthoredMotions())
+            {
+                Transform root = target;
+                if (planned.Source != null && !roots.TryGetValue(planned.Source, out root))
+                {
+                    result.Diagnostics.Add(DiagnosticSeverity.Warning, "apply.motionUnresolved",
+                        $"'{planned.Describe()}' came from a prefab that is no longer where it "
+                        + "was scanned, so its motion was not written.");
+                    continue;
+                }
+
+                WrittenAuthoredMotion written = AuthoredMotionWriter.Write(
+                    new ResolvedAuthoredMotion
+                    {
+                        Plan = planned.Plan,
+                        Host = root.gameObject,
+                        Root = root,
+                        Clip = planned.SourceClip,
+                        OutputFolder = planned.OutputFolder,
+                    },
+                    undoName);
+
+                result.Diagnostics.AddRange(written.Diagnostics);
+
+                if (written.Component == null)
+                {
+                    continue;
+                }
+
+                result.AuthoredMotionsWritten++;
+                if (!string.IsNullOrEmpty(written.AssetPath))
+                {
+                    result.MotionAssets.Add(written.AssetPath);
+                }
+            }
+        }
+
         private static GameObject targetRootOf(Transform target) => target.gameObject;
 
         private static T TranslateRenderer<T>(
@@ -286,6 +340,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 {
                     found.AddRange(host.GetComponents<JiggleRig>());
                 }
+            }
+
+            if (plan.SelectedAuthoredMotionCount > 0)
+            {
+                found.AddRange(targetRoot.GetComponents<BasisAuthoredMotion>());
             }
 
             seen.Clear();

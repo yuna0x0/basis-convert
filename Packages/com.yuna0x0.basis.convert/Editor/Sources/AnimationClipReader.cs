@@ -62,6 +62,19 @@ namespace yuna0x0.Basis.Convert.Sources
         /// <summary>Curves whose value changes over time rather than holding one value.</summary>
         public int AnimatedCurves;
 
+        /// <summary>
+        /// Transform paths whose rotation the clip turns over time. This is animation rather than
+        /// a state, so it belongs in authored motion; a Vixxy control cannot hold it.
+        /// </summary>
+        public List<string> AnimatedRotationPaths = new List<string>();
+
+        /// <summary>
+        /// How many of <see cref="AnimatedCurves"/> are those rotations. A turning transform is
+        /// three or four curves depending on whether the clip was authored with euler or
+        /// quaternion keys, so this is not the path count.
+        /// </summary>
+        public int AnimatedRotationCurves;
+
         public bool IsEmpty =>
             Activated.Count == 0 && Deactivated.Count == 0 && BlendShapes.Count == 0
             && MaterialProperties.Count == 0;
@@ -100,6 +113,16 @@ namespace yuna0x0.Basis.Convert.Sources
                 if (!TryGetConstant(curve, out float value))
                 {
                     effects.AnimatedCurves++;
+
+                    if (IsRotation(binding))
+                    {
+                        effects.AnimatedRotationCurves++;
+                        if (!effects.AnimatedRotationPaths.Contains(binding.path))
+                        {
+                            effects.AnimatedRotationPaths.Add(binding.path);
+                        }
+                    }
+
                     continue;
                 }
 
@@ -138,6 +161,21 @@ namespace yuna0x0.Basis.Convert.Sources
             }
 
             return effects;
+        }
+
+        /// <summary>
+        /// A binding turning a transform, which is what authored motion replays.
+        /// <para>
+        /// Both spellings appear: a clip authored with quaternion keys writes `m_LocalRotation`,
+        /// one authored with euler keys writes `localEulerAngles`. Basis bakes either, so both
+        /// count here.
+        /// </para>
+        /// </summary>
+        private static bool IsRotation(EditorCurveBinding binding)
+        {
+            return binding.type == typeof(Transform)
+                && (binding.propertyName.StartsWith("m_LocalRotation")
+                    || binding.propertyName.StartsWith("localEulerAngles"));
         }
 
         /// <summary>

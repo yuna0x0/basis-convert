@@ -30,8 +30,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>Menu toggles rebuilt as HVR Vixxy controls.</summary>
         public bool Toggles = true;
 
+        /// <summary>
+        /// Animation that plays unprompted, rebuilt as authored motion. This is the one category
+        /// that writes an asset to the project, the baked clip, which an undo does not remove.
+        /// </summary>
+        public bool Motion = true;
+
         public bool IsEverything =>
-            Physics && Colliders && Constraints && Descriptor && Toggles;
+            Physics && Colliders && Constraints && Descriptor && Toggles && Motion;
 
         /// <summary>Names of the categories switched off, for the report to state plainly.</summary>
         public IEnumerable<string> Excluded()
@@ -58,6 +64,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
             if (!Toggles)
             {
                 yield return "menu toggles";
+            }
+
+            if (!Motion)
+            {
+                yield return "authored motion";
             }
         }
     }

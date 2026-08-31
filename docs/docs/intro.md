@@ -12,7 +12,8 @@ You import the avatar into a Basis project, pick it in the scene, and convert:
 - **VRChat PhysBones and legacy Dynamic Bone** become Basis jiggle physics
 - **VRChat constraints** become their Basis equivalents
 - **The avatar descriptor** becomes a `BasisAvatar` component
-- **Menu toggles** become HVR Vixxy controls
+- **Menu toggles, selectors and radial puppets** become HVR Vixxy controls
+- **Animation that plays on its own** becomes authored motion, baked to a clip
 
 Clothing and accessories convert along with the avatar they are worn on.
 

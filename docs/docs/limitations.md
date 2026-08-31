@@ -11,8 +11,9 @@ this is the same information in one place.
 
 - **VRChat contacts.** Basis has no contact system, so anything driven by touch is dropped.
 - **Two-axis and four-axis puppets.**
-- **Animation that plays over time.** Toggles that animate rather than switch are reported.
-  Looping ambient motion belongs in `BasisAuthoredMotion`, which is not written yet.
+- **Animation a menu switches on.** A toggle whose clip animates rather than switches is
+  reported. Animation that plays on its own is converted; see
+  [Authored motion](what-converts/authored-motion.md).
 - **Expression parameters as a system.** Vixxy controls hold their own state, so there is no
   parameter list to recreate.
 - **Custom animation layers**, gestures, sitting and IK poses.
@@ -24,6 +25,10 @@ this is the same information in one place.
 - **Material properties are applied through a property block**, which covers every material on a
   renderer. A renderer with more than one material is reported.
 - **Modular Avatar toggles** are rebuilt only when a single parameter steers their layer.
+- **Authored motion carries rotation only**, which is what a baked Basis motion clip holds. A
+  clip that also moves or scales something keeps the turning and reports the rest.
+- **A baked motion clip is a project asset**, so an undo removes the components a conversion
+  wrote but leaves the clip on disk.
 - **A radial puppet becomes a slider between the two ends of its blend tree.** Vixxy interpolates
   in a straight line between choices, so motions the tree held in between are approximated by
   that line.

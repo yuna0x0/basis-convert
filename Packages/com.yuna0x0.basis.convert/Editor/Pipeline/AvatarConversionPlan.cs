@@ -63,6 +63,26 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public List<Renderer> SourceRenderers = new List<Renderer>();
     }
 
+    /// <summary>One authored motion the conversion intends to produce, and the clip behind it.</summary>
+    public sealed class PlannedAuthoredMotion
+    {
+        public AuthoredMotionPlan Plan;
+
+        /// <summary>Whether the conversion will write this one. Cleared from the window.</summary>
+        public bool Include = true;
+
+        /// <summary>The prefab this was read from, which its transforms belong to.</summary>
+        public ConversionSource Source;
+
+        /// <summary>The animation to bake. Baking needs a scene, so it happens when applied.</summary>
+        public AnimationClip SourceClip;
+
+        /// <summary>Project folder the baked clip asset goes in, beside the animation.</summary>
+        public string OutputFolder = string.Empty;
+
+        public string Describe() => Plan != null ? Plan.Label : "(unnamed)";
+    }
+
     /// <summary>The avatar descriptor the conversion intends to produce.</summary>
     public sealed class PlannedAvatarDescriptor
     {
@@ -169,6 +189,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>Menu toggles that can be rebuilt as Vixxy controls, with their targets.</summary>
         public List<PlannedVixxyControl> VixxyControls = new List<PlannedVixxyControl>();
 
+        /// <summary>
+        /// Animation that plays unprompted, rebuilt as authored motion. Basis has no animator
+        /// layers on an avatar, so this is the only place looping motion can live.
+        /// </summary>
+        public List<PlannedAuthoredMotion> AuthoredMotions = new List<PlannedAuthoredMotion>();
+
         /// <summary>Diagnostics about the avatar as a whole, rather than one component.</summary>
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
 
@@ -210,13 +236,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         /// <summary>Everything the plan holds, whatever the options are set to.</summary>
         public int TotalPlanned =>
-            Rigs.Count + Constraints.Count + VixxyControls.Count
+            Rigs.Count + Constraints.Count + VixxyControls.Count + AuthoredMotions.Count
             + (Descriptor != null ? 1 : 0);
 
         /// <summary>What a conversion would write, with the current options applied.</summary>
         public int TotalSelected =>
             SelectedRigCount + SelectedConstraintCount + SelectedVixxyControlCount
-            + (DescriptorSelected ? 1 : 0);
+            + SelectedAuthoredMotionCount + (DescriptorSelected ? 1 : 0);
 
         public IEnumerable<PlannedJiggleRig> SelectedRigs()
         {
@@ -266,6 +292,22 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
         }
 
+        public IEnumerable<PlannedAuthoredMotion> SelectedAuthoredMotions()
+        {
+            if (!Options.Motion)
+            {
+                yield break;
+            }
+
+            foreach (PlannedAuthoredMotion motion in AuthoredMotions)
+            {
+                if (motion.Include && IsIncluded(motion.Source))
+                {
+                    yield return motion;
+                }
+            }
+        }
+
         public bool DescriptorSelected =>
             Options.Descriptor && Descriptor != null && Descriptor.Include
             && IsIncluded(Descriptor.Source);
@@ -279,6 +321,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public int SelectedRigCount => Tally(SelectedRigs());
         public int SelectedConstraintCount => Tally(SelectedConstraints());
         public int SelectedVixxyControlCount => Tally(SelectedVixxyControls());
+        public int SelectedAuthoredMotionCount => Tally(SelectedAuthoredMotions());
 
         private static int Tally<T>(IEnumerable<T> items)
         {

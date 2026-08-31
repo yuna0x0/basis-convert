@@ -7,6 +7,7 @@ and menus intact.
 - **VRChat constraints** become their Basis equivalents
 - **The avatar descriptor** becomes a `BasisAvatar` component
 - **Menu toggles, selectors and radial puppets** become HVR Vixxy controls
+- **Animation that plays on its own** becomes authored motion, baked to a clip
 
 Clothing and accessories convert with the avatar they are worn on.
 

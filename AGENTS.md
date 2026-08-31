@@ -8,8 +8,9 @@ Editor tooling for bringing content from other social VR platforms into Basis. I
 a Basis project as a UPM package.
 
 Working today: VRChat PhysBones and colliders, legacy Dynamic Bone, all six VRChat constraint
-types, the avatar descriptor, menu toggles rebuilt as HVR Vixxy controls, and a check of the
-humanoid rig against what Basis's IK needs. A conversion can be narrowed to some of those, or to
+types, the avatar descriptor, menu toggles, selectors and radial puppets rebuilt as HVR Vixxy
+controls, animation that plays on its own rebuilt as authored motion, and a check of the humanoid
+rig against what Basis's IK needs. A conversion can be narrowed to some of those, or to
 individual items, from the window.
 
 ## Picking this up cold

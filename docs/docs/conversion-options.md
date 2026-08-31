@@ -18,12 +18,16 @@ it:
 | Constraints | Basis constraints, from VRChat constraints |
 | Avatar descriptor | The `BasisAvatar` component: view position, visemes, blink |
 | Menu toggles | HVR Vixxy controls and their menu items |
+| Authored motion | `BasisAuthoredMotion`, with a clip baked from each always-on animator layer |
 
 A row is greyed out when the avatar has nothing of that kind, so an empty checkbox always means a
 choice rather than an absence.
 
+Authored motion is the one row that writes an asset into the project, the baked clip, which stays
+there if you undo the conversion. See [Authored motion](what-converts/authored-motion.md).
+
 {/*
-  IMAGE PLACEHOLDER: the What to convert section with its four checkboxes and counts.
+  IMAGE PLACEHOLDER: the What to convert section with its checkboxes and counts.
   Save as docs/static/img/options-basic.png, then replace this comment with:
   ![The basic options](/img/options-basic.png)
 */}

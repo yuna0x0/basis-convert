@@ -64,6 +64,23 @@ namespace yuna0x0.Basis.Convert.Sources
     }
 
     /// <summary>
+    /// A layer that plays on its own, with no parameter to switch it.
+    /// <para>
+    /// This is where ambient motion lives: a tail that sways, ears that twitch, an accessory
+    /// that turns. Basis replays that from a <c>BasisAuthoredMotion</c> rather than an animator.
+    /// </para>
+    /// </summary>
+    public sealed class AmbientMotionLayer
+    {
+        public string LayerName = string.Empty;
+        public string StateName = string.Empty;
+        public AnimationClip Clip;
+
+        /// <summary>Whether the clip was authored to loop, which most ambient motion is.</summary>
+        public bool Loop;
+    }
+
+    /// <summary>
     /// Finds the animator layers behind an avatar's menu toggles.
     /// <para>
     /// Unlike the rest of the source data, an AnimatorController is a native Unity type, so it is
@@ -194,6 +211,48 @@ namespace yuna0x0.Basis.Convert.Sources
             }
 
             return read;
+        }
+
+        /// <summary>
+        /// Finds the layers that play unconditionally, which is what ambient motion is authored
+        /// as: no parameter steers them, and their state runs from the moment the avatar loads.
+        /// <para>
+        /// A layer with a single state and no transitions is the usual shape. One with several
+        /// states but nothing steering them plays only its default, so that is the state read.
+        /// </para>
+        /// </summary>
+        public static List<AmbientMotionLayer> FindAmbientLayers(AnimatorController controller)
+        {
+            List<AmbientMotionLayer> found = new List<AmbientMotionLayer>();
+            if (controller == null)
+            {
+                return found;
+            }
+
+            foreach (AnimatorControllerLayer layer in controller.layers)
+            {
+                AnimatorStateMachine machine = layer.stateMachine;
+                if (machine == null || SteeringParameters(machine).Count > 0)
+                {
+                    continue;
+                }
+
+                AnimatorState state = machine.defaultState;
+                if (state == null || !(state.motion is AnimationClip clip))
+                {
+                    continue;
+                }
+
+                found.Add(new AmbientMotionLayer
+                {
+                    LayerName = layer.name,
+                    StateName = state.name,
+                    Clip = clip,
+                    Loop = clip.isLooping,
+                });
+            }
+
+            return found;
         }
 
         /// <summary>Every parameter any transition in the layer tests.</summary>

@@ -109,7 +109,20 @@ namespace yuna0x0.Basis.Convert.Tests
             sizeState.motion = tree;
             size.stateMachine.defaultState = sizeState;
 
-            controller.layers = new[] {tail, hair, size};
+            // Ambient motion: a layer with nothing to switch it, holding a looping clip that
+            // turns a bone. This is what a swaying tail or a twitching ear is authored as.
+            controller.AddLayer("TailIdle");
+            AnimatorControllerLayer idle = controller.layers[3];
+            idle.defaultWeight = 1f;
+
+            AnimationClip sway = SwayClip("Tail");
+            Save(sway, "TailIdle");
+
+            AnimatorState swayState = idle.stateMachine.AddState("Idle");
+            swayState.motion = sway;
+            idle.stateMachine.defaultState = swayState;
+
+            controller.layers = new[] {tail, hair, size, idle};
 
             EditorUtility.SetDirty(controller);
             AssetDatabase.SaveAssets();
@@ -125,6 +138,29 @@ namespace yuna0x0.Basis.Convert.Tests
                 clip,
                 EditorCurveBinding.FloatCurve(path, typeof(GameObject), "m_IsActive"),
                 AnimationCurve.Constant(0f, 1f / 60f, active ? 1f : 0f));
+            return clip;
+        }
+
+        /// <summary>
+        /// A looping clip that turns one bone back and forth, which is what ambient motion looks
+        /// like: a curve that moves over time rather than one holding a state.
+        /// </summary>
+        private static AnimationClip SwayClip(string path)
+        {
+            AnimationClip clip = new AnimationClip {name = path + " Idle"};
+
+            AnimationCurve curve = new AnimationCurve(
+                new Keyframe(0f, -8f), new Keyframe(1f, 8f), new Keyframe(2f, -8f));
+
+            AnimationUtility.SetEditorCurve(
+                clip,
+                EditorCurveBinding.FloatCurve(path, typeof(Transform), "localEulerAnglesRaw.z"),
+                curve);
+
+            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(clip);
+            settings.loopTime = true;
+            AnimationUtility.SetAnimationClipSettings(clip, settings);
+
             return clip;
         }
 

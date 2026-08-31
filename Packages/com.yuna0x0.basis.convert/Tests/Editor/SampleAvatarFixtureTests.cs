@@ -23,6 +23,13 @@ namespace yuna0x0.Basis.Convert.Tests
         private const string FixturePath =
             "Packages/com.yuna0x0.basis.convert/Tests/Editor/Fixtures/SampleAvatar/SampleAvatar.prefab";
 
+        /// <summary>
+        /// Where a baked motion clip is written during these tests. The planner would put it
+        /// beside the animation it came from, which here is inside this package; a test writes
+        /// into the project instead, and deletes it again.
+        /// </summary>
+        private const string MotionFolder = "Assets/WatariMotionTest";
+
         private GameObject _instance;
 
         [TearDown]
@@ -33,11 +40,23 @@ namespace yuna0x0.Basis.Convert.Tests
                 Object.DestroyImmediate(_instance);
                 _instance = null;
             }
+
+            if (AssetDatabase.IsValidFolder(MotionFolder))
+            {
+                AssetDatabase.DeleteAsset(MotionFolder);
+            }
         }
 
         private static AvatarConversionPlan Plan()
         {
             AvatarConversionPlan plan = AvatarConversionPlanner.Plan(FixturePath);
+
+            // The planner would bake beside the animation, which for this fixture is inside the
+            // package. Every test here redirects that, so a run leaves nothing behind in the repo.
+            foreach (PlannedAuthoredMotion motion in plan.AuthoredMotions)
+            {
+                motion.OutputFolder = MotionFolder;
+            }
 
             foreach (ConversionDiagnostic diagnostic in plan.AllDiagnostics())
             {
@@ -212,6 +231,100 @@ namespace yuna0x0.Basis.Convert.Tests
             }
 
             Assert.That(foundSlider, Is.True, "The puppet's menu item is shown as a slider.");
+        }
+
+        [Test]
+        public void ALayerNothingSwitchesBecomesAuthoredMotion()
+        {
+            // Nothing steers this layer, so it plays from the moment the avatar loads. Basis has
+            // no animator layers on an avatar, so it can only be replayed as authored motion.
+            AvatarConversionPlan plan = Plan();
+
+            PlannedAuthoredMotion motion =
+                plan.AuthoredMotions.Find(planned => planned.Plan.Label == "TailIdle");
+
+            Assert.That(motion, Is.Not.Null, "The idle layer is ambient motion.");
+            Assert.That(motion.Plan.Paths, Does.Contain("Tail"));
+            Assert.That(motion.Plan.Loop, Is.True);
+            Assert.That(motion.SourceClip, Is.Not.Null, "The clip is baked when the plan runs.");
+            Assert.That(AvatarConversionPlanner.Plan(FixturePath).AuthoredMotions[0].OutputFolder,
+                Is.EqualTo(
+                    "Packages/com.yuna0x0.basis.convert/Tests/Editor/Fixtures/SampleAvatar/"
+                    + "Watari Motion"),
+                "A baked clip goes in a folder of ours beside the animation it came from.");
+            Assert.That(plan.AllDiagnostics().HasCode("motion.baked"), Is.True);
+        }
+
+        [Test]
+        public void TheAmbientLayerIsNotReadAsAToggle()
+        {
+            // It has no parameter, so nothing in the menu can be tied to it. Reading it as a
+            // toggle as well would rebuild the same motion twice.
+            AvatarConversionPlan plan = Plan();
+
+            foreach (ResolvedToggle toggle in plan.Toggles)
+            {
+                Assert.That(toggle.LayerName, Is.Not.EqualTo("TailIdle"));
+            }
+        }
+
+        [Test]
+        public void ConvertingBakesTheClipAndAddsTheComponent()
+        {
+            AvatarConversionPlan plan = Plan();
+
+            _instance = (GameObject)PrefabUtility.InstantiatePrefab(
+                AssetDatabase.LoadAssetAtPath<GameObject>(FixturePath));
+
+            ConversionResult result = AvatarConverter.Apply(plan, _instance);
+
+            Assert.That(result.AuthoredMotionsWritten, Is.EqualTo(1));
+            Assert.That(result.MotionAssets.Count, Is.EqualTo(1));
+
+            BasisAuthoredMotion component = _instance.GetComponent<BasisAuthoredMotion>();
+            Assert.That(component, Is.Not.Null);
+            Assert.That(component.movements.Length, Is.EqualTo(1));
+
+            BasisAuthoredMotion.Movement movement = component.movements[0];
+            Assert.That(movement.kind, Is.EqualTo(BasisAuthoredMotion.Movement.Kind.Sequence));
+            Assert.That(movement.loop, Is.True);
+            Assert.That(movement.sequenceRoot, Is.EqualTo(_instance.transform));
+            Assert.That(movement.bakedClip, Is.Not.Null);
+
+            BasisMotionClip baked = movement.bakedClip;
+            Assert.That(baked.paths, Is.EqualTo(new[] {"Tail"}));
+            Assert.That(baked.transformCount, Is.EqualTo(1));
+            Assert.That(baked.frameCount, Is.GreaterThan(1));
+            Assert.That(baked.rotationSamples.Length,
+                Is.EqualTo(baked.transformCount * baked.frameCount));
+
+            // The whole point of baking is that the pose moves. A clip sampled without the
+            // animation applied would hold the same rotation on every frame.
+            Assert.That(baked.rotationSamples[0],
+                Is.Not.EqualTo(baked.rotationSamples[baked.frameCount / 2]),
+                "The sampled rotation changes over the clip.");
+        }
+
+        [Test]
+        public void ConvertingTwiceWritesOneMotionClip()
+        {
+            // The baked clip is an asset, so it survives an undo and a second conversion. Both
+            // runs write the same path, which is what keeps a re-convert from stacking copies.
+            AvatarConversionPlan plan = Plan();
+
+            _instance = (GameObject)PrefabUtility.InstantiatePrefab(
+                AssetDatabase.LoadAssetAtPath<GameObject>(FixturePath));
+
+            ConversionResult first = AvatarConverter.Apply(plan, _instance);
+            AvatarConverter.RemoveReplaceable(plan, _instance, "Re-convert");
+            ConversionResult second = AvatarConverter.Apply(plan, _instance);
+
+            Assert.That(second.MotionAssets, Is.EqualTo(first.MotionAssets));
+            Assert.That(_instance.GetComponents<BasisAuthoredMotion>().Length, Is.EqualTo(1),
+                "Removing what a re-convert replaces takes the previous motion with it.");
+
+            string[] assets = AssetDatabase.FindAssets("t:BasisMotionClip", new[] {MotionFolder});
+            Assert.That(assets.Length, Is.EqualTo(1));
         }
 
         [Test]

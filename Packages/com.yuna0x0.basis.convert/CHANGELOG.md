@@ -14,6 +14,11 @@ Notable changes to this package. The format follows
 - Radial puppets become Vixxy sliders, taking the two ends of the blend tree their layer holds
   as the control's choices. A tree with motions between its ends is reported as
   `vixxy.puppetEnds`, because a slider interpolates between its choices in a straight line.
+- Animation that plays without anything switching it on is rebuilt as `BasisAuthoredMotion`.
+  Basis carries no animator layers on an avatar, so a swaying tail or a turning accessory had
+  nowhere to go. The clip is baked to a `BasisMotionClip` beside the animation it came from, at a
+  path a second conversion writes over rather than beside. Unlike the components a conversion
+  writes, a baked clip is a project asset and stays after an undo.
 - Modular Avatar `Object Toggle` is read. A menu item and an object toggle on the same object
   describe a toggle completely without a merged animator, which is how clothing commonly ships
   a switch.
