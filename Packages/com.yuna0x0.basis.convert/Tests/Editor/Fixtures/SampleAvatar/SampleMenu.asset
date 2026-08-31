@@ -53,6 +53,16 @@ MonoBehaviour:
     subMenu: {fileID: 0}
     subParameters: []
     labels: []
+  - name: Tail_Wag
+    icon: {fileID: 0}
+    type: 102
+    parameter:
+      name: Wag
+    value: 1
+    style: 0
+    subMenu: {fileID: 0}
+    subParameters: []
+    labels: []
   - name: Tail_Size
     icon: {fileID: 0}
     type: 203

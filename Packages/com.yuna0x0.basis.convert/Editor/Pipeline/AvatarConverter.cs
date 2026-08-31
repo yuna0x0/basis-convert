@@ -149,8 +149,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
 
             WriteDescriptor(plan, roots, target, undoName, result);
-            WriteVixxyControls(plan, roots, target, undoName, result);
-            WriteAuthoredMotions(plan, roots, target, undoName, result);
+
+            // Motions are written first because a control that switches one has to hold the
+            // component, and the component does not exist until it is written.
+            Dictionary<PlannedAuthoredMotion, BasisAuthoredMotion> motions =
+                WriteAuthoredMotions(plan, roots, target, undoName, result);
+
+            WriteVixxyControls(plan, roots, target, motions, undoName, result);
 
             Undo.CollapseUndoOperations(group);
             return result;
@@ -190,7 +195,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         private static void WriteVixxyControls(
             AvatarConversionPlan plan, Dictionary<ConversionSource, Transform> roots,
-            Transform target, string undoName, ConversionResult result)
+            Transform target, Dictionary<PlannedAuthoredMotion, BasisAuthoredMotion> motions,
+            string undoName, ConversionResult result)
         {
             foreach (PlannedVixxyControl planned in plan.SelectedVixxyControls())
             {
@@ -201,10 +207,39 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 };
 
                 bool ok = true;
-                foreach (Transform sourceTarget in planned.SourceTargets)
+                for (int i = 0; i < planned.SourceTargets.Count; i++)
                 {
-                    if (!TryTranslate(plan, roots, target, planned.Source, sourceTarget,
-                            out Transform translated))
+                    int motionIndex = i < planned.Plan.Activations.Count
+                        ? planned.Plan.Activations[i].MotionIndex
+                        : -1;
+
+                    if (motionIndex >= 0)
+                    {
+                        // The control switches a motion this conversion wrote. If that motion
+                        // was left out, the control still switches whatever else it holds.
+                        if (motionIndex < planned.Motions.Count
+                            && motions.TryGetValue(planned.Motions[motionIndex],
+                                out BasisAuthoredMotion component))
+                        {
+                            // A switched motion starts in whichever state the control's default
+                            // choice puts it, so the avatar looks right before anything is
+                            // touched. Vixxy sets it again when the control initialises.
+                            bool[] choices = planned.Plan.Activations[i].Choices;
+                            int start = planned.Plan.DefaultOn ? 1 : 0;
+                            component.enabled = start < choices.Length && choices[start];
+
+                            resolved.Targets.Add(component);
+                        }
+                        else
+                        {
+                            resolved.Targets.Add(null);
+                        }
+
+                        continue;
+                    }
+
+                    if (!TryTranslate(plan, roots, target, planned.Source,
+                            planned.SourceTargets[i], out Transform translated))
                     {
                         ok = false;
                         break;
@@ -247,10 +282,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// against a live object for its rotations to be sampled at all.
         /// </para>
         /// </summary>
-        private static void WriteAuthoredMotions(
+        private static Dictionary<PlannedAuthoredMotion, BasisAuthoredMotion> WriteAuthoredMotions(
             AvatarConversionPlan plan, Dictionary<ConversionSource, Transform> roots,
             Transform target, string undoName, ConversionResult result)
         {
+            Dictionary<PlannedAuthoredMotion, BasisAuthoredMotion> written =
+                new Dictionary<PlannedAuthoredMotion, BasisAuthoredMotion>();
+
             foreach (PlannedAuthoredMotion planned in plan.SelectedAuthoredMotions())
             {
                 Transform root = target;
@@ -262,7 +300,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
-                WrittenAuthoredMotion written = AuthoredMotionWriter.Write(
+                WrittenAuthoredMotion motion = AuthoredMotionWriter.Write(
                     new ResolvedAuthoredMotion
                     {
                         Plan = planned.Plan,
@@ -273,19 +311,22 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     },
                     undoName);
 
-                result.Diagnostics.AddRange(written.Diagnostics);
+                result.Diagnostics.AddRange(motion.Diagnostics);
 
-                if (written.Component == null)
+                if (motion.Component == null)
                 {
                     continue;
                 }
 
+                written[planned] = motion.Component;
                 result.AuthoredMotionsWritten++;
-                if (!string.IsNullOrEmpty(written.AssetPath))
+                if (!string.IsNullOrEmpty(motion.AssetPath))
                 {
-                    result.MotionAssets.Add(written.AssetPath);
+                    result.MotionAssets.Add(motion.AssetPath);
                 }
             }
+
+            return written;
         }
 
         private static GameObject targetRootOf(Transform target) => target.gameObject;

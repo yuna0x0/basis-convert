@@ -960,9 +960,27 @@ namespace yuna0x0.Basis.Convert.UI
                 parts.Add($"{plan.ChoiceCount} choices");
             }
 
-            if (plan.Activations.Count > 0)
+            // Motions are activations too, so objects are counted rather than taken from the
+            // list length: a control that only starts a motion switches no objects at all.
+            int objects = 0;
+            foreach (VixxyActivationPlan activation in plan.Activations)
             {
-                parts.Add($"{plan.Activations.Count} objects");
+                if (activation.MotionIndex < 0)
+                {
+                    objects++;
+                }
+            }
+
+            if (objects > 0)
+            {
+                parts.Add($"{objects} objects");
+            }
+
+            if (plan.Motions.Count > 0)
+            {
+                parts.Add(plan.Motions.Count == 1
+                    ? "1 motion"
+                    : $"{plan.Motions.Count} motions");
             }
 
             if (shapes > 0)

@@ -17,6 +17,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public int Value;
 
         public ClipEffects Effects = new ClipEffects();
+
+        /// <summary>
+        /// The clip behind the choice. Kept because animation that has to be baked cannot be
+        /// described by what was read out of it.
+        /// </summary>
+        public AnimationClip Clip;
     }
 
     /// <summary>A menu control whose animator layer and clips were found.</summary>
@@ -167,6 +173,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                         Name = ChoiceName(controls, state.Value, layer),
                         Value = state.Value,
                         Effects = AnimationClipReader.Read(state.Clip),
+                        Clip = state.Clip,
                     });
                 }
 
@@ -236,6 +243,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     Name = "Least",
                     Value = 0,
                     Effects = AnimationClipReader.Read(low.Clip),
+                    Clip = low.Clip,
                 });
 
                 toggle.Choices.Add(new ResolvedChoice
@@ -243,6 +251,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     Name = "Most",
                     Value = 1,
                     Effects = AnimationClipReader.Read(high.Clip),
+                    Clip = high.Clip,
                 });
 
                 resolved.Add(toggle);

@@ -13,8 +13,12 @@ namespace yuna0x0.Basis.Convert.Writers
         /// <summary>Where the control component goes, normally the avatar root.</summary>
         public GameObject Host;
 
-        /// <summary>Transforms to switch, in the same order as the plan's activations.</summary>
-        public List<Transform> Targets = new List<Transform>();
+        /// <summary>
+        /// What to switch, in the same order as the plan's activations. An object is switched
+        /// through its Transform, which is what Vixxy asks for; a motion is switched through the
+        /// `BasisAuthoredMotion` component itself.
+        /// </summary>
+        public List<Component> Targets = new List<Component>();
 
         /// <summary>Renderers the subjects act on, in the same order as the plan's subjects.</summary>
         public List<Renderer> Renderers = new List<Renderer>();
@@ -60,7 +64,7 @@ namespace yuna0x0.Basis.Convert.Writers
 
             for (int i = 0; i < control.Targets.Count; i++)
             {
-                Transform target = control.Targets[i];
+                Component target = control.Targets[i];
                 if (target == null || i >= plan.Activations.Count)
                 {
                     continue;

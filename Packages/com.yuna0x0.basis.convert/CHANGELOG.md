@@ -14,6 +14,9 @@ Notable changes to this package. The format follows
 - Radial puppets become Vixxy sliders, taking the two ends of the blend tree their layer holds
   as the control's choices. A tree with motions between its ends is reported as
   `vixxy.puppetEnds`, because a slider interpolates between its choices in a straight line.
+- A menu toggle whose clip animates over time is rebuilt rather than dropped. The animation
+  becomes an authored motion and the control switches the component on and off, which is what
+  Vixxy listing `BasisAuthoredMotion` among the types an activation may toggle allows for.
 - Animation that plays without anything switching it on is rebuilt as `BasisAuthoredMotion`.
   Basis carries no animator layers on an avatar, so a swaying tail or a turning accessory had
   nowhere to go. The clip is baked to a `BasisMotionClip` beside the animation it came from, at a

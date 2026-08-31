@@ -11,8 +11,8 @@ this is the same information in one place.
 
 - **VRChat contacts.** Basis has no contact system, so anything driven by touch is dropped.
 - **Two-axis and four-axis puppets.**
-- **Animation a menu switches on.** A toggle whose clip animates rather than switches is
-  reported. Animation that plays on its own is converted; see
+- **Animation that moves or scales something over time.** Only rotation is baked, so a toggle
+  or a layer that animates anything else over time is reported rather than half converted. See
   [Authored motion](what-converts/authored-motion.md).
 - **Expression parameters as a system.** Vixxy controls hold their own state, so there is no
   parameter list to recreate.

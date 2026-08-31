@@ -668,7 +668,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
-                AuthoredMotionPlan motion = AmbientMotionToAuthoredMapper.Map(
+                AuthoredMotionPlan motion = MotionToAuthoredMapper.MapAmbient(
                     layer.LayerName, layer.Loop, effects);
 
                 foreach (ConversionDiagnostic diagnostic in motion.Diagnostics)
@@ -759,6 +759,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 foreach (VixxyActivationPlan activation in control.Activations)
                 {
+                    // A motion is switched by the component this conversion writes, so there is
+                    // no transform to look up. The slot is kept so the two lists stay in step.
+                    if (activation.MotionIndex >= 0)
+                    {
+                        planned.SourceTargets.Add(null);
+                        continue;
+                    }
+
                     Transform target = root.Find(activation.Path);
                     if (target == null)
                     {
@@ -782,6 +790,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 if (resolved)
                 {
+                    AttachMotions(plan, control, planned, toggle, source);
                     planned.Source = source;
                     plan.VixxyControls.Add(planned);
                 }
@@ -792,6 +801,36 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "vixxy.rebuilt",
                     $"{plan.VixxyControls.Count} menu toggles were rebuilt as Vixxy controls, "
                     + "each with a menu item. The rest are listed above with why they were not.");
+            }
+        }
+
+        /// <summary>
+        /// Plans the motions a control switches, alongside the control itself.
+        /// <para>
+        /// They go in the plan's own motion list as well, so they are written by the same pass
+        /// that writes ambient motion, are counted and can be deselected with the rest.
+        /// </para>
+        /// </summary>
+        private static void AttachMotions(
+            AvatarConversionPlan plan, VixxyControlPlan control, PlannedVixxyControl planned,
+            ResolvedToggle toggle, ConversionSource source)
+        {
+            foreach (VixxyMotionPlan motion in control.Motions)
+            {
+                AnimationClip clip = motion.Choice < toggle.Choices.Count
+                    ? toggle.Choices[motion.Choice].Clip
+                    : null;
+
+                PlannedAuthoredMotion authored = new PlannedAuthoredMotion
+                {
+                    Plan = motion.Motion,
+                    SourceClip = clip,
+                    OutputFolder = OutputFolderFor(clip),
+                    Source = source,
+                };
+
+                planned.Motions.Add(authored);
+                plan.AuthoredMotions.Add(authored);
             }
         }
 

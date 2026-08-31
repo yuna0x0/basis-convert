@@ -111,6 +111,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                             Value = state.Value,
                             Effects = Rebase(
                                 AnimationClipReader.Read(state.Clip), animator.Prefix),
+                            Clip = state.Clip,
                         });
                     }
 

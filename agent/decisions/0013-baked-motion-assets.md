@@ -47,9 +47,22 @@ Rotations are recorded as they land on the bone rather than as the curve states 
 what lets a clip authored against a different rest pose replay correctly, and it is why the bake
 needs the live hierarchy being converted rather than the prefab the plan was read from.
 
-## Not yet: motion a menu switches
+## Motion a menu switches on
 
-A toggle whose clip animates over time is still reported and dropped. It should become an
-authored motion that the control's activation enables: `HVR_VixxyPermitted` lists
-`BasisAuthoredMotion` among the types a Vixxy activation may toggle, and the component raises
-`EnabledStateChanged` for exactly that purpose. Deferred, not rejected.
+A toggle whose clip animates rather than switches becomes a motion of its own, and the control
+enables and disables the component. This needs no new mechanism: `HVR_VixxyPermitted` lists
+`BasisAuthoredMotion` among the types a Vixxy activation may toggle, an activation holds a
+`Component` rather than a GameObject, and the component raises `EnabledStateChanged` so a system
+that has already registered it picks the change up without polling.
+
+Two consequences worth knowing:
+
+- **Motions are written before controls**, because a control has to hold a component that does
+  not exist until it is written. An activation names its motion by index into the control's own
+  motion list rather than by a path, since there is no object to look up.
+- **The component starts in whatever state the control's default choice puts it**, so an avatar
+  nobody has touched looks right before Vixxy initialises.
+
+A toggle is still dropped whole when its clip animates something other than rotation, or drives
+something a control cannot hold at all. Converting the half that works would leave a control that
+looks finished and does part of the job.

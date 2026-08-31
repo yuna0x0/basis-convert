@@ -45,9 +45,9 @@ is reported as `vixxy.puppetEnds`.
 
 ## What cannot
 
-- Anything that animates over time. Vixxy holds a value per choice, not a curve. Motion that
-  plays on its own is converted separately, as
-  [authored motion](authored-motion.md).
+- Anything that animates over time other than rotation. Vixxy holds a value per choice, not a
+  curve. A toggle whose clip turns transforms is converted: the animation becomes
+  [authored motion](authored-motion.md) that the control switches on.
 - Two-axis and four-axis puppets.
 - Expression parameters as a system. Vixxy controls hold their own state, so there is no
   parameter list to recreate, and anything driven by parameters outside a toggle has to be

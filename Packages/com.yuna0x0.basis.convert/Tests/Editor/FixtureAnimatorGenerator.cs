@@ -109,10 +109,34 @@ namespace yuna0x0.Basis.Convert.Tests
             sizeState.motion = tree;
             size.stateMachine.defaultState = sizeState;
 
+            // A toggle whose clip animates over time rather than switching something. Vixxy
+            // cannot hold that as a value per choice, so it becomes a motion the control
+            // switches on.
+            controller.AddParameter("Wag", AnimatorControllerParameterType.Bool);
+            controller.AddLayer("Wag");
+            AnimatorControllerLayer wag = controller.layers[3];
+            wag.defaultWeight = 1f;
+
+            AnimationClip wagOff = Clip("Tail", active: true);
+            AnimationClip wagOn = SwayClip("Tail");
+            Save(wagOff, "WagOff");
+            Save(wagOn, "WagOn");
+
+            AnimatorState wagOffState = wag.stateMachine.AddState("Off");
+            AnimatorState wagOnState = wag.stateMachine.AddState("On", new Vector3(0f, 100f, 0f));
+            wagOffState.motion = wagOff;
+            wagOnState.motion = wagOn;
+            wag.stateMachine.defaultState = wagOffState;
+
+            AnimatorStateTransition wagToOn = wagOffState.AddTransition(wagOnState);
+            wagToOn.AddCondition(AnimatorConditionMode.If, 0f, "Wag");
+            AnimatorStateTransition wagToOff = wagOnState.AddTransition(wagOffState);
+            wagToOff.AddCondition(AnimatorConditionMode.IfNot, 0f, "Wag");
+
             // Ambient motion: a layer with nothing to switch it, holding a looping clip that
             // turns a bone. This is what a swaying tail or a twitching ear is authored as.
             controller.AddLayer("TailIdle");
-            AnimatorControllerLayer idle = controller.layers[3];
+            AnimatorControllerLayer idle = controller.layers[4];
             idle.defaultWeight = 1f;
 
             AnimationClip sway = SwayClip("Tail");
@@ -122,7 +146,7 @@ namespace yuna0x0.Basis.Convert.Tests
             swayState.motion = sway;
             idle.stateMachine.defaultState = swayState;
 
-            controller.layers = new[] {tail, hair, size, idle};
+            controller.layers = new[] {tail, hair, size, wag, idle};
 
             EditorUtility.SetDirty(controller);
             AssetDatabase.SaveAssets();

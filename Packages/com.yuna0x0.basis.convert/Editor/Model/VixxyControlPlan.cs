@@ -10,6 +10,17 @@ namespace yuna0x0.Basis.Convert.Model
         public string Path = string.Empty;
 
         /// <summary>
+        /// Index into the control's <see cref="VixxyControlPlan.Motions"/> when this activation
+        /// switches an authored motion rather than an object, or -1 when it switches an object.
+        /// <para>
+        /// A Vixxy activation holds a Component, not a GameObject, and `BasisAuthoredMotion` is
+        /// one of the types it is permitted to toggle, so a motion is switched the same way an
+        /// object is: by the component it lives on rather than by a path.
+        /// </para>
+        /// </summary>
+        public int MotionIndex = -1;
+
+        /// <summary>
         /// Active state per choice. A toggle has two, off first; a selector has one per value of
         /// its parameter, in the order the menu offers them.
         /// </summary>
@@ -38,6 +49,15 @@ namespace yuna0x0.Basis.Convert.Model
                 return true;
             }
         }
+    }
+
+    /// <summary>Motion a control switches on, and which of its choices plays it.</summary>
+    public sealed class VixxyMotionPlan
+    {
+        public AuthoredMotionPlan Motion;
+
+        /// <summary>Index of the choice whose clip this was baked from.</summary>
+        public int Choice;
     }
 
     /// <summary>One blendshape a control sets, and its value in each choice.</summary>
@@ -152,6 +172,14 @@ namespace yuna0x0.Basis.Convert.Model
 
         public List<VixxyActivationPlan> Activations = new List<VixxyActivationPlan>();
         public List<VixxySubjectPlan> Subjects = new List<VixxySubjectPlan>();
+
+        /// <summary>
+        /// Motion this control switches on. A toggle whose clip animates over time cannot be
+        /// held as a value per choice, so the animation becomes an authored motion and the
+        /// control enables and disables it.
+        /// </summary>
+        public List<VixxyMotionPlan> Motions = new List<VixxyMotionPlan>();
+
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
     }
 }

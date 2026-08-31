@@ -30,7 +30,11 @@ namespace yuna0x0.Basis.Convert.Mapping
                 plan.ChoiceNames.Add(choice.Name);
                 plan.ChoiceValues.Add(choice.Value);
 
-                if (choice.Effects.OtherCurves > 0 || choice.Effects.AnimatedCurves > 0)
+                // Turning a transform over time has somewhere to go: an authored motion the
+                // control switches on. Anything else animated does not, and a clip driving
+                // something a control cannot hold is left alone rather than half converted.
+                if (choice.Effects.OtherCurves > 0
+                    || choice.Effects.AnimatedCurves > choice.Effects.AnimatedRotationCurves)
                 {
                     plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vixxy.notSimple",
                         $"'{toggle.MenuName}' animates over time or drives something a Vixxy "
@@ -38,6 +42,8 @@ namespace yuna0x0.Basis.Convert.Mapping
                     return plan;
                 }
             }
+
+            MapMotions(toggle, plan);
 
             int count = toggle.Choices.Count;
             Dictionary<string, bool>[] states = new Dictionary<string, bool>[count];
@@ -83,7 +89,7 @@ namespace yuna0x0.Basis.Convert.Mapping
             }
 
             if (plan.Activations.Count == 0 && plan.Subjects.Count == 0
-                && plan.Diagnostics.Count == 0)
+                && plan.Motions.Count == 0 && plan.Diagnostics.Count == 0)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vixxy.nothingToSwitch",
                     $"'{toggle.MenuName}' did not switch any objects, so there was nothing to "
@@ -92,6 +98,63 @@ namespace yuna0x0.Basis.Convert.Mapping
 
             return plan;
         }
+
+        /// <summary>
+        /// Turns a choice that animates transforms over time into a motion the control switches.
+        /// <para>
+        /// The activation reads like any other: on for the choice whose clip carried the
+        /// animation, off for the rest. What it holds is the motion's component rather than an
+        /// object's transform, which Vixxy permits for this type specifically.
+        /// </para>
+        /// </summary>
+        private static void MapMotions(ResolvedToggle toggle, VixxyControlPlan plan)
+        {
+            int count = toggle.Choices.Count;
+
+            for (int choice = 0; choice < count; choice++)
+            {
+                ResolvedChoice resolved = toggle.Choices[choice];
+                if (resolved.Effects.AnimatedRotationPaths.Count == 0)
+                {
+                    continue;
+                }
+
+                AuthoredMotionPlan motion = MotionToAuthoredMapper.MapSwitched(
+                    toggle.MenuName, resolved.Name, Looping(resolved), resolved.Effects);
+
+                foreach (ConversionDiagnostic diagnostic in motion.Diagnostics)
+                {
+                    plan.Diagnostics.Add(diagnostic);
+                }
+
+                VixxyActivationPlan activation = new VixxyActivationPlan
+                {
+                    MotionIndex = plan.Motions.Count,
+                    Choices = new bool[count],
+                    Set = new bool[count],
+                };
+
+                for (int i = 0; i < count; i++)
+                {
+                    activation.Choices[i] = i == choice;
+
+                    // Every choice has something to say about a motion: the one that carries it
+                    // plays it, and the rest leave it off. There is no authored state to fall
+                    // back on, because the component does not exist until this writes it.
+                    activation.Set[i] = true;
+                }
+
+                plan.Activations.Add(activation);
+                plan.Motions.Add(new VixxyMotionPlan {Motion = motion, Choice = choice});
+            }
+        }
+
+        /// <summary>
+        /// Whether a switched motion repeats. A clip authored to loop keeps looping while the
+        /// control holds it on; one that was not plays once each time it is switched on.
+        /// </summary>
+        private static bool Looping(ResolvedChoice choice) =>
+            choice.Clip == null || choice.Clip.isLooping;
 
         /// <summary>
         /// Blendshapes become subjects holding a float property per shape. As with objects, a

@@ -108,7 +108,10 @@ namespace yuna0x0.Basis.Convert.Tests
 
             Assert.That(plan.Expressions.Menus.Count, Is.EqualTo(1));
             Assert.That(plan.Expressions.CountOf(VrcExpressionControlType.Toggle),
-                Is.EqualTo(4), "One toggle and three controls sharing a selector parameter.");
+                Is.EqualTo(5),
+                "Two toggles and three controls sharing a selector parameter.");
+            Assert.That(plan.Expressions.CountOf(VrcExpressionControlType.RadialPuppet),
+                Is.EqualTo(1));
         }
 
         [Test]
@@ -233,6 +236,24 @@ namespace yuna0x0.Basis.Convert.Tests
             Assert.That(foundSlider, Is.True, "The puppet's menu item is shown as a slider.");
         }
 
+        /// <summary>The movement labelled this, on whichever component carries it.</summary>
+        private static BasisAuthoredMotion.Movement MovementNamed(GameObject root, string label)
+        {
+            foreach (BasisAuthoredMotion component in
+                     root.GetComponents<BasisAuthoredMotion>())
+            {
+                foreach (BasisAuthoredMotion.Movement movement in component.movements)
+                {
+                    if (movement.label == label)
+                    {
+                        return movement;
+                    }
+                }
+            }
+
+            return null;
+        }
+
         [Test]
         public void ALayerNothingSwitchesBecomesAuthoredMotion()
         {
@@ -253,6 +274,76 @@ namespace yuna0x0.Basis.Convert.Tests
                     + "Watari Motion"),
                 "A baked clip goes in a folder of ours beside the animation it came from.");
             Assert.That(plan.AllDiagnostics().HasCode("motion.baked"), Is.True);
+        }
+
+        [Test]
+        public void AToggleThatAnimatesBecomesAMotionTheControlSwitches()
+        {
+            // Vixxy holds a value per choice, not a curve, so this used to be reported and
+            // dropped whole. The animation becomes a motion, and the control switches it.
+            AvatarConversionPlan plan = Plan();
+
+            PlannedVixxyControl control =
+                plan.VixxyControls.Find(c => c.Plan.Parameter == "Wag");
+
+            Assert.That(control, Is.Not.Null, "The toggle is rebuilt rather than dropped.");
+            Assert.That(control.Plan.Motions.Count, Is.EqualTo(1));
+            Assert.That(control.Motions.Count, Is.EqualTo(1));
+            Assert.That(control.Motions[0].Plan.Paths, Does.Contain("Tail"));
+            Assert.That(plan.AuthoredMotions, Does.Contain(control.Motions[0]),
+                "A switched motion is written and counted with the rest.");
+
+            VixxyActivationPlan activation =
+                control.Plan.Activations.Find(a => a.MotionIndex == 0);
+            Assert.That(activation, Is.Not.Null);
+            Assert.That(activation.Choices[0], Is.False, "Off does not play it.");
+            Assert.That(activation.Choices[1], Is.True, "On does.");
+            Assert.That(plan.AllDiagnostics().HasCode("motion.switched"), Is.True);
+        }
+
+        [Test]
+        public void AControlSwitchesTheMotionComponentItself()
+        {
+            AvatarConversionPlan plan = Plan();
+
+            _instance = (GameObject)PrefabUtility.InstantiatePrefab(
+                AssetDatabase.LoadAssetAtPath<GameObject>(FixturePath));
+
+            AvatarConverter.Apply(plan, _instance);
+
+            BasisAuthoredMotion.Movement movement = MovementNamed(_instance, "Tail_Wag");
+            Assert.That(movement, Is.Not.Null, "The toggle's animation was baked.");
+            Assert.That(movement.bakedClip, Is.Not.Null);
+
+            // The activation list is internal to Vixxy's assembly, so it is read the same way
+            // it is written.
+            BasisAuthoredMotion switched = null;
+            foreach (HVR.Vixxy.HVRVixxyControl candidate in
+                     _instance.GetComponents<HVR.Vixxy.HVRVixxyControl>())
+            {
+                SerializedObject serialized = new SerializedObject(candidate);
+                SerializedProperty activations = serialized.FindProperty("activations");
+
+                for (int i = 0; i < activations.arraySize; i++)
+                {
+                    Object held = activations.GetArrayElementAtIndex(i)
+                        .FindPropertyRelative("component").objectReferenceValue;
+
+                    if (held is BasisAuthoredMotion motion)
+                    {
+                        switched = motion;
+                    }
+                }
+
+                serialized.Dispose();
+            }
+
+            Assert.That(switched, Is.Not.Null,
+                "A Vixxy activation holds the motion component, which is a type Vixxy permits.");
+
+            // The control starts off, so the motion it switches starts disabled rather than
+            // playing on an avatar nobody has touched yet.
+            Assert.That(switched.enabled, Is.False);
         }
 
         [Test]
@@ -278,14 +369,11 @@ namespace yuna0x0.Basis.Convert.Tests
 
             ConversionResult result = AvatarConverter.Apply(plan, _instance);
 
-            Assert.That(result.AuthoredMotionsWritten, Is.EqualTo(1));
-            Assert.That(result.MotionAssets.Count, Is.EqualTo(1));
+            Assert.That(result.AuthoredMotionsWritten, Is.EqualTo(plan.AuthoredMotions.Count));
+            Assert.That(result.MotionAssets.Count, Is.EqualTo(plan.AuthoredMotions.Count));
 
-            BasisAuthoredMotion component = _instance.GetComponent<BasisAuthoredMotion>();
-            Assert.That(component, Is.Not.Null);
-            Assert.That(component.movements.Length, Is.EqualTo(1));
-
-            BasisAuthoredMotion.Movement movement = component.movements[0];
+            BasisAuthoredMotion.Movement movement = MovementNamed(_instance, "TailIdle");
+            Assert.That(movement, Is.Not.Null, "The ambient layer's own component.");
             Assert.That(movement.kind, Is.EqualTo(BasisAuthoredMotion.Movement.Kind.Sequence));
             Assert.That(movement.loop, Is.True);
             Assert.That(movement.sequenceRoot, Is.EqualTo(_instance.transform));
@@ -320,11 +408,13 @@ namespace yuna0x0.Basis.Convert.Tests
             ConversionResult second = AvatarConverter.Apply(plan, _instance);
 
             Assert.That(second.MotionAssets, Is.EqualTo(first.MotionAssets));
-            Assert.That(_instance.GetComponents<BasisAuthoredMotion>().Length, Is.EqualTo(1),
-                "Removing what a re-convert replaces takes the previous motion with it.");
+            Assert.That(_instance.GetComponents<BasisAuthoredMotion>().Length,
+                Is.EqualTo(plan.AuthoredMotions.Count),
+                "Removing what a re-convert replaces takes the previous motions with it.");
 
             string[] assets = AssetDatabase.FindAssets("t:BasisMotionClip", new[] {MotionFolder});
-            Assert.That(assets.Length, Is.EqualTo(1));
+            Assert.That(assets.Length, Is.EqualTo(plan.AuthoredMotions.Count),
+                "One clip per motion, written over rather than beside on the second run.");
         }
 
         [Test]

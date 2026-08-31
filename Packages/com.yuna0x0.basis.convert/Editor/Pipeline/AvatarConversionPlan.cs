@@ -54,6 +54,10 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>The prefab this was read from, which its transforms belong to.</summary>
         public ConversionSource Source;
 
+        /// <summary>
+        /// One per activation, in the same order. An activation that switches a motion rather
+        /// than an object has no transform of its own and holds null here.
+        /// </summary>
         public List<Transform> SourceTargets = new List<Transform>();
 
         /// <summary>
@@ -61,6 +65,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// need a skinned mesh; material properties work on any renderer.
         /// </summary>
         public List<Renderer> SourceRenderers = new List<Renderer>();
+
+        /// <summary>
+        /// The motions this control switches, in the same order as the plan's motions. Each is
+        /// also in the plan's own motion list, so it is written and can be deselected there.
+        /// </summary>
+        public List<PlannedAuthoredMotion> Motions = new List<PlannedAuthoredMotion>();
     }
 
     /// <summary>One authored motion the conversion intends to produce, and the clip behind it.</summary>
