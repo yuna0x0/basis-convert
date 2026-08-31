@@ -151,7 +151,24 @@ the original. Everything else maps directly.
     reported rather than guessed at.
   - A layer steered by two of the avatar's own parameters is still left alone. Vixxy has an
     aggregator that may cover some of those; it has not been looked at.
-- **Props and worlds.** Separate content types, same three stages.
+- **Props and worlds. Backlog, and for different reasons.** Both are in scope, and the reading
+  and mapping stages are shared, but neither is waiting on a turn in the queue.
+
+  - **`BasisProp`** has no counterpart to read from. VRChat has no prop content type: the
+    nearest thing is an object worn on an avatar, which already converts. Making one spawnable
+    is authoring rather than conversion, and Basis ships `BasisPropValidator` with its own
+    fix-ups for exactly that, so writing a `BasisProp` here would duplicate its tooling and put
+    this package in the business of authoring Basis content rather than converting into it.
+    Worth doing only if someone asks for it, and as a small button rather than a pipeline.
+  - **`BasisScene`** is blocked by what a world is. Geometry, lighting and colliders are plain
+    Unity and need no conversion; behaviour is Udon, which is a compiled VM with no readable
+    form to map from. Translating it would be a compiler project, not a reader. Basis has Cilbox
+    for sandboxed C#, which is where anything in this direction would land, and that is a
+    separate undertaking.
+
+  What both already get: physics and constraints convert on any hierarchy the window is pointed
+  at, and the rig check skips itself when there is no humanoid. So a world's props convert as
+  far as anything in them is a component this reads.
 
 ## Backlog, outside this package
 

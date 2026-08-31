@@ -69,5 +69,12 @@ reporting what it does not yet know.
 - **A Basis prop**, meaning the `BasisProp` content type that players spawn and that is
   networked: no. Nothing here writes one, and no `BasisProp` component is created.
 
-Worlds, meaning `BasisScene`, are not supported either. Avatars are the only Basis content type
-this produces.
+`BasisAvatar` is the only Basis content type written today. That is not a limit of what the tool
+is for: props and worlds are in scope, and the reading and mapping stages are shared. What is
+missing for each is not the same thing, though. A prop needs no conversion so much as authoring,
+which Basis already has its own validator and fix-ups for. A world's geometry and lighting are
+plain Unity and need nothing at all, while its behaviour is Udon, which has no readable form to
+convert from.
+
+Physics and constraints do convert on anything you point the window at, avatar or not, so a
+world's props or a spawnable object get that much already.
