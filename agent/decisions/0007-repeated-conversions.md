@@ -36,6 +36,21 @@ a GameObject to every converted avatar, and relying on the `EditorOnly` tag to k
 builds. That is a large concession to [0004](0004-editor-only.md) for one edge case, and it
 leaves a missing script behind for anyone opening the scene without this package installed.
 
+## What sits on the avatar root, where the transform rule says nothing
+
+Vixxy controls, their menu items and authored motions all go on the avatar root rather than on a
+transform of their own. "Whatever is on a transform this plan writes to" would mean everything on
+the root, including controls somebody added by hand.
+
+Those are matched by name instead: a menu item titled after a toggle this conversion is about to
+write, or a movement labelled after a motion it is about to write, is the one it wrote last time.
+The rule stays the same in spirit, the plan knowing what it produces rather than the avatar
+remembering, and it is still nothing stored between runs.
+
+A control whose menu item was renamed or deleted by hand is orphaned rather than replaced, which
+is the safe direction: a duplicate is visible and removable, and someone else's control being
+deleted is not.
+
 ## Consequence
 
 A rig tuned by hand on a bone the converter also targets is replaced on a re-convert. That is

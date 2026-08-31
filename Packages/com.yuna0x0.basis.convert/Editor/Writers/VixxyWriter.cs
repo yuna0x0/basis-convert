@@ -54,7 +54,7 @@ namespace yuna0x0.Basis.Convert.Writers
 
             // choices and defaultValue are public; everything else here is not.
             component.choices = ChoicesOf(plan);
-            component.defaultValue = plan.DefaultOn ? 1f : 0f;
+            component.defaultValue = plan.DefaultValue;
 
             SerializedObject serialized = new SerializedObject(component);
             SerializedProperty activations = serialized.FindProperty("activations");

@@ -140,7 +140,15 @@ namespace yuna0x0.Basis.Convert.Writers
             int frameCount = Mathf.Max(1, Mathf.CeilToInt(motion.Clip.length * FrameRate));
             Vector4[] rotations = new Vector4[transforms.Count * frameCount];
 
-            AnimationMode.StartAnimationMode();
+            // Sampling poses the hierarchy and restores it afterwards. If the editor was
+            // already in animation mode, somebody is previewing something: leave that alone
+            // rather than ending their preview when this finishes.
+            bool alreadySampling = AnimationMode.InAnimationMode();
+            if (!alreadySampling)
+            {
+                AnimationMode.StartAnimationMode();
+            }
+
             try
             {
                 for (int frame = 0; frame < frameCount; frame++)
@@ -160,7 +168,10 @@ namespace yuna0x0.Basis.Convert.Writers
             }
             finally
             {
-                AnimationMode.StopAnimationMode();
+                if (!alreadySampling)
+                {
+                    AnimationMode.StopAnimationMode();
+                }
             }
 
             BasisMotionClip baked = ScriptableObject.CreateInstance<BasisMotionClip>();

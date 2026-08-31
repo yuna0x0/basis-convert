@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using Basis.Scripts.BasisSdk.Constraints;
 using GatorDragonGames.JigglePhysics;
+using HVR.Vixxy;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 using yuna0x0.Basis.Convert.Model;
 using yuna0x0.Basis.Convert.Writers;
 
@@ -224,9 +226,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                             // A switched motion starts in whichever state the control's default
                             // choice puts it, so the avatar looks right before anything is
                             // touched. Vixxy sets it again when the control initialises.
-                            bool[] choices = planned.Plan.Activations[i].Choices;
-                            int start = planned.Plan.DefaultOn ? 1 : 0;
-                            component.enabled = start < choices.Length && choices[start];
+                            component.enabled = StartsOn(planned.Plan, i);
 
                             resolved.Targets.Add(component);
                         }
@@ -329,6 +329,28 @@ namespace yuna0x0.Basis.Convert.Pipeline
             return written;
         }
 
+        /// <summary>
+        /// Whether the control's default choice has this activation switched on. The default is
+        /// a value rather than an index, matched against the choices' own values the way Vixxy
+        /// matches it; an avatar declaring a default no choice carries starts at the first.
+        /// </summary>
+        private static bool StartsOn(VixxyControlPlan plan, int activation)
+        {
+            bool[] choices = plan.Activations[activation].Choices;
+            int start = 0;
+
+            for (int i = 0; i < plan.ChoiceValues.Count; i++)
+            {
+                if (Mathf.Approximately(plan.ChoiceValues[i], plan.DefaultValue))
+                {
+                    start = i;
+                    break;
+                }
+            }
+
+            return start < choices.Length && choices[start];
+        }
+
         private static GameObject targetRootOf(Transform target) => target.gameObject;
 
         private static T TranslateRenderer<T>(
@@ -383,10 +405,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 }
             }
 
-            if (plan.SelectedAuthoredMotionCount > 0)
-            {
-                found.AddRange(targetRoot.GetComponents<BasisAuthoredMotion>());
-            }
+            FindReplaceableOnRoot(plan, targetRoot, found);
 
             seen.Clear();
             foreach (PlannedConstraint planned in plan.SelectedConstraints())
@@ -400,6 +419,72 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
 
             return found;
+        }
+
+        /// <summary>
+        /// The Vixxy controls and authored motions a re-conversion replaces.
+        /// <para>
+        /// These all sit on the avatar root rather than on a transform of their own, so the rule
+        /// the rest of the converter uses, replace only what is on a transform this plan writes
+        /// to, says nothing here. What separates ours from a control somebody added by hand is
+        /// the name: a menu item titled after a toggle this conversion is about to write is the
+        /// one it wrote last time. Anything else on the root is left alone.
+        /// </para>
+        /// </summary>
+        private static void FindReplaceableOnRoot(
+            AvatarConversionPlan plan, GameObject targetRoot, List<Component> found)
+        {
+            HashSet<string> titles = new HashSet<string>();
+            foreach (PlannedVixxyControl planned in plan.SelectedVixxyControls())
+            {
+                titles.Add(planned.Plan.MenuName);
+            }
+
+            if (titles.Count > 0)
+            {
+                foreach (HVRVixxyMenuItem item in targetRoot.GetComponents<HVRVixxyMenuItem>())
+                {
+                    SerializedObject serialized = new SerializedObject(item);
+                    string title = serialized.FindProperty("title")?.stringValue;
+                    Object linked =
+                        serialized.FindProperty("control")?.objectReferenceValue;
+                    serialized.Dispose();
+
+                    if (string.IsNullOrEmpty(title) || !titles.Contains(title))
+                    {
+                        continue;
+                    }
+
+                    found.Add(item);
+                    if (linked is HVRVixxyControl control)
+                    {
+                        found.Add(control);
+                    }
+                }
+            }
+
+            HashSet<string> labels = new HashSet<string>();
+            foreach (PlannedAuthoredMotion planned in plan.SelectedAuthoredMotions())
+            {
+                labels.Add(planned.Plan.Label);
+            }
+
+            if (labels.Count == 0)
+            {
+                return;
+            }
+
+            foreach (BasisAuthoredMotion motion in targetRoot.GetComponents<BasisAuthoredMotion>())
+            {
+                foreach (BasisAuthoredMotion.Movement movement in motion.movements)
+                {
+                    if (movement != null && labels.Contains(movement.label))
+                    {
+                        found.Add(motion);
+                        break;
+                    }
+                }
+            }
         }
 
         /// <summary>Removes what <see cref="FindReplaceable"/> finds, under one undo step.</summary>

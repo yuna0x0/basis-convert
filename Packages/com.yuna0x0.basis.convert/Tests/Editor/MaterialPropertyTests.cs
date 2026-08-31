@@ -209,7 +209,7 @@ namespace yuna0x0.Basis.Convert.Tests
                 + "as unconvertible.");
 
             // What is left, and why. Reading this is how the next gap gets found.
-            foreach (ConversionDiagnostic diagnostic in plan.Diagnostics)
+            foreach (ConversionDiagnostic diagnostic in plan.AllDiagnostics())
             {
                 if (diagnostic.Code.StartsWith("vixxy.")
                     || diagnostic.Code.StartsWith("expressions."))

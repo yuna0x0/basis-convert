@@ -43,7 +43,7 @@ namespace yuna0x0.Basis.Convert.Tests
             foreach (PlannedVixxyControl control in plan.VixxyControls)
             {
                 TestContext.WriteLine($"CONTROL [{control.Plan.MenuName}] "
-                    + $"default {(control.Plan.DefaultOn ? "on" : "off")}");
+                    + $"default {control.Plan.DefaultValue}");
                 foreach (VixxyActivationPlan activation in control.Plan.Activations)
                 {
                     TestContext.WriteLine(

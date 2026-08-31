@@ -56,6 +56,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// </summary>
         public List<string> GuardedBy = new List<string>();
 
+        /// <summary>
+        /// What the avatar declares its parameter defaults to. A control that starts anywhere
+        /// else would switch something the moment the avatar loads.
+        /// </summary>
+        public float DefaultValue;
+
         public bool IsSelector => Choices.Count > 2;
 
         public ClipEffects WhenOff
@@ -173,6 +179,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 };
 
                 toggle.GuardedBy.AddRange(layer.GuardedBy);
+                toggle.DefaultValue = DefaultOf(inventory, layer.Parameter);
 
                 foreach (FxParameterState state in layer.States)
                 {
@@ -189,6 +196,27 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
 
             return resolved;
+        }
+
+        /// <summary>
+        /// What the avatar declares the parameter defaults to, or zero when it declares nothing.
+        /// </summary>
+        private static float DefaultOf(VrcExpressionInventory inventory, string parameter)
+        {
+            if (inventory == null)
+            {
+                return 0f;
+            }
+
+            foreach (VrcExpressionParameter declared in inventory.Parameters)
+            {
+                if (declared.Name == parameter)
+                {
+                    return declared.DefaultValue;
+                }
+            }
+
+            return 0f;
         }
 
         /// <summary>
@@ -236,6 +264,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     Parameter = layer.Parameter,
                     LayerName = layer.LayerName,
                     IsSlider = true,
+                    DefaultValue = DefaultOf(inventory, layer.Parameter),
                 };
 
                 // The two ends of the range. Vixxy interpolates between a control's choices, so

@@ -166,7 +166,7 @@ namespace yuna0x0.Basis.Convert.Tests
                 }
             }
 
-            foreach (ConversionDiagnostic diagnostic in plan.Diagnostics)
+            foreach (ConversionDiagnostic diagnostic in plan.AllDiagnostics())
             {
                 if (diagnostic.Code.StartsWith("modularAvatar."))
                 {

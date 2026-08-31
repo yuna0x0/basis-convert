@@ -89,6 +89,8 @@ namespace yuna0x0.Basis.Convert.Reporting
             text.AppendLine($"- Constraints found: {plan.ConstraintsFound}");
             text.AppendLine($"- Jiggle rigs planned: {plan.Rigs.Count}");
             text.AppendLine($"- Basis constraints planned: {plan.Constraints.Count}");
+            text.AppendLine($"- Vixxy controls planned: {plan.VixxyControls.Count}");
+            text.AppendLine($"- Authored motions planned: {plan.AuthoredMotions.Count}");
             text.AppendLine("- Avatar descriptor: "
                 + (plan.Descriptor == null
                     ? "none found"
@@ -107,6 +109,13 @@ namespace yuna0x0.Basis.Convert.Reporting
                 if (result.TotalSkipped > 0)
                 {
                     text.AppendLine($"- Skipped while writing: {result.TotalSkipped}");
+                }
+
+                // The one thing a conversion leaves in the project rather than on the avatar,
+                // and the one thing an undo does not take back.
+                foreach (string asset in result.MotionAssets)
+                {
+                    text.AppendLine($"- Motion clip baked: {asset}");
                 }
             }
 
@@ -226,6 +235,11 @@ namespace yuna0x0.Basis.Convert.Reporting
             if (plan.Options.Toggles)
             {
                 individually += plan.VixxyControls.Count - plan.SelectedVixxyControlCount;
+            }
+
+            if (plan.Options.Motion)
+            {
+                individually += plan.AuthoredMotions.Count - plan.SelectedAuthoredMotionCount;
             }
 
             if (plan.Options.Descriptor && plan.Descriptor != null && !plan.Descriptor.Include)

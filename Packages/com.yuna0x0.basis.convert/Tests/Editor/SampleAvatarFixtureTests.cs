@@ -190,6 +190,29 @@ namespace yuna0x0.Basis.Convert.Tests
         }
 
         [Test]
+        public void ARadialsLabelsAreNotReadAsMoreParameters()
+        {
+            // A puppet's labels are a list of their own further down the same control. Reading
+            // them as subParameters would invent parameters the menu never named.
+            AvatarConversionPlan plan = Plan();
+
+            VrcExpressionControl radial = null;
+            foreach (VrcExpressionMenu menu in plan.Expressions.Menus)
+            {
+                foreach (VrcExpressionControl control in menu.Controls)
+                {
+                    if (control.Type == VrcExpressionControlType.RadialPuppet)
+                    {
+                        radial = control;
+                    }
+                }
+            }
+
+            Assert.That(radial, Is.Not.Null);
+            Assert.That(radial.SubParameters, Is.EqualTo(new[] {"TailSize"}));
+        }
+
+        [Test]
         public void ARadialPuppetBecomesASliderBetweenItsEnds()
         {
             // The menu entry names its parameter under subParameters rather than as its own,
@@ -347,6 +370,20 @@ namespace yuna0x0.Basis.Convert.Tests
         }
 
         [Test]
+        public void AControlStartsWhereTheAvatarDeclaresItsParameterDefaults()
+        {
+            // The fixture declares every parameter defaulting to 0, so every control starts at
+            // its first choice. A parameter declared otherwise carries across the same way.
+            AvatarConversionPlan plan = Plan();
+
+            PlannedVixxyControl tail = plan.VixxyControls.Find(c => c.Plan.Parameter == "Tail");
+            Assert.That(tail, Is.Not.Null);
+            Assert.That(tail.Plan.DefaultValue, Is.EqualTo(0f));
+            Assert.That(tail.Plan.ChoiceValues[0], Is.EqualTo(0),
+                "The default names a choice value, which is what Vixxy compares against.");
+        }
+
+        [Test]
         public void AToggleGuardedByAVrchatParameterIsRebuilt()
         {
             // The layer waits on IsLocal as well as its own parameter. Basis has nothing that
@@ -406,6 +443,58 @@ namespace yuna0x0.Basis.Convert.Tests
             Assert.That(baked.rotationSamples[0],
                 Is.Not.EqualTo(baked.rotationSamples[baked.frameCount / 2]),
                 "The sampled rotation changes over the clip.");
+        }
+
+        [Test]
+        public void ConvertingTwiceReplacesTheControlsRatherThanStackingThem()
+        {
+            // Everything Vixxy sits on the avatar root rather than on a transform of its own, so
+            // the rule that protects hand-made components elsewhere says nothing here. What a
+            // re-conversion replaces is matched by the names it is about to write.
+            AvatarConversionPlan plan = Plan();
+
+            _instance = (GameObject)PrefabUtility.InstantiatePrefab(
+                AssetDatabase.LoadAssetAtPath<GameObject>(FixturePath));
+
+            AvatarConverter.Apply(plan, _instance);
+            int first = _instance.GetComponents<HVR.Vixxy.HVRVixxyControl>().Length;
+            Assert.That(first, Is.GreaterThan(0));
+
+            AvatarConverter.RemoveReplaceable(plan, _instance, "Re-convert");
+            AvatarConverter.Apply(plan, _instance);
+
+            Assert.That(_instance.GetComponents<HVR.Vixxy.HVRVixxyControl>().Length,
+                Is.EqualTo(first), "A second conversion replaces the controls it wrote.");
+            Assert.That(_instance.GetComponents<HVR.Vixxy.HVRVixxyMenuItem>().Length,
+                Is.EqualTo(first), "One menu item per control, not two.");
+        }
+
+        [Test]
+        public void AControlSomebodyElseAddedIsLeftAlone()
+        {
+            AvatarConversionPlan plan = Plan();
+
+            _instance = (GameObject)PrefabUtility.InstantiatePrefab(
+                AssetDatabase.LoadAssetAtPath<GameObject>(FixturePath));
+
+            // Something the user set up by hand, on the same object ours go on.
+            HVR.Vixxy.HVRVixxyControl mine =
+                _instance.AddComponent<HVR.Vixxy.HVRVixxyControl>();
+            HVR.Vixxy.HVRVixxyMenuItem item =
+                _instance.AddComponent<HVR.Vixxy.HVRVixxyMenuItem>();
+
+            SerializedObject serialized = new SerializedObject(item);
+            serialized.FindProperty("title").stringValue = "Something I made";
+            serialized.FindProperty("control").objectReferenceValue = mine;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            serialized.Dispose();
+
+            AvatarConverter.Apply(plan, _instance);
+
+            List<Component> replaceable = AvatarConverter.FindReplaceable(plan, _instance);
+
+            Assert.That(replaceable, Has.No.Member(mine));
+            Assert.That(replaceable, Has.No.Member(item));
         }
 
         [Test]

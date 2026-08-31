@@ -90,6 +90,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>Project folder the baked clip asset goes in, beside the animation.</summary>
         public string OutputFolder = string.Empty;
 
+        /// <summary>
+        /// The control that switches this motion on, when a menu toggle does. A motion with
+        /// nothing to switch it plays from load, so one written without its control would play
+        /// permanently: it is only written when that control is.
+        /// </summary>
+        public PlannedVixxyControl SwitchedBy;
+
         public string Describe() => Plan != null ? Plan.Label : "(unnamed)";
     }
 
@@ -180,13 +187,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         /// <summary>
         /// The expression menu tree and parameters. Nothing here converts; it is read so the
-        /// report can describe what rebuilding it in HVR Vixxy involves.
+        /// report can describe what rebuilding it in HVR Vixxy involves, and because the menu
+        /// entries are what name a control and its choices.
         /// </summary>
         public VrcExpressionInventory Expressions = new VrcExpressionInventory();
 
         /// <summary>
-        /// Menu toggles whose animator layer and clips were found. What a Vixxy rebuild can be
-        /// generated from, once emitting is implemented.
+        /// Menu toggles whose animator layer and clips were found. Each one a Vixxy control can
+        /// hold is in <see cref="VixxyControls"/>; the rest are here and reported with why.
         /// </summary>
         public List<ResolvedToggle> Toggles = new List<ResolvedToggle>();
 
@@ -207,6 +215,16 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         /// <summary>Diagnostics about the avatar as a whole, rather than one component.</summary>
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
+
+        /// <summary>
+        /// Diagnostics about the menu and the controls rebuilt from it. Kept apart from the rest
+        /// so that switching menu toggles off leaves their losses out of the report, the same as
+        /// every other category.
+        /// </summary>
+        public List<ConversionDiagnostic> ToggleDiagnostics = new List<ConversionDiagnostic>();
+
+        /// <summary>Diagnostics about authored motion, gated the same way.</summary>
+        public List<ConversionDiagnostic> MotionDiagnostics = new List<ConversionDiagnostic>();
 
         /// <summary>
         /// What the humanoid rig looks like to Basis's full-body IK. Not a conversion, so these
@@ -311,12 +329,17 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (PlannedAuthoredMotion motion in AuthoredMotions)
             {
-                if (motion.Include && IsIncluded(motion.Source))
+                if (motion.Include && IsIncluded(motion.Source)
+                    && (motion.SwitchedBy == null || IsSelected(motion.SwitchedBy)))
                 {
                     yield return motion;
                 }
             }
         }
+
+        /// <summary>Whether a conversion with these options would write this control.</summary>
+        public bool IsSelected(PlannedVixxyControl control) =>
+            Options.Toggles && control != null && control.Include && IsIncluded(control.Source);
 
         public bool DescriptorSelected =>
             Options.Descriptor && Descriptor != null && Descriptor.Include
@@ -359,6 +382,22 @@ namespace yuna0x0.Basis.Convert.Pipeline
             foreach (ConversionDiagnostic diagnostic in Diagnostics)
             {
                 yield return diagnostic;
+            }
+
+            if (!selectedOnly || Options.Toggles)
+            {
+                foreach (ConversionDiagnostic diagnostic in ToggleDiagnostics)
+                {
+                    yield return diagnostic;
+                }
+            }
+
+            if (!selectedOnly || Options.Motion)
+            {
+                foreach (ConversionDiagnostic diagnostic in MotionDiagnostics)
+                {
+                    yield return diagnostic;
+                }
             }
 
             foreach (PlannedJiggleRig rig in selectedOnly ? SelectedRigs() : Rigs)

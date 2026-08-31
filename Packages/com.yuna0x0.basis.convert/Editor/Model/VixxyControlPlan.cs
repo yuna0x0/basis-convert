@@ -167,8 +167,12 @@ namespace yuna0x0.Basis.Convert.Model
         /// </summary>
         public bool IsSlider;
 
-        /// <summary>Which choice the control starts in.</summary>
-        public bool DefaultOn;
+        /// <summary>
+        /// The value the control starts at, in the same space as the choices' own values, which
+        /// is what Vixxy compares against. This is the avatar's declared default for the
+        /// parameter behind the toggle, so a conversion starts where the avatar was authored.
+        /// </summary>
+        public float DefaultValue;
 
         public List<VixxyActivationPlan> Activations = new List<VixxyActivationPlan>();
         public List<VixxySubjectPlan> Subjects = new List<VixxySubjectPlan>();

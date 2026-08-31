@@ -83,4 +83,8 @@ MonoBehaviour:
     subMenu: {fileID: 0}
     subParameters:
     - name: TailSize
-    labels: []
+    labels:
+    - name: Small
+      icon: {fileID: 0}
+    - name: Large
+      icon: {fileID: 0}

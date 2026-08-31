@@ -60,10 +60,13 @@ namespace yuna0x0.Basis.Convert.Tests
 
             ConversionResult result = AvatarConverter.Apply(plan, instance);
 
+            // A Vixxy control is two components, itself and its menu item, both on the avatar
+            // root; everything else is one.
             List<Component> replaceable = AvatarConverter.FindReplaceable(plan, instance);
             Assert.That(replaceable.Count,
-                Is.EqualTo(result.RigsWritten + result.ConstraintsWritten),
-                "Every rig and constraint written should be found again by the scoped lookup.");
+                Is.EqualTo(result.RigsWritten + result.ConstraintsWritten
+                    + result.VixxyControlsWritten * 2 + result.AuthoredMotionsWritten),
+                "Everything written should be found again by the scoped lookup.");
         }
 
         [Test]

@@ -108,17 +108,18 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 {
                     names.Add(source.Name);
                 }
-
-                if (names.Count == limit)
-                {
-                    break;
-                }
             }
 
-            int remaining = sources.Count - names.Count;
-            return remaining > 0
-                ? string.Join(", ", names) + $" and {remaining} more"
-                : string.Join(", ", names);
+            // The count is of names left unlisted, not of prefabs: the same prefab nested a
+            // dozen times is one name, and saying "and eleven more" would describe repetition
+            // as variety.
+            if (names.Count <= limit)
+            {
+                return string.Join(", ", names);
+            }
+
+            List<string> listed = names.GetRange(0, limit);
+            return string.Join(", ", listed) + $" and {names.Count - limit} more";
         }
 
         /// <summary>Reads one prefab into a plan, tagging what it finds with where it came from.</summary>
@@ -211,13 +212,20 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 if (kind == SourceComponentKind.VrcAvatarDescriptor)
                 {
-                    // The avatar's own descriptor is the one that counts. Clothing prefabs are
-                    // often shipped with a descriptor of their own for previewing.
-                    PlannedAvatarDescriptor descriptor = PlanDescriptor(document, resolver, plan);
-                    if (descriptor != null && plan.Descriptor == null)
+                    // The avatar's own descriptor is the one that counts, and it is read first
+                    // because the avatar's own prefab is the first source. Clothing is often
+                    // shipped with a descriptor of its own for previewing, and reading that one
+                    // would report visemes and a view position for something not being written.
+                    if (plan.Descriptor == null)
                     {
-                        descriptor.Source = source;
-                        plan.Descriptor = descriptor;
+                        PlannedAvatarDescriptor descriptor =
+                            PlanDescriptor(document, resolver, plan);
+
+                        if (descriptor != null)
+                        {
+                            descriptor.Source = source;
+                            plan.Descriptor = descriptor;
+                        }
                     }
 
                     continue;
@@ -263,9 +271,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
             if (plan.ModularAvatarMenuFound > 0)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "modularAvatar.menus",
-                    $"{plan.ModularAvatarMenuFound} Modular Avatar components build menus and "
-                    + "merge animator layers. Both target structures VRChat has and Basis does "
-                    + "not, so anything they add does nothing on Basis and is not converted yet.");
+                    $"{plan.ModularAvatarMenuFound} Modular Avatar components build menus, merge "
+                    + "animator layers or react to them. All of those target structures VRChat "
+                    + "has and Basis does not, so they do nothing there as they stand. A menu "
+                    + "item read together with a merged animator or an object toggle is rebuilt "
+                    + "as a Vixxy control; anything else is listed here and left.");
             }
 
             if (plan.ModularAvatarVrchatOnlyFound > 0)
@@ -560,19 +570,22 @@ namespace yuna0x0.Basis.Convert.Pipeline
             int toggles = inventory.CountOf(VrcExpressionControlType.Toggle);
             int buttons = inventory.CountOf(VrcExpressionControlType.Button);
             int subMenus = inventory.CountOf(VrcExpressionControlType.SubMenu);
-            int puppets = inventory.CountOf(VrcExpressionControlType.TwoAxisPuppet)
-                + inventory.CountOf(VrcExpressionControlType.FourAxisPuppet)
-                + inventory.CountOf(VrcExpressionControlType.RadialPuppet);
+            int radials = inventory.CountOf(VrcExpressionControlType.RadialPuppet);
+            int axisPuppets = inventory.CountOf(VrcExpressionControlType.TwoAxisPuppet)
+                + inventory.CountOf(VrcExpressionControlType.FourAxisPuppet);
+            int puppets = radials + axisPuppets;
 
-            plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "expressions.menu",
+            plan.ToggleDiagnostics.Add(DiagnosticSeverity.Dropped, "expressions.menu",
                 $"The expression menu has {inventory.ControlCount} controls across "
                 + $"{inventory.Menus.Count} menus: {toggles} toggles, {buttons} buttons, "
-                + $"{subMenus} submenus, {puppets} puppets. Basis has no menu format, so each of "
-                + "these is rebuilt as an HVR Vixxy control with a menu item.");
+                + $"{subMenus} submenus, {puppets} puppets. Basis has no menu of its own, so the "
+                + "toggles and radials are rebuilt as Vixxy controls with a menu item each, "
+                + "listed one after another. Buttons, which act only while held, and the nesting "
+                + "the submenus gave the menu are not rebuilt.");
 
             if (inventory.Parameters.Count > 0)
             {
-                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "expressions.parameters",
+                plan.ToggleDiagnostics.Add(DiagnosticSeverity.Dropped, "expressions.parameters",
                     $"{inventory.Parameters.Count} expression parameters were declared. Vixxy "
                     + "controls hold their own state, so there is no parameter list to recreate, "
                     + "but anything driven by these has to be rebuilt control by control.");
@@ -580,12 +593,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             ResolveToggles(plan, source);
 
-            if (puppets > 0)
+            // Radials are rebuilt as sliders and counted with the rest of what was rebuilt.
+            // Only the ones with nowhere to go are reported as dropped.
+            if (axisPuppets > 0)
             {
-                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "expressions.puppets",
-                    $"{puppets} of the controls are puppets. Vixxy offers a slider for a control "
-                    + "with several choices, which covers a radial puppet; the two and four axis "
-                    + "ones have no direct equivalent.");
+                plan.ToggleDiagnostics.Add(DiagnosticSeverity.Dropped, "expressions.puppets",
+                    $"{axisPuppets} of the controls are two or four axis puppets. Each drives two "
+                    + "parameters at once, which no single Vixxy control expresses, so they are "
+                    + "not rebuilt.");
             }
         }
 
@@ -628,20 +643,25 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 }
             }
 
+            int before = plan.VixxyControls.Count;
+
             BuildVixxyControls(plan, plan.Toggles, plan.SourceRoot.transform,
                 plan.Sources.Count > 0 ? plan.Sources[0] : null);
 
+            int rebuilt = plan.VixxyControls.Count - before;
             int toggleControls = plan.Expressions.CountOf(VrcExpressionControlType.Toggle)
                 + plan.Expressions.CountOf(VrcExpressionControlType.RadialPuppet);
 
             // Counting controls against traced parameters compares unlike things: a menu often
-            // has several controls sharing one parameter, each selecting a different value.
-            plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "expressions.togglesResolved",
+            // has several controls sharing one parameter, each selecting a different value. The
+            // rebuilt count is what was actually produced rather than what looked rebuildable,
+            // since a layer that animates over time becomes a control and a motion together.
+            plan.ToggleDiagnostics.Add(DiagnosticSeverity.Mapped, "expressions.togglesResolved",
                 $"{plan.Toggles.Count} animator layers were traced from the {toggleControls} "
-                + "menu toggles and radials, which share fewer parameters between them. Of those "
-                + $"layers, {simple} only switch objects on and off, set blendshapes or set "
-                + "material properties, which is what a Vixxy control holds. The rest animate "
-                + "over time or drive something else and need rebuilding by hand.");
+                + "menu toggles and radials, which share fewer parameters between them. "
+                + $"{rebuilt} of those layers became Vixxy controls, {simple} of them holding "
+                + "nothing but object switching, blendshapes and material properties. The rest "
+                + "are listed above with why.");
         }
 
         /// <summary>
@@ -673,7 +693,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 foreach (ConversionDiagnostic diagnostic in motion.Diagnostics)
                 {
-                    plan.Diagnostics.Add(diagnostic);
+                    plan.MotionDiagnostics.Add(diagnostic);
                 }
 
                 plan.AuthoredMotions.Add(new PlannedAuthoredMotion
@@ -724,7 +744,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             int rebuilt = plan.VixxyControls.Count - before;
             if (plan.ModularAvatarToggles.Count > 0)
             {
-                plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "modularAvatar.togglesRebuilt",
+                plan.ToggleDiagnostics.Add(DiagnosticSeverity.Mapped, "modularAvatar.togglesRebuilt",
                     $"{rebuilt} of {plan.ModularAvatarToggles.Count} Modular Avatar menu toggles "
                     + "were rebuilt as Vixxy controls. They would otherwise do nothing on Basis, "
                     + "which has no expression menu for Modular Avatar to install them into.");
@@ -744,7 +764,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 foreach (ConversionDiagnostic diagnostic in control.Diagnostics)
                 {
-                    plan.Diagnostics.Add(diagnostic);
+                    plan.ToggleDiagnostics.Add(diagnostic);
                 }
 
                 // A control may switch nothing and only set blendshapes, which is how a body
@@ -770,7 +790,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     Transform target = root.Find(activation.Path);
                     if (target == null)
                     {
-                        plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vixxy.targetMissing",
+                        plan.ToggleDiagnostics.Add(DiagnosticSeverity.Warning, "vixxy.targetMissing",
                             $"'{control.MenuName}' switches {activation.Path}, which is not in "
                             + "this avatar. The clip was authored against a different hierarchy.");
                         resolved = false;
@@ -798,7 +818,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             if (plan.VixxyControls.Count > 0)
             {
-                plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "vixxy.rebuilt",
+                plan.ToggleDiagnostics.Add(DiagnosticSeverity.Mapped, "vixxy.rebuilt",
                     $"{plan.VixxyControls.Count} menu toggles were rebuilt as Vixxy controls, "
                     + "each with a menu item. The rest are listed above with why they were not.");
             }
@@ -827,7 +847,13 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     SourceClip = clip,
                     OutputFolder = OutputFolderFor(clip),
                     Source = source,
+                    SwitchedBy = planned,
                 };
+
+                foreach (ConversionDiagnostic diagnostic in motion.Motion.Diagnostics)
+                {
+                    plan.MotionDiagnostics.Add(diagnostic);
+                }
 
                 planned.Motions.Add(authored);
                 plan.AuthoredMotions.Add(authored);
@@ -849,7 +875,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                 if (renderer == null)
                 {
-                    plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vixxy.rendererMissing",
+                    plan.ToggleDiagnostics.Add(DiagnosticSeverity.Warning, "vixxy.rendererMissing",
                         $"'{control.MenuName}' sets {subject.Path}, which is not a renderer in "
                         + "this avatar.");
                     return false;
@@ -860,7 +886,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     SkinnedMeshRenderer skinned = renderer as SkinnedMeshRenderer;
                     if (skinned == null || skinned.sharedMesh == null)
                     {
-                        plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vixxy.rendererMissing",
+                        plan.ToggleDiagnostics.Add(DiagnosticSeverity.Warning, "vixxy.rendererMissing",
                             $"'{control.MenuName}' sets blendshapes on {subject.Path}, which is "
                             + "not a skinned mesh in this avatar.");
                         return false;
@@ -935,7 +961,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             // applies to all of its materials at once.
             if (renderer.sharedMaterials.Length > 1)
             {
-                plan.Diagnostics.Add(DiagnosticSeverity.Approximated, "vixxy.materialBlock",
+                plan.ToggleDiagnostics.Add(DiagnosticSeverity.Approximated, "vixxy.materialBlock",
                     $"'{control.MenuName}' sets material properties on {subject.Path}, which has "
                     + $"{renderer.sharedMaterials.Length} materials. Vixxy applies them through a "
                     + "MaterialPropertyBlock, so every material on that renderer is affected.");

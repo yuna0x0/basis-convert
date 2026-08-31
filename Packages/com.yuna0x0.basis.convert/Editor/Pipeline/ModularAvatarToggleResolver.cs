@@ -376,6 +376,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 effects.Deactivated[i] = Join(prefix, effects.Deactivated[i]);
             }
 
+            for (int i = 0; i < effects.AnimatedRotationPaths.Count; i++)
+            {
+                effects.AnimatedRotationPaths[i] =
+                    Join(prefix, effects.AnimatedRotationPaths[i]);
+            }
+
             foreach (BlendShapeEffect shape in effects.BlendShapes)
             {
                 shape.Path = Join(prefix, shape.Path);

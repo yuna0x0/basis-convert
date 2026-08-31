@@ -105,10 +105,16 @@ namespace yuna0x0.Basis.Convert.Sources
 
                 if (key == "subParameters")
                 {
-                    inSubParameters = true;
+                    // "subParameters: []" is an empty inline list with no block after it. Only a
+                    // bare key opens one.
+                    inSubParameters = string.IsNullOrEmpty(value);
                     inParameterBlock = false;
                     continue;
                 }
+
+                // Any other field of the control closes that block, so a list further down, such
+                // as the labels a puppet carries, is not read as more parameter names.
+                inSubParameters = false;
 
                 switch (key)
                 {

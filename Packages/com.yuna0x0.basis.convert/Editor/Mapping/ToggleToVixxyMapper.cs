@@ -23,6 +23,7 @@ namespace yuna0x0.Basis.Convert.Mapping
                 MenuName = toggle.MenuName,
                 Parameter = toggle.Parameter,
                 IsSlider = toggle.IsSlider,
+                DefaultValue = toggle.DefaultValue,
             };
 
             foreach (ResolvedChoice choice in toggle.Choices)
@@ -130,11 +131,9 @@ namespace yuna0x0.Basis.Convert.Mapping
                 AuthoredMotionPlan motion = MotionToAuthoredMapper.MapSwitched(
                     toggle.MenuName, resolved.Name, Looping(resolved), resolved.Effects);
 
-                foreach (ConversionDiagnostic diagnostic in motion.Diagnostics)
-                {
-                    plan.Diagnostics.Add(diagnostic);
-                }
-
+                // The motion's own diagnostics stay on it rather than being folded in here.
+                // They say it was rebuilt, which is only true once the control it belongs to
+                // resolves against the avatar, and that is known a layer further out.
                 VixxyActivationPlan activation = new VixxyActivationPlan
                 {
                     MotionIndex = plan.Motions.Count,

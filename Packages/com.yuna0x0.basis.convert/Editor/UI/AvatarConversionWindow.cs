@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using Basis.Scripts.BasisSdk.Constraints;
 using GatorDragonGames.JigglePhysics;
+using HVR.Vixxy;
 using UnityEditor;
 using UnityEngine;
 using yuna0x0.Basis.Convert.Mapping;
@@ -1148,10 +1149,10 @@ namespace yuna0x0.Basis.Convert.UI
             if (_plan.TotalPlanned == 0)
             {
                 _blocker = "Nothing convertible was found in this prefab. Supported sources are "
-                    + "VRChat PhysBones, colliders and constraints, the VRChat avatar "
-                    + "descriptor, and Dynamic Bone, which plenty of avatars use without VRChat "
-                    + "being involved. If the components were already stripped, there is nothing "
-                    + "left to read.";
+                    + "VRChat PhysBones, colliders and constraints, the VRChat avatar descriptor "
+                    + "with the menu and animation behind it, and Dynamic Bone, which plenty of "
+                    + "avatars use without VRChat being involved. If the components were already "
+                    + "stripped, there is nothing left to read.";
             }
         }
 
@@ -1177,6 +1178,15 @@ namespace yuna0x0.Basis.Convert.UI
             _groups = ConversionReport.Group(_plan);
         }
 
+        /// <summary>A count and its noun, pluralised, for the list in the dialog.</summary>
+        private static void Describe(List<string> into, int count, string noun)
+        {
+            if (count > 0)
+            {
+                into.Add(count == 1 ? $"1 {noun}" : $"{count} {noun}s");
+            }
+        }
+
         /// <summary>
         /// Converting twice would otherwise stack a second set of components on top of the
         /// first. Offers to remove the ones sitting where this conversion is about to write, and
@@ -1192,23 +1202,45 @@ namespace yuna0x0.Basis.Convert.UI
 
             int rigs = 0;
             int constraints = 0;
+            int controls = 0;
+            int motions = 0;
+
             foreach (Component component in replaceable)
             {
-                if (component is JiggleRig)
+                switch (component)
                 {
-                    rigs++;
-                }
-                else
-                {
-                    constraints++;
+                    case JiggleRig _:
+                        rigs++;
+                        break;
+                    case BasisConstraintBase _:
+                        constraints++;
+                        break;
+                    case BasisAuthoredMotion _:
+                        motions++;
+                        break;
+
+                    // A control and its menu item are two components making up one control, so
+                    // the menu item is what is counted and the control goes with it.
+                    case HVRVixxyMenuItem _:
+                        controls++;
+                        break;
                 }
             }
 
+            List<string> kinds = new List<string>();
+            Describe(kinds, rigs, "jiggle rig");
+            Describe(kinds, constraints, "Basis constraint");
+            Describe(kinds, controls, "Vixxy control");
+            Describe(kinds, motions, "authored motion");
+
             bool replace = EditorUtility.DisplayDialog(
                 "Convert again?",
-                $"{destination.name} already has {rigs} jiggle rigs and {constraints} Basis "
-                + "constraints on the bones this conversion writes to.\n\nThey will be replaced. "
-                + "Anything elsewhere on the avatar is left alone.\n\nThis is undoable.",
+                $"{destination.name} already has {string.Join(", ", kinds)} from a previous "
+                + "conversion.\n\nThey will be replaced. Anything elsewhere on the avatar is left "
+                + "alone.\n\nRemoving them is undoable"
+                + (motions > 0
+                    ? ", though the motion clips baked into the project stay where they are."
+                    : "."),
                 "Replace",
                 "Cancel");
 
