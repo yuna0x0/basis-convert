@@ -89,9 +89,11 @@ the original. Everything else maps directly.
     dropped. It should become an authored motion the control enables:
     `HVR_VixxyPermitted` lists `BasisAuthoredMotion` among the types a Vixxy activation may
     toggle, and the component raises `EnabledStateChanged` for exactly that.
-  - **Gimmick layers steered by more than one parameter.** A layer is read only when a single
-    parameter steers it, which is what keeps gesture layers from being mistaken for a toggle's
-    own. Anything combining conditions is reported rather than rebuilt.
+  - **Gimmick layers steered by more than one of the avatar's own parameters.** A layer is read
+    only when one of them steers it. VRChat's own parameters no longer count towards that: a
+    layer guarded by `IsLocal` or `InStation` is still the toggle's, and the guard is reported as
+    dropped. A built-in that steers a transition on its own, as a gesture does, still means the
+    layer belongs to it.
   - **Two and four axis puppets.** They drive two parameters at once, which no single Vixxy
     control expresses.
 
@@ -136,6 +138,8 @@ the original. Everything else maps directly.
   - Modular Avatar object paths are resolved against the avatar root, which is what
     `AvatarObjectReference` does. A path naming something outside the prefab being converted is
     reported rather than guessed at.
+  - A layer steered by two of the avatar's own parameters is still left alone. Vixxy has an
+    aggregator that may cover some of those; it has not been looked at.
 - **Props and worlds.** Separate content types, same three stages.
 
 ## Backlog, outside this package

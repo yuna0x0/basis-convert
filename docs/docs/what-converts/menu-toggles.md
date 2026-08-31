@@ -14,8 +14,18 @@ menu item each.
 The expression menu names a parameter. The FX controller has a layer steered by that parameter,
 with a clip on each side. Both are read, and the two clips are reduced to what they actually do.
 
-A layer counts only when a single parameter steers it, which keeps gesture layers that mention a
-toggle as a secondary condition from being read as that toggle's own.
+A layer counts only when a single parameter of the avatar's own steers it, which keeps gesture
+layers that mention a toggle as a secondary condition from being read as that toggle's own.
+
+VRChat's own parameters are treated differently. A gimmick that only runs for the wearer tests
+`IsLocal`, one that stops in a chair tests `InStation`, and Basis drives none of them. A layer
+guarded that way is still the toggle's, and what the rebuilt control no longer waits for is
+reported as `vixxy.builtinGuard`. It only counts as a guard when no transition tests the built-in
+on its own: a layer with a state per gesture belongs to the gesture, not to the menu.
+
+A layer where one value of the parameter leads to two different states is left alone as well.
+Something other than the parameter is choosing between them, and reading it would keep whichever
+transition happened to come first.
 
 ## What can be rebuilt
 

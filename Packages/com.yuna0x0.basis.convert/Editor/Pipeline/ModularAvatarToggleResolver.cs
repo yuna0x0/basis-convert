@@ -103,6 +103,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
                         LayerName = layer.LayerName,
                     };
 
+                    toggle.GuardedBy.AddRange(layer.GuardedBy);
+
                     foreach (FxParameterState state in layer.States)
                     {
                         toggle.Choices.Add(new ResolvedChoice

@@ -108,8 +108,8 @@ namespace yuna0x0.Basis.Convert.Tests
 
             Assert.That(plan.Expressions.Menus.Count, Is.EqualTo(1));
             Assert.That(plan.Expressions.CountOf(VrcExpressionControlType.Toggle),
-                Is.EqualTo(5),
-                "Two toggles and three controls sharing a selector parameter.");
+                Is.EqualTo(6),
+                "Three toggles and three controls sharing a selector parameter.");
             Assert.That(plan.Expressions.CountOf(VrcExpressionControlType.RadialPuppet),
                 Is.EqualTo(1));
         }
@@ -344,6 +344,21 @@ namespace yuna0x0.Basis.Convert.Tests
             // The control starts off, so the motion it switches starts disabled rather than
             // playing on an avatar nobody has touched yet.
             Assert.That(switched.enabled, Is.False);
+        }
+
+        [Test]
+        public void AToggleGuardedByAVrchatParameterIsRebuilt()
+        {
+            // The layer waits on IsLocal as well as its own parameter. Basis has nothing that
+            // drives it, so the control switches regardless and says so.
+            AvatarConversionPlan plan = Plan();
+
+            ResolvedToggle ear = plan.Toggles.Find(toggle => toggle.Parameter == "Ear");
+            Assert.That(ear, Is.Not.Null, "A guard is not a second steering parameter.");
+            Assert.That(ear.GuardedBy, Is.EqualTo(new[] {"IsLocal"}));
+
+            Assert.That(plan.VixxyControls.Find(c => c.Plan.Parameter == "Ear"), Is.Not.Null);
+            Assert.That(plan.AllDiagnostics().HasCode("vixxy.builtinGuard"), Is.True);
         }
 
         [Test]

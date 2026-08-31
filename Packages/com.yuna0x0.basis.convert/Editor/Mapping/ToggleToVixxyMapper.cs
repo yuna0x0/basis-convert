@@ -79,6 +79,14 @@ namespace yuna0x0.Basis.Convert.Mapping
             MapBlendShapes(toggle, plan);
             MapMaterialProperties(toggle, plan);
 
+            if (toggle.GuardedBy.Count > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Approximated, "vixxy.builtinGuard",
+                    $"'{toggle.MenuName}' also waited on VRChat's "
+                    + $"{string.Join(", ", toggle.GuardedBy)}, which Basis has no equivalent for. "
+                    + "The control switches whenever it is used, as though those were satisfied.");
+            }
+
             if (toggle.MotionsBetweenEnds > 0)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Approximated, "vixxy.puppetEnds",

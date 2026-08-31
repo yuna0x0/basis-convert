@@ -14,6 +14,11 @@ Notable changes to this package. The format follows
 - Radial puppets become Vixxy sliders, taking the two ends of the blend tree their layer holds
   as the control's choices. A tree with motions between its ends is reported as
   `vixxy.puppetEnds`, because a slider interpolates between its choices in a straight line.
+- A toggle whose animator layer also waits on one of VRChat's own parameters is rebuilt rather
+  than skipped. `IsLocal`, `InStation` and the rest have no Basis equivalent, so the control
+  switches whenever it is used, and the guard it no longer waits for is reported as
+  `vixxy.builtinGuard`. A built-in that steers a transition on its own still means the layer
+  belongs to it rather than to the menu.
 - A menu toggle whose clip animates over time is rebuilt rather than dropped. The animation
   becomes an authored motion and the control switches the component on and off, which is what
   Vixxy listing `BasisAuthoredMotion` among the types an activation may toggle allows for.
@@ -28,6 +33,9 @@ Notable changes to this package. The format follows
 
 ### Fixed
 
+- A layer where one value of its parameter led to two different states was read as though the
+  first transition were the only one. Something other than the parameter decides between them,
+  so the layer is left alone and reported instead.
 - A Modular Avatar menu item's toggle was only built when the prefab also installed an
   expression menu, so a piece of clothing that installs a menu item alone converted nothing.
 - Any list entry in an expression menu asset began a new control, so a radial's `subParameters`

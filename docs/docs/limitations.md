@@ -24,7 +24,11 @@ this is the same information in one place.
 - **Wide angle limits are dropped** rather than clamped to something tighter.
 - **Material properties are applied through a property block**, which covers every material on a
   renderer. A renderer with more than one material is reported.
-- **Modular Avatar toggles** are rebuilt only when a single parameter steers their layer.
+- **Modular Avatar toggles** are rebuilt only when a single parameter of the avatar's own steers
+  their layer.
+- **A toggle that waited on a VRChat parameter no longer waits.** `IsLocal`, `InStation`,
+  `Seated` and the rest have no Basis equivalent, so a control guarded by one switches whenever
+  it is used. The report names the guard that was dropped.
 - **Authored motion carries rotation only**, which is what a baked Basis motion clip holds. A
   clip that also moves or scales something keeps the turning and reports the rest.
 - **A baked motion clip is a project asset**, so an undo removes the components a conversion

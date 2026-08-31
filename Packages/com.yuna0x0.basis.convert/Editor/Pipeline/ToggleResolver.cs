@@ -50,6 +50,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// </summary>
         public int MotionsBetweenEnds;
 
+        /// <summary>
+        /// VRChat's own parameters the layer also waited on, which Basis does not have. The
+        /// control was rebuilt as though each were satisfied.
+        /// </summary>
+        public List<string> GuardedBy = new List<string>();
+
         public bool IsSelector => Choices.Count > 2;
 
         public ClipEffects WhenOff
@@ -165,6 +171,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     Parameter = layer.Parameter,
                     LayerName = layer.LayerName,
                 };
+
+                toggle.GuardedBy.AddRange(layer.GuardedBy);
 
                 foreach (FxParameterState state in layer.States)
                 {

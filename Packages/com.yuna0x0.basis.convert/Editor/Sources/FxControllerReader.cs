@@ -43,6 +43,13 @@ namespace yuna0x0.Basis.Convert.Sources
         /// </summary>
         public bool IsBlendTree;
 
+        /// <summary>
+        /// VRChat's own parameters the layer also tests, which Basis has no equivalent for. The
+        /// layer was read as though each were satisfied, so these are what a rebuilt control no
+        /// longer waits for.
+        /// </summary>
+        public List<string> GuardedBy = new List<string>();
+
         /// <summary>The clip for a parameter value of 0, which a toggle calls off.</summary>
         public AnimationClip WhenOff => ClipFor(0);
 
@@ -108,27 +115,45 @@ namespace yuna0x0.Basis.Convert.Sources
                 }
 
                 // A layer is a toggle for a parameter only when that parameter is the only one
-                // steering it. Gesture layers commonly carry a second condition on an unrelated
-                // parameter, and treating those as that parameter's own layer picks up the wrong
-                // clips entirely.
+                // of the avatar's own steering it. Gesture layers commonly carry a second
+                // condition on an unrelated parameter, and treating those as that parameter's
+                // own layer picks up the wrong clips entirely.
                 HashSet<string> steering = SteeringParameters(machine);
-                if (steering.Count != 1)
+                List<string> guards = new List<string>();
+                string parameter = null;
+                bool ambiguous = false;
+
+                foreach (string steered in steering)
+                {
+                    if (VrchatBuiltInParameters.Contains(steered))
+                    {
+                        guards.Add(steered);
+                    }
+                    else if (parameter == null)
+                    {
+                        parameter = steered;
+                    }
+                    else
+                    {
+                        ambiguous = true;
+                    }
+                }
+
+                // VRChat's own parameters are a different matter: nothing on Basis drives them,
+                // so a layer guarded by one is still the menu parameter's layer. It counts as a
+                // guard only when no transition tests it on its own, since a layer with states
+                // of its own per gesture belongs to the gesture rather than to the toggle.
+                if (ambiguous || parameter == null || !parameters.Contains(parameter)
+                    || (guards.Count > 0 && !GuardsOnly(machine, parameter)))
                 {
                     continue;
                 }
 
-                foreach (string parameter in parameters)
+                FxToggleLayer toggle = ReadLayer(layer, machine, parameter);
+                if (toggle != null)
                 {
-                    if (!steering.Contains(parameter))
-                    {
-                        continue;
-                    }
-
-                    FxToggleLayer toggle = ReadLayer(layer, machine, parameter);
-                    if (toggle != null)
-                    {
-                        found.Add(toggle);
-                    }
+                    toggle.GuardedBy.AddRange(guards);
+                    found.Add(toggle);
                 }
             }
 
@@ -255,6 +280,68 @@ namespace yuna0x0.Basis.Convert.Sources
             return found;
         }
 
+        /// <summary>
+        /// Whether every transition testing one of VRChat's own parameters also tests the
+        /// avatar's. When one does not, that transition is steered by the built-in alone, and
+        /// the layer belongs to it rather than to the menu.
+        /// </summary>
+        private static bool GuardsOnly(AnimatorStateMachine machine, string parameter)
+        {
+            foreach (ChildAnimatorState child in machine.states)
+            {
+                foreach (AnimatorStateTransition transition in child.state.transitions)
+                {
+                    if (!IsGuarded(transition.conditions, parameter))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            foreach (AnimatorStateTransition transition in machine.anyStateTransitions)
+            {
+                if (!IsGuarded(transition.conditions, parameter))
+                {
+                    return false;
+                }
+            }
+
+            foreach (AnimatorTransition transition in machine.entryTransitions)
+            {
+                if (!IsGuarded(transition.conditions, parameter))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsGuarded(AnimatorCondition[] conditions, string parameter)
+        {
+            if (conditions == null)
+            {
+                return true;
+            }
+
+            bool builtIn = false;
+            bool own = false;
+
+            foreach (AnimatorCondition condition in conditions)
+            {
+                if (condition.parameter == parameter)
+                {
+                    own = true;
+                }
+                else if (VrchatBuiltInParameters.Contains(condition.parameter))
+                {
+                    builtIn = true;
+                }
+            }
+
+            return !builtIn || own;
+        }
+
         /// <summary>Every parameter any transition in the layer tests.</summary>
         private static HashSet<string> SteeringParameters(AnimatorStateMachine machine)
         {
@@ -311,29 +398,33 @@ namespace yuna0x0.Basis.Convert.Sources
             Dictionary<int, AnimatorState> byValue = new Dictionary<int, AnimatorState>();
             AnimatorState whenOff = null;
             bool mentionsParameter = false;
+            bool ambiguous = false;
 
             foreach (ChildAnimatorState child in machine.states)
             {
                 foreach (AnimatorStateTransition transition in child.state.transitions)
                 {
                     Classify(transition.conditions, transition.destinationState, parameter,
-                        ref mentionsParameter, byValue, ref whenOff);
+                        ref mentionsParameter, byValue, ref whenOff, ref ambiguous);
                 }
             }
 
             foreach (AnimatorStateTransition transition in machine.anyStateTransitions)
             {
                 Classify(transition.conditions, transition.destinationState, parameter,
-                    ref mentionsParameter, byValue, ref whenOff);
+                    ref mentionsParameter, byValue, ref whenOff, ref ambiguous);
             }
 
             foreach (AnimatorTransition transition in machine.entryTransitions)
             {
                 Classify(transition.conditions, transition.destinationState, parameter,
-                    ref mentionsParameter, byValue, ref whenOff);
+                    ref mentionsParameter, byValue, ref whenOff, ref ambiguous);
             }
 
-            if (!mentionsParameter)
+            // One value reaching two different states means something else decides between them,
+            // which is the shape of a layer combining a toggle with a gesture. Reading it would
+            // pick whichever transition came first, so it is left alone instead.
+            if (!mentionsParameter || ambiguous)
             {
                 return null;
             }
@@ -372,6 +463,28 @@ namespace yuna0x0.Basis.Convert.Sources
             return read;
         }
 
+        /// <summary>
+        /// Records the state a value selects. Two transitions into the same state are ordinary;
+        /// two into different states mean the value alone does not decide, which is what makes
+        /// a layer unreadable as this parameter's own.
+        /// </summary>
+        private static void Claim(
+            Dictionary<int, AnimatorState> byValue, int value, AnimatorState destination,
+            ref bool ambiguous)
+        {
+            if (byValue.TryGetValue(value, out AnimatorState claimed))
+            {
+                if (claimed != destination)
+                {
+                    ambiguous = true;
+                }
+
+                return;
+            }
+
+            byValue[value] = destination;
+        }
+
         private static int LowestUnusedValue(Dictionary<int, AnimatorState> byValue)
         {
             int value = 0;
@@ -391,7 +504,7 @@ namespace yuna0x0.Basis.Convert.Sources
         private static void Classify(
             AnimatorCondition[] conditions, AnimatorState destination, string parameter,
             ref bool mentionsParameter, Dictionary<int, AnimatorState> byValue,
-            ref AnimatorState whenOff)
+            ref AnimatorState whenOff, ref bool ambiguous)
         {
             if (destination == null || conditions == null)
             {
@@ -410,23 +523,13 @@ namespace yuna0x0.Basis.Convert.Sources
                 switch (condition.mode)
                 {
                     case AnimatorConditionMode.Equals:
-                    {
-                        int value = Mathf.RoundToInt(condition.threshold);
-                        if (!byValue.ContainsKey(value))
-                        {
-                            byValue[value] = destination;
-                        }
-
+                        Claim(byValue, Mathf.RoundToInt(condition.threshold), destination,
+                            ref ambiguous);
                         break;
-                    }
 
                     case AnimatorConditionMode.If:
                     case AnimatorConditionMode.Greater:
-                        if (!byValue.ContainsKey(1))
-                        {
-                            byValue[1] = destination;
-                        }
-
+                        Claim(byValue, 1, destination, ref ambiguous);
                         break;
 
                     case AnimatorConditionMode.IfNot:

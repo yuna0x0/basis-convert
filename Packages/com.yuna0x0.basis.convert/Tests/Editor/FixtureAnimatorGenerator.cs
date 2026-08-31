@@ -133,10 +133,32 @@ namespace yuna0x0.Basis.Convert.Tests
             AnimatorStateTransition wagToOff = wagOnState.AddTransition(wagOffState);
             wagToOff.AddCondition(AnimatorConditionMode.IfNot, 0f, "Wag");
 
+            // A toggle guarded by one of VRChat's own parameters, which is how a gimmick that
+            // only runs for the wearer is written. Nothing on Basis drives IsLocal.
+            controller.AddParameter("Ear", AnimatorControllerParameterType.Bool);
+            controller.AddParameter("IsLocal", AnimatorControllerParameterType.Bool);
+            controller.AddLayer("Ear");
+            AnimatorControllerLayer ear = controller.layers[4];
+            ear.defaultWeight = 1f;
+
+            AnimationClip earOn = Clip("Hair", active: false);
+            Save(earOn, "EarOn");
+
+            AnimatorState earOffState = ear.stateMachine.AddState("Off");
+            AnimatorState earOnState = ear.stateMachine.AddState("On", new Vector3(0f, 100f, 0f));
+            earOnState.motion = earOn;
+            ear.stateMachine.defaultState = earOffState;
+
+            AnimatorStateTransition earToOn = earOffState.AddTransition(earOnState);
+            earToOn.AddCondition(AnimatorConditionMode.If, 0f, "Ear");
+            earToOn.AddCondition(AnimatorConditionMode.If, 0f, "IsLocal");
+            AnimatorStateTransition earToOff = earOnState.AddTransition(earOffState);
+            earToOff.AddCondition(AnimatorConditionMode.IfNot, 0f, "Ear");
+
             // Ambient motion: a layer with nothing to switch it, holding a looping clip that
             // turns a bone. This is what a swaying tail or a twitching ear is authored as.
             controller.AddLayer("TailIdle");
-            AnimatorControllerLayer idle = controller.layers[4];
+            AnimatorControllerLayer idle = controller.layers[5];
             idle.defaultWeight = 1f;
 
             AnimationClip sway = SwayClip("Tail");
@@ -146,7 +168,7 @@ namespace yuna0x0.Basis.Convert.Tests
             swayState.motion = sway;
             idle.stateMachine.defaultState = swayState;
 
-            controller.layers = new[] {tail, hair, size, wag, idle};
+            controller.layers = new[] {tail, hair, size, wag, ear, idle};
 
             EditorUtility.SetDirty(controller);
             AssetDatabase.SaveAssets();

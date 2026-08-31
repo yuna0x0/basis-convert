@@ -29,6 +29,7 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `constraint.solveInLocalSpace` | A VRChat constraint setting with no Basis equivalent. |
 | `vixxy.notSimple` | A menu toggle that animates over time or drives something a Vixxy control cannot hold. |
 | `vixxy.puppetEnds` | A radial puppet blended through motions between its ends. A slider interpolates between its ends in a straight line. |
+| `vixxy.builtinGuard` | The toggle's layer also waited on a VRChat parameter such as `IsLocal`. Basis has no equivalent, so the control switches whenever it is used. |
 | `motion.baked` | An animator layer that plays on its own was rebuilt as authored motion. |
 | `motion.switched` | A menu toggle animated over time, so it was rebuilt as a motion the control switches on. |
 | `motion.rotationOnly` | That layer also animates something other than rotation, which a baked motion clip cannot hold. |
