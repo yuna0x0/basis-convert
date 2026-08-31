@@ -91,6 +91,22 @@ The licence is a warning when it forbids changing the avatar or limits who may w
 is blocked: converting changes an avatar and using it on Basis is a use, and both are yours to
 judge.
 
+## Constraints
+
+VRM 1.0 has three node constraints, and each becomes a Basis constraint on the object it sits on.
+
+- **Rotation** becomes a Basis rotation constraint. VRM copies how far the source has turned from
+  its rest pose; a Basis constraint takes the source's rotation itself. The two agree while both
+  objects sit as they were authored and differ if the source's rest pose changes.
+- **Aim** becomes a Basis aim constraint, pointing the same local axis at the same source. Basis
+  also holds an up direction, which VRM does not state, so the scene's up is used and the roll
+  around the aim may differ.
+- **Roll** copies the source's rotation about one axis alone, which nothing in Basis or in
+  Unity's own set does. It becomes a rotation constraint limited to that axis, which follows the
+  source's rotation rather than its roll.
+
+All three are reported, since none of them is exact.
+
 ## Where the eyes sit
 
 Both formats record the point the camera sits at as an offset from the head bone. Basis stores
@@ -110,9 +126,6 @@ camera, add a Basis Head Chop naming it.
 - **Inside colliders**, which hold bones within a shape rather than pushing them out. Basis only
   pushes out, so those are written as ordinary colliders and reported: they now push the opposite
   way, and are worth removing if the result looks wrong.
-- **VRM constraints.** VRM 1.0 has rotation, aim and roll constraints that copy one bone's
-  rotation onto another. Basis has equivalents, but these are not converted yet; they are
-  reported as `vrm.constraints`.
 - **Where the avatar looks.** VRM aims the eyes with curves or an expression per direction;
   Basis drives gaze from the eye bones. Only the eye offset carries across, not the aiming.
 - **The avatar's metadata**: its title, author and permissions.

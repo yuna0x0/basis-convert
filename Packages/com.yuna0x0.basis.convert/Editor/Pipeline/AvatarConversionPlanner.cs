@@ -193,6 +193,16 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 if (KnownScriptIdentities.IsVrmConstraint(kind))
                 {
                     plan.VrmConstraintsFound++;
+
+                    PlannedConstraint vrmConstraint =
+                        PlanVrmConstraint(document, kind, resolver, plan);
+
+                    if (vrmConstraint != null)
+                    {
+                        vrmConstraint.Source = source;
+                        plan.Constraints.Add(vrmConstraint);
+                    }
+
                     continue;
                 }
 
@@ -296,15 +306,6 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     $"{plan.ModularAvatarVrchatOnlyFound} Modular Avatar components act on "
                     + "VRChat's own systems: its colliders, its head chop, its MMD layers. There "
                     + "is nothing for them to act on under Basis.");
-            }
-
-            if (plan.VrmConstraintsFound > 0)
-            {
-                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vrm.constraints",
-                    $"{plan.VrmConstraintsFound} VRM constraints were found: rotation, aim and "
-                    + "roll constraints that copy one bone's rotation onto another. Basis has "
-                    + "equivalents, but these are not converted yet, so anything they drove "
-                    + "stays still.");
             }
 
             if (plan.ContactsFound > 0)
@@ -1570,6 +1571,54 @@ namespace yuna0x0.Basis.Convert.Pipeline
             diagnostics.Add(DiagnosticSeverity.Warning, $"descriptor.{role}Mesh.unresolved",
                 $"The {role} mesh could not be resolved, so it was left unset.");
             return null;
+        }
+
+        /// <summary>
+        /// Plans one VRM node constraint. It drives the object it sits on and follows a single
+        /// source, so there is neither a target to relocate nor a source list to flatten.
+        /// </summary>
+        private static PlannedConstraint PlanVrmConstraint(
+            UnityYamlDocument document, SourceComponentKind kind, PrefabObjectResolver resolver,
+            AvatarConversionPlan plan)
+        {
+            VrmConstraintKind vrmKind = kind switch
+            {
+                SourceComponentKind.Vrm10AimConstraint => VrmConstraintKind.Aim,
+                SourceComponentKind.Vrm10RollConstraint => VrmConstraintKind.Roll,
+                _ => VrmConstraintKind.Rotation,
+            };
+
+            VrmConstraintData source = VrmDocumentReader.ReadConstraint(document, vrmKind);
+            BasisConstraintPlan constraintPlan = VrmConstraintToBasisMapper.Map(source);
+
+            if (!resolver.TryResolveTransform(constraintPlan.HostFileId, out Transform host))
+            {
+                plan.Unresolved++;
+                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "constraint.unresolved",
+                    $"A VRM {vrmKind} constraint at &{document.FileId} could not be tied to a "
+                    + "transform and was skipped.");
+                return null;
+            }
+
+            PlannedConstraint planned = new PlannedConstraint
+            {
+                Plan = constraintPlan,
+                SourceHost = host,
+            };
+
+            // The rest pose is the one the avatar was authored in, which is what both systems
+            // measure from.
+            constraintPlan.RotationAtRest = host.localEulerAngles;
+
+            foreach (BasisConstraintSourcePlan entry in constraintPlan.Sources)
+            {
+                planned.SourceTransforms.Add(
+                    resolver.TryResolveTransform(entry.TransformFileId, out Transform from)
+                        ? from
+                        : null);
+            }
+
+            return planned;
         }
 
         private static PlannedConstraint PlanConstraint(

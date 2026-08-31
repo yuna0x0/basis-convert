@@ -57,8 +57,11 @@ Notable changes to this package. The format follows
 
 ### Fixed
 
-- VRM 1.0's rotation, aim and roll constraints are named and reported as not converted, rather
-  than showing up as unknown scripts.
+- VRM 1.0's rotation, aim and roll constraints become Basis constraints. Each drives the object
+  it sits on and follows one source, so there is no target to relocate. None of the three is
+  exact and all three say so: VRM's rotation constraint copies a delta from the source's rest
+  where a Basis one follows the rotation itself, VRM's aim states no up direction, and nothing in
+  Basis copies rotation about a single axis the way a roll constraint does.
 - `UniHumanoid.Humanoid`, which UniVRM puts on an imported avatar, was reported as an unknown
   script. It records the humanoid bone mapping Unity's own avatar already holds, so it is named
   and left alone.

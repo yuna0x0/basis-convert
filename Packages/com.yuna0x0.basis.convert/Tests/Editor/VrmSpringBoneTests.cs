@@ -322,6 +322,55 @@ namespace yuna0x0.Basis.Convert.Tests
         }
 
         [Test]
+        public void VrmConstraintsBecomeBasisConstraints()
+        {
+            // A VRM constraint drives the object it sits on and follows one source, so there is
+            // no target to relocate and no source list to flatten.
+            AvatarConversionPlan plan = Plan(Vrm10Path);
+
+            Assert.That(plan.VrmConstraintsFound, Is.EqualTo(2));
+            Assert.That(plan.Constraints.Count, Is.EqualTo(2));
+
+            PlannedConstraint rotation = plan.Constraints.Find(
+                c => c.Plan.Kind == BasisConstraintKind.Rotation);
+            Assert.That(rotation, Is.Not.Null);
+            Assert.That(rotation.SourceHost.name, Is.EqualTo("Head"));
+            Assert.That(rotation.SourceTransforms[0].name, Is.EqualTo("HairRoot"));
+            Assert.That(rotation.Plan.Weight, Is.EqualTo(0.5f).Within(0.001f));
+
+            PlannedConstraint aim = plan.Constraints.Find(
+                c => c.Plan.Kind == BasisConstraintKind.Aim);
+            Assert.That(aim, Is.Not.Null);
+            Assert.That(aim.Plan.AimVector, Is.EqualTo(Vector3.forward),
+                "AimAxis 4 is positive Z.");
+
+            Assert.That(plan.AllDiagnostics().HasCode("vrm.constraint.rotation"), Is.True,
+                "VRM copies a delta from rest, Basis follows the rotation itself.");
+            Assert.That(plan.AllDiagnostics().HasCode("vrm.constraint.aim"), Is.True,
+                "VRM states no up direction and Basis needs one.");
+        }
+
+        [Test]
+        public void ARollConstraintBecomesASingleAxisRotation()
+        {
+            // Nothing in Basis copies rotation about one axis, so this is the closest shape
+            // with the difference reported.
+            VrmConstraintData roll = new VrmConstraintData
+            {
+                Kind = VrmConstraintKind.Roll,
+                RollAxis = 1,
+                SourceTransformFileId = 42L,
+                Weight = 1f,
+            };
+
+            BasisConstraintPlan plan = Mapping.VrmConstraintToBasisMapper.Map(roll);
+
+            Assert.That(plan.Kind, Is.EqualTo(BasisConstraintKind.Rotation));
+            Assert.That(plan.RotationAxis, Is.EqualTo(ConstraintAxes.Y));
+            Assert.That(plan.Diagnostics.HasCode("vrm.constraint.roll"), Is.True);
+        }
+
+        [Test]
         public void NoVrmComponentIsReportedAsAnUnknownScript()
         {
             foreach (string path in new[] {Vrm10Path, Vrm0Path})

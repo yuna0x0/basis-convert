@@ -33,7 +33,9 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `motion.baked` | An animator layer that plays on its own was rebuilt as authored motion. |
 | `motion.switched` | A menu toggle animated over time, so it was rebuilt as a motion the control switches on. |
 | `motion.rotationOnly` | That layer also animates something other than rotation, which a baked motion clip cannot hold. |
-| `vrm.constraints` | VRM rotation, aim or roll constraints were found. Not converted yet. |
+| `vrm.constraint.rotation` | A VRM rotation constraint copies a delta from rest; a Basis one follows the rotation itself. |
+| `vrm.constraint.aim` | A VRM aim constraint states no up direction, so the scene's up is used. |
+| `vrm.constraint.roll` | Nothing in Basis copies rotation about one axis, so this became a rotation constraint limited to it. |
 | `vrm.objectUnreadable` | The avatar's expressions and licence are still inside the `.vrm` file. Extract them in its import settings. |
 | `vrm.licence` | What the avatar's VRM licence says: its title, author and who may wear it. |
 | `vrm.licence.restricted` | The licence forbids changing the avatar, or limits who may wear it. |

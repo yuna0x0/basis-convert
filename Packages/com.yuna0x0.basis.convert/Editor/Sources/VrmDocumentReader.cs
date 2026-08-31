@@ -122,6 +122,42 @@ namespace yuna0x0.Basis.Convert.Sources
             return joint;
         }
 
+        /// <summary>
+        /// One VRM 1.0 node constraint. All three kinds carry a source and a weight; an aim
+        /// constraint adds the axis it points, and a roll constraint the axis it copies.
+        /// </summary>
+        public static VrmConstraintData ReadConstraint(
+            UnityYamlDocument document, VrmConstraintKind kind)
+        {
+            VrmConstraintData constraint = new VrmConstraintData
+            {
+                DocumentFileId = document.FileId,
+                Kind = kind,
+            };
+
+            document.TryGetTopLevelFileIdReference("m_GameObject",
+                out constraint.OwnerGameObjectFileId);
+            document.TryGetTopLevelFileIdReference("Source",
+                out constraint.SourceTransformFileId);
+
+            if (document.TryGetFloat("Weight", out float weight))
+            {
+                constraint.Weight = weight;
+            }
+
+            if (kind == VrmConstraintKind.Aim && document.TryGetInt("AimAxis", out int aim))
+            {
+                constraint.AimAxis = (VrmAimAxis)aim;
+            }
+
+            if (kind == VrmConstraintKind.Roll && document.TryGetInt("RollAxis", out int roll))
+            {
+                constraint.RollAxis = roll;
+            }
+
+            return constraint;
+        }
+
         /// <summary>A VRM 1.0 collider shape.</summary>
         public static VrmColliderData ReadCollider(UnityYamlDocument document)
         {
