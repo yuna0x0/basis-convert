@@ -8,6 +8,11 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- A VRM avatar's eye offset becomes the Basis eye position. Both formats record the point the
+  camera sits at as an offset from the head bone, which is what VRChat calls the view position,
+  so a converted VRM avatar has a correct eye height rather than one Basis has to guess. The
+  renderers a VRM hides from its wearer are reported: Basis hides the head bone and everything
+  under it, which covers the usual case.
 - VRM expressions become Vixxy controls. An expression is a named set of blendshape weights,
   which is what a control holds once it has two choices: off leaves every shape as the avatar was
   authored, on takes the expression's. The lip sync shapes, blinking and looking around are left

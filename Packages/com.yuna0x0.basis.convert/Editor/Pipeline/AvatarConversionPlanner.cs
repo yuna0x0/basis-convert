@@ -152,6 +152,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             // sit anywhere in the file, so they cannot be resolved as the documents go past.
             PlanVrmChains(documents, resolver, plan, source);
             PlanVrmExpressions(documents, plan, source);
+            ReadVrmAvatarSettings(documents, resolver, plan);
 
             foreach (UnityYamlDocument document in documents)
             {
@@ -300,6 +301,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             BuildProfile(plan);
             EnsureAvatarComponent(plan);
+            ApplyVrmEyePosition(plan);
             LoadExpressions(plan);
 
             // Clothing has no descriptor and no expression menu of its own, so this is not part
@@ -495,6 +497,108 @@ namespace yuna0x0.Basis.Convert.Pipeline
         }
 
         /// <summary>
+        /// Reads what a VRM avatar says about its own eyes, and holds it for the Basis Avatar
+        /// component. VRM measures the eyes as an offset from the head bone, and Basis stores
+        /// the same point relative to the avatar root.
+        /// </summary>
+        private static void ReadVrmAvatarSettings(
+            List<UnityYamlDocument> documents, PrefabObjectResolver resolver,
+            AvatarConversionPlan plan)
+        {
+            VrmAvatarSettingsData settings = null;
+
+            foreach (UnityYamlDocument document in documents)
+            {
+                if (document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
+                    || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))
+                {
+                    continue;
+                }
+
+                switch (KnownScriptIdentities.Resolve(guid, scriptFileId))
+                {
+                    case SourceComponentKind.VrmFirstPerson:
+                        settings = VrmObjectReader.ReadVrm0Settings(document);
+                        break;
+                    case SourceComponentKind.Vrm10Instance:
+                        settings = VrmObjectReader.ReadVrm10Settings(document);
+                        break;
+                }
+
+                if (settings != null)
+                {
+                    break;
+                }
+            }
+
+            if (settings == null)
+            {
+                return;
+            }
+
+            plan.VrmSettings = settings;
+
+            if (settings.ThirdPersonOnlyRenderers > 0 || settings.FirstPersonOnlyRenderers > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vrm.firstPerson",
+                    $"{settings.ThirdPersonOnlyRenderers} renderers are marked to hide from the "
+                    + $"wearer and {settings.FirstPersonOnlyRenderers} to show only to them. "
+                    + "Basis hides the head bone and everything under it in first person, which "
+                    + "covers the usual case. If something still blocks the camera, add a Basis "
+                    + "Head Chop naming it.");
+            }
+        }
+
+        /// <summary>
+        /// Turns a VRM eye offset into the avatar's eye position. VRM measures from the head
+        /// bone, and Basis stores the height and depth of the same point relative to the avatar
+        /// root, which is what a VRChat view position holds.
+        /// </summary>
+        private static void ApplyVrmEyePosition(AvatarConversionPlan plan)
+        {
+            VrmAvatarSettingsData settings = plan.VrmSettings;
+            if (settings == null || !settings.HasEyeOffset || plan.SourceRoot == null)
+            {
+                return;
+            }
+
+            Animator animator = plan.SourceRoot.GetComponentInChildren<Animator>(true);
+            Transform head = animator != null && animator.avatar != null && animator.avatar.isHuman
+                ? animator.GetBoneTransform(HumanBodyBones.Head)
+                : null;
+
+            // The offset is measured from the head, and it goes on the Basis Avatar component.
+            // Without a humanoid rig there is neither, so the eye position is left for Basis.
+            if (head == null || plan.Descriptor == null)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vrm.eyePosition.noRig",
+                    "The avatar says where its eyes sit relative to the head bone, but the rig "
+                    + "is not humanoid with a head mapped, so there was nothing to measure from "
+                    + "and nothing to write it to.");
+                return;
+            }
+
+            Vector2 eyes = EyePositionFrom(
+                plan.SourceRoot.transform, head, settings.EyeOffsetFromHead);
+
+            plan.Descriptor.Plan.EyePosition = eyes;
+            plan.Descriptor.Plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "vrm.eyePosition",
+                $"The eyes sit {settings.EyeOffsetFromHead} from the head bone, which is "
+                + $"{eyes.x:0.###} up and {eyes.y:0.###} forward of the avatar root. That is "
+                + "what Basis stores as the eye position.");
+        }
+
+        /// <summary>
+        /// The height and depth of a point offset from the head bone, measured in the avatar
+        /// root's space. VRM states the eyes that way and Basis stores them this way.
+        /// </summary>
+        public static Vector2 EyePositionFrom(Transform root, Transform head, Vector3 offset)
+        {
+            Vector3 local = root.InverseTransformPoint(head.TransformPoint(offset));
+            return new Vector2(local.y, local.z);
+        }
+
+        /// <summary>
         /// Rebuilds a VRM avatar's expressions as Vixxy controls.
         /// <para>
         /// An expression is a named set of blendshape weights, which is what a Vixxy control
@@ -523,10 +627,10 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 switch (KnownScriptIdentities.Resolve(guid, scriptFileId))
                 {
                     case SourceComponentKind.VrmBlendShapeProxy:
-                        expressions.AddRange(VrmExpressionReader.ReadVrm0(document));
+                        expressions.AddRange(VrmObjectReader.ReadVrm0(document));
                         break;
                     case SourceComponentKind.Vrm10Instance:
-                        expressions.AddRange(VrmExpressionReader.ReadVrm10(document));
+                        expressions.AddRange(VrmObjectReader.ReadVrm10(document));
                         break;
                 }
             }

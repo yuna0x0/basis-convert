@@ -219,6 +219,59 @@ namespace yuna0x0.Basis.Convert.Tests
         }
 
         [Test]
+        public void AVrm0EyeOffsetBecomesTheAvatarsEyePosition()
+        {
+            // VRM measures the camera point from the head bone. Basis stores the height and
+            // depth of the same point relative to the avatar root, which is what VRChat's view
+            // position holds.
+            AvatarConversionPlan plan = Plan(Vrm0Path);
+
+            Assert.That(plan.VrmSettings, Is.Not.Null);
+            Assert.That(plan.VrmSettings.HasEyeOffset, Is.True);
+            Assert.That(plan.VrmSettings.EyeOffsetFromHead,
+                Is.EqualTo(new Vector3(0f, 0.06f, 0.08f)));
+
+            // The fixture is a hand-written hierarchy with no humanoid rig, so there is no head
+            // bone to measure from and no Basis Avatar component to put the result on.
+            Assert.That(plan.AllDiagnostics().HasCode("vrm.eyePosition.noRig"), Is.True);
+        }
+
+        [Test]
+        public void AnEyeOffsetIsMeasuredFromTheHeadInTheRootsSpace()
+        {
+            // The arithmetic on its own: a head 1.4 up, eyes 0.06 above it and 0.08 forward.
+            GameObject root = new GameObject("Root");
+            GameObject head = new GameObject("Head");
+
+            try
+            {
+                head.transform.SetParent(root.transform);
+                head.transform.localPosition = new Vector3(0f, 1.4f, 0f);
+
+                Vector2 eyes = AvatarConversionPlanner.EyePositionFrom(
+                    root.transform, head.transform, new Vector3(0f, 0.06f, 0.08f));
+
+                Assert.That(eyes.x, Is.EqualTo(1.46f).Within(0.001f), "Height above the root.");
+                Assert.That(eyes.y, Is.EqualTo(0.08f).Within(0.001f), "Depth in front of it.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        [Test]
+        public void FirstPersonRendererFlagsAreReported()
+        {
+            // Basis hides the head bone and everything under it, which covers the usual case,
+            // so the flags are reported rather than turned into head chop targets.
+            AvatarConversionPlan plan = Plan(Vrm0Path);
+
+            Assert.That(plan.VrmSettings.ThirdPersonOnlyRenderers, Is.EqualTo(1));
+            Assert.That(plan.AllDiagnostics().HasCode("vrm.firstPerson"), Is.True);
+        }
+
+        [Test]
         public void NoVrmComponentIsReportedAsAnUnknownScript()
         {
             foreach (string path in new[] {Vrm10Path, Vrm0Path})

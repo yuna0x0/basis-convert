@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 using yuna0x0.Basis.Convert.Model;
 
 namespace yuna0x0.Basis.Convert.Sources
 {
     /// <summary>
-    /// Reads a VRM avatar's expressions.
+    /// Reads what a VRM avatar keeps beside its prefab: expressions, and the look-at and
+    /// first-person settings.
     /// <para>
     /// Both formats keep them in assets rather than on the avatar: VRM 0.x has a blend shape
     /// avatar asset listing clip assets, and VRM 1.0 has a VRM10Object asset holding one
@@ -13,7 +15,7 @@ namespace yuna0x0.Basis.Convert.Sources
     /// followed off disk, the same way an expression menu's submenus are.
     /// </para>
     /// </summary>
-    public static class VrmExpressionReader
+    public static class VrmObjectReader
     {
         /// <summary>
         /// VRM 1.0 weights run from 0 to 1, and Unity's blendshape weights from 0 to 100.
@@ -163,6 +165,111 @@ namespace yuna0x0.Basis.Convert.Sources
             }
 
             return expressions;
+        }
+
+        /// <summary>
+        /// A VRM 0.x avatar's first person settings, which is where its eye offset lives.
+        /// </summary>
+        public static VrmAvatarSettingsData ReadVrm0Settings(UnityYamlDocument firstPerson)
+        {
+            VrmAvatarSettingsData settings = new VrmAvatarSettingsData();
+            if (firstPerson == null)
+            {
+                return settings;
+            }
+
+            firstPerson.TryGetTopLevelFileIdReference("FirstPersonBone",
+                out settings.HeadBoneFileId);
+
+            if (firstPerson.TryGetVector3("FirstPersonOffset", out Vector3 offset))
+            {
+                settings.EyeOffsetFromHead = offset;
+                settings.HasEyeOffset = offset != Vector3.zero;
+            }
+
+            CountFirstPersonFlags(firstPerson, "Renderers", "FirstPersonFlag", settings);
+            return settings;
+        }
+
+        /// <summary>
+        /// A VRM 1.0 avatar's look at and first person settings, which live in the same object
+        /// asset as its expressions.
+        /// </summary>
+        public static VrmAvatarSettingsData ReadVrm10Settings(UnityYamlDocument instance)
+        {
+            VrmAvatarSettingsData settings = new VrmAvatarSettingsData();
+
+            if (instance == null || !instance.TryGetTopLevelObjectReference(
+                    "Vrm", out string guid, out long fileId))
+            {
+                return settings;
+            }
+
+            UnityYamlDocument vrm = Load(guid, fileId);
+            if (vrm == null)
+            {
+                return settings;
+            }
+
+            if (vrm.TryGetTopLevelBlock("LookAt", out List<string> lookAt))
+            {
+                foreach (string line in lookAt)
+                {
+                    string trimmed = line.TrimStart();
+                    if (!trimmed.StartsWith("OffsetFromHead:"))
+                    {
+                        continue;
+                    }
+
+                    if (UnityYamlValues.TryParseVector3(trimmed, out Vector3 offset))
+                    {
+                        settings.EyeOffsetFromHead = offset;
+                        settings.HasEyeOffset = offset != Vector3.zero;
+                    }
+
+                    break;
+                }
+            }
+
+            CountFirstPersonFlags(vrm, "FirstPerson", "FirstPersonFlag", settings);
+            return settings;
+        }
+
+        /// <summary>
+        /// Counts the renderers hidden from one view or the other. Both formats write the same
+        /// four values in the same order: auto, both, third person only, first person only.
+        /// </summary>
+        private static void CountFirstPersonFlags(
+            UnityYamlDocument document, string key, string flagKey, VrmAvatarSettingsData settings)
+        {
+            if (!document.TryGetTopLevelBlock(key, out List<string> block))
+            {
+                return;
+            }
+
+            foreach (string line in block)
+            {
+                string trimmed = line.TrimStart().TrimStart('-').TrimStart();
+                if (!trimmed.StartsWith(flagKey + ":"))
+                {
+                    continue;
+                }
+
+                if (!UnityYamlValues.TryParseInt(
+                        trimmed.Substring(flagKey.Length + 1).Trim(), out int flag))
+                {
+                    continue;
+                }
+
+                if (flag == 2)
+                {
+                    settings.ThirdPersonOnlyRenderers++;
+                }
+                else if (flag == 3)
+                {
+                    settings.FirstPersonOnlyRenderers++;
+                }
+            }
         }
 
         private static VrmExpressionData ReadVrm0Clip(UnityYamlDocument clip)

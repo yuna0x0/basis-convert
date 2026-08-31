@@ -258,6 +258,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>VRM expressions found, whether or not each became a control.</summary>
         public int VrmExpressionsFound;
 
+        /// <summary>What a VRM avatar says about its eyes and its first person view.</summary>
+        public VrmAvatarSettingsData VrmSettings;
+
         public int CollidersFound;
         public int ConstraintsFound;
         public int DynamicBonesFound;

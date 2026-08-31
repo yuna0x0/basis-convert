@@ -11,6 +11,11 @@ expressions become HVR Vixxy controls.
 UniVRM does not need to be installed. A VRM avatar imported into a Basis project arrives with its
 components as missing scripts, and the data is read from the prefab file either way.
 
+To bring a `.vrm` file in, install [UniVRM](https://github.com/vrm-c/UniVRM) and drag the file
+into the project: it registers an importer for the extension and writes the prefab. Convert that
+prefab as you would any other avatar. UniVRM's own components are not on the Basis allow-list, so
+Basis strips them when the avatar loads and the converted jiggle physics takes over.
+
 ## The two formats
 
 **VRM 0.x** puts one component on the avatar carrying a group of chains and a single set of
@@ -53,6 +58,17 @@ after the expression was authored, is reported rather than guessed at.
 An expression that also changes material colours or UVs keeps the blendshapes and reports the
 rest: VRM names the material to change, while Vixxy acts through a renderer.
 
+## Where the eyes sit
+
+Both formats record the point the camera sits at as an offset from the head bone. Basis stores
+the same point as the avatar's eye position, so it carries across: a converted VRM avatar has a
+correct eye height instead of one Basis has to guess.
+
+A VRM also marks renderers to hide from the wearer or show only to them. Basis hides the head
+bone and everything under it in first person, which covers a face skinned to the head and hats
+parented to it. The flags are reported rather than converted. If something still blocks the
+camera, add a Basis Head Chop naming it.
+
 ## What does not
 
 - **The centre transform.** VRM simulates relative to it so hair does not lag behind a moving
@@ -61,5 +77,6 @@ rest: VRM names the material to change, while Vixxy acts through a renderer.
 - **Inside colliders**, which hold bones within a shape rather than pushing them out. Basis only
   pushes out, so those are written as ordinary colliders and reported: they now push the opposite
   way, and are worth removing if the result looks wrong.
-- **Look-at, first-person settings and the avatar's metadata.** Basis drives gaze from the eye
-  bones and fills in the `BasisAvatar` component itself when its inspector is first opened.
+- **Where the avatar looks.** VRM aims the eyes with curves or an expression per direction;
+  Basis drives gaze from the eye bones. Only the eye offset carries across, not the aiming.
+- **The avatar's metadata**: its title, author and permissions.

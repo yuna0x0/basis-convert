@@ -111,6 +111,26 @@ the mesh to translate.
 The 0.x `BlendShapePreset` enum, which the asset stores as an int, is: Unknown, Neutral, A, I, U,
 E, O, Blink, Joy, Angry, Sorrow, Fun, LookUp, LookDown, LookLeft, LookRight, Blink_L, Blink_R.
 
+## Look at and first person
+
+`VRMFirstPerson` (guid `dedba1309bdf12b42af2362f52eea134`) carries VRM 0.x's `FirstPersonBone`,
+`FirstPersonOffset` and a `Renderers` list of `{Renderer, FirstPersonFlag}`. VRM 1.0 keeps the
+same two ideas in the `VRM10Object` asset: `LookAt.OffsetFromHead` and `FirstPerson.Renderers`.
+
+`FirstPersonFlag` and `FirstPersonType` share their order in both formats: `Auto, Both,
+ThirdPersonOnly, FirstPersonOnly`, so 2 hides a renderer from the wearer and 3 shows it only to
+them.
+
+The offset is the useful part: it is the point the camera sits at, measured from the head bone,
+which is the same thing VRChat calls the view position and Basis stores as `AvatarEyePosition`
+(height and depth relative to the avatar root).
+
+Basis hides the head bone in first person and `BasisHeadChop` scales further transforms to
+nothing, skipping the head itself (`BasisLocalAvatarDriver.CollectHeadChopEntries`). A scaled
+bone takes its children with it, so the usual VRM cases, a face skinned to the head and hats
+parented to it, are already covered. Scaling a skinned renderer's own transform would hide
+nothing, so the flags are reported rather than turned into head chop targets.
+
 ## The `.vrm` file itself
 
 A `.vrm` is a glTF binary. `extensions.VRMC_springBone` in the JSON chunk holds the same data
