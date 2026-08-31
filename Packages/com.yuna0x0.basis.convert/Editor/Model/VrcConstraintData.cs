@@ -62,6 +62,12 @@ namespace yuna0x0.Basis.Convert.Model
 
         public List<VrcConstraintSource> Sources = new List<VrcConstraintSource>();
 
+        /// <summary>
+        /// How many sources the constraint says it has. VRChat serializes the first sixteen as
+        /// numbered slots and the rest in an overflow list, so this can exceed what was read.
+        /// </summary>
+        public int DeclaredSourceCount;
+
         public Vector3 PositionAtRest;
         public Vector3 PositionOffset;
         public bool AffectsPositionX = true;

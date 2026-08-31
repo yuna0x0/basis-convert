@@ -81,6 +81,18 @@ namespace yuna0x0.Basis.Convert.Mapping
                 });
             }
 
+            // VRChat serializes the first sixteen sources as numbered slots and the rest in an
+            // overflow list, which is not read. A constraint with more than sixteen is rare and
+            // would otherwise lose the extras without saying so.
+            if (source.DeclaredSourceCount > plan.Sources.Count)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "constraint.source.overflow",
+                    $"The constraint declares {source.DeclaredSourceCount} sources but only "
+                    + $"{plan.Sources.Count} could be read. VRChat keeps anything past the "
+                    + "sixteenth in an overflow list this does not read yet, so those were not "
+                    + "carried over.");
+            }
+
             if (plan.Sources.Count == 0)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Warning, "constraint.noSources",

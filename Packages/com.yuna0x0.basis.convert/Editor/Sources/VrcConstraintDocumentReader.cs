@@ -114,13 +114,15 @@ namespace yuna0x0.Basis.Convert.Sources
                 data.WorldUp = (VrcConstraintWorldUp)worldUp;
             }
 
-            data.Sources = ReadSources(document);
+            data.Sources = ReadSources(document, out data.DeclaredSourceCount);
             return data;
         }
 
-        private static List<VrcConstraintSource> ReadSources(UnityYamlDocument document)
+        private static List<VrcConstraintSource> ReadSources(
+            UnityYamlDocument document, out int declared)
         {
             List<VrcConstraintSource> sources = new List<VrcConstraintSource>();
+            declared = 0;
 
             if (!document.TryGetTopLevelBlock("Sources", out List<string> block))
             {
@@ -202,6 +204,7 @@ namespace yuna0x0.Basis.Convert.Sources
                 }
             }
 
+            declared = totalLength;
             return sources;
         }
 
