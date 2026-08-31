@@ -20,9 +20,9 @@ needs.
 
 Clothing and accessories convert along with the avatar they are worn on.
 
-Conversion is not lossless, and the tool does not pretend otherwise. Roughly a third of what a
-VRChat avatar carries has no Basis equivalent, and every source loses something, so anything
-approximated or dropped is listed with a reason before anything is written.
+Conversion is not lossless. Roughly a third of what a VRChat avatar carries has no Basis
+equivalent, and every source loses something, so anything approximated or dropped is listed with
+a reason before anything is written.
 
 ## What you need
 
@@ -37,4 +37,4 @@ scripts in a Basis project, and that is exactly what this reads.
 - [Installing](installation.md)
 - [Converting an avatar](converting-an-avatar.md)
 - [What converts](what-converts/physics.md), source by source
-- [Limitations](limitations.md), which is worth reading before you rely on the result
+- [Limitations](limitations.md), before you rely on the result

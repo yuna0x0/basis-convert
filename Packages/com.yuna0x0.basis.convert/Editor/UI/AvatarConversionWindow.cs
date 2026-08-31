@@ -123,7 +123,7 @@ namespace yuna0x0.Basis.Convert.UI
             EditorGUILayout.LabelField("Avatar to Basis", EditorStyles.boldLabel);
             EditorGUILayout.LabelField(
                 "Reads the avatar's prefab directly, so no source SDK needs installing.",
-                EditorStyles.wordWrappedMiniLabel);
+                EditorStyles.wordWrappedLabel);
 
             EditorGUILayout.Space();
 
@@ -184,20 +184,20 @@ namespace yuna0x0.Basis.Convert.UI
 
             EditorGUILayout.LabelField("Detected", _plan.Profile.Kind, EditorStyles.boldLabel);
             EditorGUILayout.LabelField(" ", string.Join(", ", _plan.Profile.Signals()),
-                EditorStyles.miniLabel);
+                EditorStyles.label);
 
             if (_plan.Sources.Count > 1)
             {
                 EditorGUILayout.LabelField("Read from",
-                    $"{_plan.Sources.Count} prefabs: {SourceNames()}", EditorStyles.miniLabel);
+                    $"{_plan.Sources.Count} prefabs: {SourceNames()}", EditorStyles.label);
             }
 
             if (_plan.Profile.LooksInconsistent)
             {
                 EditorGUILayout.HelpBox(
-                    "This has a humanoid rig but nothing convertible on it. If you meant to "
-                    + "convert an avatar, check you picked the right object: a rig with its "
-                    + "physics on a child prefab looks like this.", MessageType.Warning);
+                    "This has a humanoid rig but nothing convertible on it. Check you picked "
+                    + "the right object: an avatar whose physics sits on a child prefab looks "
+                    + "like this.", MessageType.Warning);
             }
 
             EditorGUILayout.Space(2f);
@@ -355,7 +355,7 @@ namespace yuna0x0.Basis.Convert.UI
             {
                 EditorGUILayout.LabelField(
                     "Advanced adds a checkbox per prefab, rig, constraint and toggle, and the "
-                    + "two tuning weights.", EditorStyles.wordWrappedMiniLabel);
+                    + "two tuning weights.", EditorStyles.wordWrappedLabel);
 
                 // Colliders only appear under Advanced, so say so here rather than let the
                 // setting act on a conversion from somewhere the reader cannot see it.
@@ -363,7 +363,7 @@ namespace yuna0x0.Basis.Convert.UI
                 {
                     EditorGUILayout.LabelField(
                         "Colliders are switched off under Advanced, so the rigs will be written "
-                        + "without them.", EditorStyles.wordWrappedMiniLabel);
+                        + "without them.", EditorStyles.wordWrappedLabel);
                 }
             }
         }
@@ -422,7 +422,7 @@ namespace yuna0x0.Basis.Convert.UI
                             EditorGUIUtility.PingObject(source.Root);
                         }
 
-                        EditorGUILayout.LabelField(detail, EditorStyles.miniLabel);
+                        EditorGUILayout.LabelField(detail, EditorStyles.label);
                     }
                 }
 
@@ -430,7 +430,7 @@ namespace yuna0x0.Basis.Convert.UI
                 {
                     EditorGUILayout.LabelField(
                         $"{quiet} more hold nothing this converts.",
-                        EditorStyles.wordWrappedMiniLabel);
+                        EditorStyles.wordWrappedLabel);
                 }
             }
         }
@@ -505,7 +505,7 @@ namespace yuna0x0.Basis.Convert.UI
             {
                 bool result = EditorGUILayout.ToggleLeft(label, value && available,
                     GUILayout.Width(170f));
-                EditorGUILayout.LabelField(detail, EditorStyles.miniLabel);
+                EditorGUILayout.LabelField(detail, EditorStyles.label);
                 return available ? result : value;
             }
         }
@@ -554,9 +554,9 @@ namespace yuna0x0.Basis.Convert.UI
             using (new EditorGUI.IndentLevelScope())
             {
                 EditorGUILayout.LabelField(
-                    "What Basis's full-body IK will make of this rig. Nothing here is converted; "
-                    + "these are settings on the model itself.",
-                    EditorStyles.wordWrappedMiniLabel);
+                    "What Basis's full-body IK will make of this rig. These are settings on the "
+                    + "model, not things a conversion changes.",
+                    EditorStyles.wordWrappedLabel);
 
                 foreach (ConversionDiagnostic diagnostic in _plan.RigDiagnostics)
                 {
@@ -566,7 +566,7 @@ namespace yuna0x0.Basis.Convert.UI
                         GUILayout.Label(IconFor(diagnostic.Severity), GUILayout.Width(20f),
                             GUILayout.Height(18f));
                         EditorGUILayout.LabelField(diagnostic.Message,
-                            EditorStyles.wordWrappedMiniLabel);
+                            EditorStyles.wordWrappedLabel);
                     }
                 }
 
@@ -635,20 +635,20 @@ namespace yuna0x0.Basis.Convert.UI
             using (new EditorGUI.IndentLevelScope())
             {
                 EditorGUILayout.LabelField(
-                    "Everything else is a direct mapping. These two are fits between settings "
-                    + "that do not have the same meaning or scale, so they are the ones worth "
-                    + "adjusting if the result feels wrong. Rescan to apply.",
-                    EditorStyles.wordWrappedMiniLabel);
+                    "These two settings do not mean the same thing on both sides, so they are "
+                    + "fitted rather than converted. Adjust them if the result feels wrong, "
+                    + "then rescan. Everything else maps directly.",
+                    EditorStyles.wordWrappedLabel);
 
                 EditorGUILayout.LabelField("Stiffness, from PhysBone pull and stiffness",
-                    EditorStyles.miniBoldLabel);
+                    EditorStyles.boldLabel);
                 _profile.PullToStiffness = EditorGUILayout.Slider(
                     "Pull weight", _profile.PullToStiffness, 0f, 2f);
                 _profile.StiffnessToStiffness = EditorGUILayout.Slider(
                     "Stiffness weight", _profile.StiffnessToStiffness, 0f, 2f);
 
                 EditorGUILayout.LabelField("Drag, from PhysBone spring",
-                    EditorStyles.miniBoldLabel);
+                    EditorStyles.boldLabel);
                 _profile.DragAtNoSpring = EditorGUILayout.Slider(
                     "Drag at spring 0", _profile.DragAtNoSpring, 0f, 1f);
                 _profile.DragAtFullSpring = EditorGUILayout.Slider(
@@ -656,7 +656,7 @@ namespace yuna0x0.Basis.Convert.UI
 
                 EditorGUILayout.LabelField(
                     "Higher stiffness holds bones closer to their animated pose. Higher drag "
-                    + "settles them sooner.", EditorStyles.wordWrappedMiniLabel);
+                    + "settles them sooner.", EditorStyles.wordWrappedLabel);
             }
         }
 
@@ -688,7 +688,7 @@ namespace yuna0x0.Basis.Convert.UI
             }
 
             EditorGUILayout.Space(2f);
-            EditorGUILayout.LabelField(heading, EditorStyles.miniBoldLabel);
+            EditorGUILayout.LabelField(heading, EditorStyles.boldLabel);
 
             foreach (DiagnosticGroup group in section)
             {
@@ -703,7 +703,7 @@ namespace yuna0x0.Basis.Convert.UI
 
                 using (new EditorGUI.IndentLevelScope())
                 {
-                    EditorGUILayout.LabelField(group.Example, EditorStyles.wordWrappedMiniLabel);
+                    EditorGUILayout.LabelField(group.Example, EditorStyles.wordWrappedLabel);
                 }
             }
         }
@@ -879,13 +879,13 @@ namespace yuna0x0.Basis.Convert.UI
                         EditorGUILayout.LabelField(motion.Describe(), GUILayout.MinWidth(120f));
                         EditorGUILayout.LabelField(
                             $"{motion.Plan.Paths.Count} transforms",
-                            EditorStyles.miniLabel);
+                            EditorStyles.label);
                     }
                 }
 
                 EditorGUILayout.HelpBox(
                     "Each motion is baked to a clip asset beside the animation it came from. "
-                    + "Unlike the components, a baked clip stays in the project after an undo.",
+                    + "An undo removes the components but leaves the clip.",
                     MessageType.None);
             }
         }
@@ -933,7 +933,7 @@ namespace yuna0x0.Basis.Convert.UI
 
                         EditorGUILayout.LabelField(label, GUILayout.MinWidth(120f));
                         EditorGUILayout.LabelField(Describe(control.Plan),
-                            EditorStyles.miniLabel);
+                            EditorStyles.label);
                     }
                 }
             }
@@ -1037,7 +1037,7 @@ namespace yuna0x0.Basis.Convert.UI
 
             EditorGUILayout.LabelField(
                 "Convert writes components you can tune by hand. One undo reverts all of it.",
-                EditorStyles.wordWrappedMiniLabel);
+                EditorStyles.wordWrappedLabel);
         }
 
         /// <summary>
@@ -1066,7 +1066,7 @@ namespace yuna0x0.Basis.Convert.UI
                 + $"{_result.VixxyControlsWritten} Vixxy controls, "
                 + $"{_result.AuthoredMotionsWritten} authored motions"
                 + (_result.DescriptorWritten ? ", Basis Avatar component." : "."),
-                EditorStyles.miniLabel);
+                EditorStyles.label);
 
             if (_result.MotionAssets.Count > 0)
             {
@@ -1074,14 +1074,14 @@ namespace yuna0x0.Basis.Convert.UI
                     $"Baked {_result.MotionAssets.Count} motion clips into "
                     + $"{System.IO.Path.GetDirectoryName(_result.MotionAssets[0])?.Replace('\\', '/')}. "
                     + "These stay in the project if you undo.",
-                    EditorStyles.wordWrappedMiniLabel);
+                    EditorStyles.wordWrappedLabel);
             }
 
             EditorGUILayout.Space(2f);
             EditorGUILayout.LabelField(
                 "To see the jiggle move, press Test in Editor on the Basis Avatar component. "
                 + "Play mode alone does not calibrate the avatar.",
-                EditorStyles.wordWrappedMiniLabel);
+                EditorStyles.wordWrappedLabel);
         }
 
         /// <summary>
@@ -1139,9 +1139,8 @@ namespace yuna0x0.Basis.Convert.UI
             {
                 _plan = null;
                 _blocker = "This object is not linked to a prefab, so there is no file to read "
-                    + "the source data from. That usually means the prefab was unpacked. "
-                    + "Re-import the avatar and convert it before unpacking, or drag the "
-                    + "original prefab in here instead.";
+                    + "from. That usually means it was unpacked. Drag the original prefab in "
+                    + "here, or re-import the avatar and convert it before unpacking.";
                 return;
             }
 
@@ -1149,11 +1148,11 @@ namespace yuna0x0.Basis.Convert.UI
 
             if (_plan.TotalPlanned == 0)
             {
-                _blocker = "Nothing convertible was found in this prefab. Supported sources are "
-                    + "VRChat PhysBones, colliders and constraints, the VRChat avatar descriptor "
-                    + "with the menu and animation behind it, VRM spring bones in both formats, "
-                    + "and Dynamic Bone. If the components were already stripped, there is "
-                    + "nothing left to read.";
+                _blocker = "Nothing convertible was found in this prefab. It reads VRChat "
+                    + "PhysBones, colliders, constraints and the avatar descriptor with the menu "
+                    + "and animation behind it, VRM spring bones and expressions, and Dynamic "
+                    + "Bone. If the components were stripped before export, there is nothing "
+                    + "left to read.";
             }
         }
 

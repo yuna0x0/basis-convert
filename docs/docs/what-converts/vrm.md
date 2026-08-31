@@ -2,14 +2,14 @@
 sidebar_position: 2
 ---
 
-# VRM spring bones
+# VRM
 
-VRM avatars, including everything VRoid Studio exports, carry their hair and clothing physics as
-spring bones. Both formats are read and become Basis jiggle physics.
+VRM avatars, including everything VRoid Studio exports, carry their physics as spring bones and
+their faces as expressions. Both formats are read: spring bones become Basis jiggle physics, and
+expressions become HVR Vixxy controls.
 
 UniVRM does not need to be installed. A VRM avatar imported into a Basis project arrives with its
-spring bones as missing scripts, the same as any other platform's components, and the data is
-read from the prefab file either way.
+components as missing scripts, and the data is read from the prefab file either way.
 
 ## The two formats
 
@@ -39,17 +39,12 @@ swinging, so it is excluded to leave it as still as VRM left it.
 
 ## Expressions
 
-A VRM expression is a named set of blendshape weights, which is what a Vixxy control holds once
-it has two choices. The ones an author added, and the emotion presets, become controls with a
-menu item each: off leaves every shape at the weight the avatar was authored with, on takes the
-expression's.
+A VRM expression is a named set of blendshape weights. The ones an author added, and the
+emotion presets, become Vixxy controls with a menu item each: off leaves every shape at the
+weight the avatar was authored with, on takes the expression's.
 
-VRM has no menu of its own, so on VRChat these were driven by whatever was playing the avatar.
-On Basis the wearer picks them.
-
-Not every expression becomes a control. The lip sync shapes, blinking and looking around are
-driven by Basis itself, and offering the wearer a menu item for something already being driven
-would fight it. Those are reported as left to Basis.
+The lip sync shapes, blinking and looking around do not. Basis drives those itself, and a menu
+item would fight it. They are reported as left to Basis.
 
 VRM refers to a blendshape by its position in the mesh rather than by name, so each one is looked
 up on the renderer it names. A shape that is no longer there, usually because the mesh changed
@@ -66,6 +61,5 @@ rest: VRM names the material to change, while Vixxy acts through a renderer.
 - **Inside colliders**, which hold bones within a shape rather than pushing them out. Basis only
   pushes out, so those are written as ordinary colliders and reported: they now push the opposite
   way, and are worth removing if the result looks wrong.
-- **Everything a VRM carries that is not physics.** Expressions, look-at, first-person settings
-  and the avatar's metadata are not read yet. What a VRM avatar needs beyond physics is the
-  `BasisAvatar` component, which Basis fills in itself when its inspector is first opened.
+- **Look-at, first-person settings and the avatar's metadata.** Basis drives gaze from the eye
+  bones and fills in the `BasisAvatar` component itself when its inspector is first opened.

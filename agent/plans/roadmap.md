@@ -157,9 +157,15 @@ the original. Everything else maps directly.
     thing, an object worn on an avatar, already converts. Setting up a prop is authoring rather
     than conversion, and Basis ships `BasisPropValidator` for it, including a collider layer
     fix-up. A menu item at most, if anyone asks.
-  - **`BasisScene`** is blocked by Udon. Geometry, lighting and colliders are plain Unity and
-    need no conversion; behaviour is a compiled VM with no serialized form to read. Anything in
-    that direction would go through Cilbox, Basis's sandboxed C#, which is its own project.
+  - **`BasisScene`** is blocked by what world scripts are written against, not by their format.
+    Geometry, lighting and colliders are plain Unity and need no conversion. Behaviour is Udon,
+    and Basis runs sandboxed C# through Cilbox, which interprets CIL. Most world code is
+    UdonSharp, so the source is usually already C#, and compiled Udon programs are serialized
+    assets that could be lifted. The wall is the API: `UdonSharpBehaviour`, `VRCPlayerApi`,
+    `Networking` ownership, `[UdonSynced]`, pickups and stations have no Basis equivalents.
+    Converting a world's scripts means implementing VRChat's world API on top of Basis's
+    networking and player model first, which is a runtime project rather than a reader, and one
+    with its own licensing questions.
 
   Physics and constraints already convert on any hierarchy the window is pointed at, and the rig
   check skips itself when there is no humanoid.

@@ -16,8 +16,8 @@ needs.
 
 Clothing and accessories convert with the avatar they are worn on.
 
-Nothing is written until you press Convert, one undo reverts the components it wrote, and
-anything that cannot come across cleanly is listed rather than dropped quietly.
+Nothing is written until you press Convert, and one undo reverts it. Anything that cannot come
+across cleanly is listed first.
 
 Documentation: **https://yuna0x0.github.io/watari-basis/**
 

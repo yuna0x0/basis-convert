@@ -4,14 +4,13 @@ sidebar_position: 7
 
 # Limitations
 
-Worth reading before you rely on a conversion. Everything here is reported by the tool as well;
-this is the same information in one place.
+Everything here is also reported by the tool. This is the same information in one place.
 
 ## Not converted at all
 
 - **VRChat contacts.** Basis has no contact system, so anything driven by touch is dropped.
-- **Everything a VRM carries that is not physics**: expressions, look-at, first-person settings
-  and the avatar's metadata. See [VRM spring bones](what-converts/vrm.md).
+- **A VRM's look-at, first-person settings and metadata.** Its spring bones and expressions do
+  convert. See [VRM](what-converts/vrm.md).
 - **Two-axis and four-axis puppets.**
 - **Animation that moves or scales something over time.** Only rotation is baked, so a toggle
   or a layer that animates anything else over time is reported rather than half converted. See
@@ -31,7 +30,7 @@ this is the same information in one place.
 - **A toggle that waited on a VRChat parameter no longer waits.** `IsLocal`, `InStation`,
   `Seated` and the rest have no Basis equivalent, so a control guarded by one switches whenever
   it is used. The report names the guard that was dropped.
-- **Authored motion carries rotation only**, which is what a baked Basis motion clip holds. A
+- **Authored motion carries rotation only.** A baked Basis motion clip holds nothing else, so a
   clip that also moves or scales something keeps the turning and reports the rest.
 - **A baked motion clip is a project asset**, so an undo removes the components a conversion
   wrote but leaves the clip on disk.

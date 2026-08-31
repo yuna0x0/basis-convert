@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Avatar descriptor
 
-The VRChat avatar descriptor becomes a `BasisAvatar`, which is what Basis loads an avatar
+The VRChat avatar descriptor becomes a `BasisAvatar`, the component Basis loads an avatar
 through.
 
 ## What carries across

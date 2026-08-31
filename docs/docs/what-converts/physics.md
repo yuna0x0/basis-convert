@@ -5,12 +5,12 @@ sidebar_position: 1
 # Physics
 
 VRChat PhysBones, VRM spring bones and legacy Dynamic Bone all become
-[Jiggle Physics](https://github.com/naelstrof/UnityJigglePhysics) rigs, which is what Basis ships
-for secondary motion. Dynamic Bone is an ordinary Unity asset and VRM is a format rather than a
-platform, so an avatar using either converts whether or not VRChat was ever involved.
+[Jiggle Physics](https://github.com/naelstrof/UnityJigglePhysics) rigs, the secondary motion
+system Basis ships. Dynamic Bone is an ordinary Unity asset and VRM is a format, not a platform,
+so an avatar using either converts whether or not VRChat was ever involved.
 
 This page is about PhysBones and Dynamic Bone. Spring bones have their own page, since the two
-VRM formats describe a chain differently: see [VRM spring bones](vrm.md).
+VRM formats describe a chain differently: see [VRM](vrm.md).
 
 One rig is written per source component. Jiggle physics walks into every child of the bone it is
 rooted at, so a PhysBone covering a whole head of hair stays one rig rather than becoming one per

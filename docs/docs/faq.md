@@ -7,7 +7,7 @@ sidebar_position: 8
 ### Do I need the VRChat SDK installed?
 
 No, and you should not install it into a Basis project. VRChat components arrive as missing
-scripts, and their data is read from the prefab file, which is what makes this work at all.
+scripts, and their data is read from the prefab file instead.
 
 ### My avatar shows missing scripts everywhere. Is that a problem?
 
@@ -76,6 +76,6 @@ A `BasisProp` has nothing to read from: VRChat has no prop content type, and set
 authoring rather than conversion, which Basis covers with its own validator.
 
 A `BasisScene`'s geometry, lighting and colliders are plain Unity and need no conversion. Its
-behaviour is Udon, which has no serialized form to read.
+behaviour is Udon, written against VRChat's own runtime API, which Basis does not have.
 
 Physics and constraints convert on any object you select, avatar or not.
