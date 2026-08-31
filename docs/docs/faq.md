@@ -69,12 +69,13 @@ reporting what it does not yet know.
 - **A Basis prop**, meaning the `BasisProp` content type that players spawn and that is
   networked: no. Nothing here writes one, and no `BasisProp` component is created.
 
-`BasisAvatar` is the only Basis content type written today. That is not a limit of what the tool
-is for: props and worlds are in scope, and the reading and mapping stages are shared. What is
-missing for each is not the same thing, though. A prop needs no conversion so much as authoring,
-which Basis already has its own validator and fix-ups for. A world's geometry and lighting are
-plain Unity and need nothing at all, while its behaviour is Udon, which has no readable form to
-convert from.
+`BasisAvatar` is the only Basis content type written today. Props and worlds are in scope, and
+each is blocked on something different.
 
-Physics and constraints do convert on anything you point the window at, avatar or not, so a
-world's props or a spawnable object get that much already.
+A `BasisProp` has nothing to read from: VRChat has no prop content type, and setting one up is
+authoring rather than conversion, which Basis covers with its own validator.
+
+A `BasisScene`'s geometry, lighting and colliders are plain Unity and need no conversion. Its
+behaviour is Udon, which has no serialized form to read.
+
+Physics and constraints convert on any object you select, avatar or not.
