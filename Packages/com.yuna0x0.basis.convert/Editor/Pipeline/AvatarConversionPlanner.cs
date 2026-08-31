@@ -566,10 +566,6 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 return;
             }
 
-            string licence = string.IsNullOrEmpty(meta.LicenseName)
-                ? string.Empty
-                : $" Licence: {meta.LicenseName}.";
-
             string url = string.IsNullOrEmpty(meta.LicenseUrl)
                 ? string.Empty
                 : $" {meta.LicenseUrl}";
@@ -578,14 +574,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 || meta.AvatarPermission == VrmAvatarPermission.OnlyAuthor)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vrm.licence.restricted",
-                    meta.Describe() + licence + " Converting an avatar changes it, and using it "
-                    + "on Basis is a use. Check you are allowed to before you convert." + url);
+                    meta.Summarise() + " Converting an avatar changes it, and using it on Basis "
+                    + "is a use. Check you are allowed to before you convert." + url);
                 return;
             }
 
             plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "vrm.licence",
-                meta.Describe() + licence + " Converting an avatar changes it, so the licence is "
-                + "worth a look before you rely on the result." + url);
+                meta.Summarise() + " Converting an avatar changes it, so read the licence before "
+                + "you rely on the result." + url);
         }
 
         /// <summary>

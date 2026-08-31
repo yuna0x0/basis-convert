@@ -60,12 +60,17 @@ rest: VRM names the material to change, while Vixxy acts through a renderer.
 
 ## The avatar's licence
 
-Every VRM states who may wear it and what may be done to it. The window shows that before you
-convert, with the title, the author and the licence it names, and warns when the licence forbids
-changing the avatar or limits who may wear it.
+Every VRM states who may wear it and what may be done with it. The window shows all of it before
+you convert: the title, the author, who may wear it, whether it may be changed or passed on,
+whether commercial, violent, sexual, political or hateful use is allowed, whether credit is
+required, and the licence it names.
 
-Nothing is blocked. Converting changes an avatar and using it on Basis is a use, and both are
-yours to judge; this only makes sure the licence is in front of you first.
+A permission the format has no field for is left out rather than guessed at. VRM 0.x has no
+political or antisocial fields, and no redistribution or credit fields; VRM 1.0 has all of them.
+
+The licence is a warning when it forbids changing the avatar or limits who may wear it. Nothing
+is blocked: converting changes an avatar and using it on Basis is a use, and both are yours to
+judge.
 
 ## Where the eyes sit
 

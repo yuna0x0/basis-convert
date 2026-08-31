@@ -22,7 +22,7 @@ MonoBehaviour:
   AllowedUser: 2
   ViolentUssage: 0
   SexualUssage: 0
-  CommercialUssage: 0
+  CommercialUssage: 1
   OtherPermissionUrl:
   LicenseType: 2
   OtherLicenseUrl: https://example.invalid/licence

@@ -207,6 +207,16 @@ namespace yuna0x0.Basis.Convert.Sources
                     Mathf.Clamp(license, 0, Vrm0LicenseNames.Length - 1)];
             }
 
+            // VRM 0.x writes each of these as Disallow or Allow, and has no field for the
+            // political or antisocial ones that 1.0 added.
+            data.ViolentUsage = Allowed(document, "ViolentUssage");
+            data.SexualUsage = Allowed(document, "SexualUssage");
+
+            if (Allowed(document, "CommercialUssage") is bool commercial)
+            {
+                data.CommercialUsage = commercial ? "allowed" : "not allowed";
+            }
+
             return data;
         }
 
@@ -272,10 +282,68 @@ namespace yuna0x0.Basis.Convert.Sources
                 {
                     data.Modification = (VrmModificationPermission)change;
                 }
+                else if (trimmed.StartsWith("ViolentUsage:"))
+                {
+                    data.ViolentUsage = Flag(trimmed, "ViolentUsage");
+                }
+                else if (trimmed.StartsWith("SexualUsage:"))
+                {
+                    data.SexualUsage = Flag(trimmed, "SexualUsage");
+                }
+                else if (trimmed.StartsWith("PoliticalOrReligiousUsage:"))
+                {
+                    data.PoliticalOrReligiousUsage =
+                        Flag(trimmed, "PoliticalOrReligiousUsage");
+                }
+                else if (trimmed.StartsWith("AntisocialOrHateUsage:"))
+                {
+                    data.AntisocialOrHateUsage = Flag(trimmed, "AntisocialOrHateUsage");
+                }
+                else if (trimmed.StartsWith("Redistribution:"))
+                {
+                    data.Redistribution = Flag(trimmed, "Redistribution");
+                }
+                else if (trimmed.StartsWith("CreditNotation:")
+                         && UnityYamlValues.TryParseInt(
+                             trimmed.Substring("CreditNotation:".Length).Trim(), out int credit))
+                {
+                    // required, unnecessary
+                    data.CreditRequired = credit == 0;
+                }
+                else if (trimmed.StartsWith("CommercialUsage:")
+                         && UnityYamlValues.TryParseInt(
+                             trimmed.Substring("CommercialUsage:".Length).Trim(), out int use))
+                {
+                    data.CommercialUsage = Vrm10CommercialNames[
+                        Mathf.Clamp(use, 0, Vrm10CommercialNames.Length - 1)];
+                }
             }
 
             return data;
         }
+
+        /// <summary>A yes or no field of a VRM 1.0 meta block.</summary>
+        private static bool? Flag(string line, string key)
+        {
+            return UnityYamlValues.TryParseInt(
+                line.Substring(key.Length + 1).Trim(), out int value)
+                ? value != 0
+                : (bool?)null;
+        }
+
+        /// <summary>A VRM 0.x usage field, which is Disallow or Allow.</summary>
+        private static bool? Allowed(UnityYamlDocument document, string key)
+        {
+            return document.TryGetInt(key, out int value) ? value != 0 : (bool?)null;
+        }
+
+        /// <summary>How far VRM 1.0 lets commercial use go, in its own words.</summary>
+        private static readonly string[] Vrm10CommercialNames =
+        {
+            "personal, not for profit",
+            "personal, including for profit",
+            "corporate",
+        };
 
         /// <summary>VRM 0.x's licence types, in the order its own enum declares them.</summary>
         private static readonly string[] Vrm0LicenseNames =

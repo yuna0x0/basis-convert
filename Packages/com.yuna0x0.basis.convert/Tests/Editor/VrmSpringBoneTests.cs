@@ -286,6 +286,19 @@ namespace yuna0x0.Basis.Convert.Tests
             Assert.That(plan.VrmMeta.LicenseName, Is.EqualTo("CC_BY"));
             Assert.That(plan.VrmMeta.ForbidsModification, Is.False);
 
+            // Every permission the format states, in its own words.
+            Assert.That(plan.VrmMeta.ViolentUsage, Is.False);
+            Assert.That(plan.VrmMeta.SexualUsage, Is.False);
+            Assert.That(plan.VrmMeta.CommercialUsage, Is.EqualTo("allowed"));
+            Assert.That(plan.VrmMeta.PoliticalOrReligiousUsage, Is.Null,
+                "VRM 0.x has no field for it, so it is left unstated rather than guessed.");
+
+            List<string> permissions = new List<string>(plan.VrmMeta.Permissions());
+            Assert.That(permissions, Does.Contain("Wearing: anyone"));
+            Assert.That(permissions, Does.Contain("Violence: not allowed"));
+            Assert.That(permissions, Does.Contain("Commercial use: allowed"));
+            Assert.That(permissions, Does.Contain("Licence: CC_BY"));
+
             Assert.That(plan.AllDiagnostics().HasCode("vrm.licence"), Is.True);
             Assert.That(plan.AllDiagnostics().HasCode("vrm.licence.restricted"), Is.False,
                 "CC BY allows changing it, and anyone may wear this one.");
@@ -304,7 +317,8 @@ namespace yuna0x0.Basis.Convert.Tests
             };
 
             Assert.That(meta.ForbidsModification, Is.True);
-            Assert.That(meta.Describe(), Does.Contain("only its author may wear it"));
+            Assert.That(new List<string>(meta.Permissions()),
+                Does.Contain("Wearing: the author only"));
         }
 
         [Test]

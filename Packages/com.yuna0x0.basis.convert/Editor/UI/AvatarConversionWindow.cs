@@ -199,14 +199,11 @@ namespace yuna0x0.Basis.Convert.UI
                 bool restricted = _plan.VrmMeta.ForbidsModification
                     || _plan.VrmMeta.AvatarPermission == VrmAvatarPermission.OnlyAuthor;
 
-                string licence = string.IsNullOrEmpty(_plan.VrmMeta.LicenseName)
-                    ? string.Empty
-                    : $"\nLicence: {_plan.VrmMeta.LicenseName}";
-
                 EditorGUILayout.HelpBox(
-                    _plan.VrmMeta.Describe() + licence
+                    _plan.VrmMeta.Describe()
+                    + "\n" + string.Join("\n", _plan.VrmMeta.Permissions())
                     + (restricted
-                        ? "\nConverting changes the avatar. Check you are allowed to."
+                        ? "\n\nConverting changes the avatar. Check you are allowed to."
                         : string.Empty),
                     restricted ? MessageType.Warning : MessageType.Info);
 

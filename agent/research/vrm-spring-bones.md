@@ -144,6 +144,17 @@ Every VRM carries one. VRM 0.x has a `VRMMeta` component (guid
 `ModificationType` is `prohibited`, `allowModification`, `allowModificationRedistribution`. VRM
 0.x says the same through `LicenseType`, where `CC_BY_ND` and `CC_BY_NC_ND` forbid changes.
 
+The rest of the permissions differ between the formats, so a field one has and the other does
+not is left unstated rather than guessed:
+
+| Permission | VRM 0.x | VRM 1.0 |
+|---|---|---|
+| Violence, sexual content | `ViolentUssage`, `SexualUssage` as `UssageLicense` (Disallow, Allow) | `ViolentUsage`, `SexualUsage` as bools |
+| Commercial | `CommercialUssage`, allow or not | `CommercialUsage` as `personalNonProfit`, `personalProfit`, `corporation` |
+| Political or religious, antisocial or hateful | absent | `PoliticalOrReligiousUsage`, `AntisocialOrHateUsage` |
+| Passing it on | absent, implied by the licence type | `Redistribution` |
+| Credit | absent | `CreditNotation`: `required`, `unnecessary` |
+
 Converting an avatar changes it, so the licence is read and shown before anything is written.
 Nothing is blocked: what the licence permits is the wearer's to judge.
 
