@@ -39,10 +39,18 @@ the writers touch Unity objects.
 
 Fixtures live in `Tests/Editor/Fixtures`. `SampleAvatar` is an avatar the package ships: a
 prefab carrying a descriptor, a PhysBone and a constraint as the missing scripts they arrive as,
-plus an expression menu, parameters, an animator and its clips. Prefer extending it over reaching
-for a real avatar, so the suite means something on a machine that has no purchased assets. Its
-animator half is generated through `Tools/Watari/Development/Regenerate Test Fixtures`, because
-hand-writing a state machine produces files that look right and do not load.
+plus an expression menu, parameters, an animator and its clips. Between them the menu and the
+animator cover a plain toggle, a selector sharing one parameter, a radial puppet, a toggle
+guarded by one of VRChat's own parameters, a toggle whose clip animates over time, and a layer
+with nothing steering it. `SampleClothing` is the Modular Avatar half. Prefer extending these
+over reaching for a real avatar, so the suite means something on a machine that has no purchased
+assets. The animator half is generated through
+`Tools/Watari/Development/Regenerate Test Fixtures`, because hand-writing a state machine
+produces files that look right and do not load.
+
+A conversion writes one asset, the baked motion clip, beside the animation it came from. A test
+that applies a plan must redirect that: set `OutputFolder` on each planned motion to a folder
+under `Assets` and delete it in teardown, or the run leaves files in the package.
 
 Some tests need a real VRChat avatar imported into the Basis project. Those assets cannot be
 distributed, so the tests skip themselves when the fixture is absent rather than failing. If you
@@ -64,7 +72,8 @@ does. Describe what changed and why; skip tool or process detail.
   GameObject tagged `EditorOnly`, which the Basis build pipeline strips.
 - **Conversion is destructive and undoable, on purpose.** Some of the mapping is a judgement
   call, so the output has to be editable and has to survive rebuilds. See
-  `agent/decisions/0003`.
+  `agent/decisions/0003`. The one exception is the baked motion clip, which is a project asset
+  and stays after an undo; see `agent/decisions/0013`.
 - **Anything the converter cannot carry over must produce a diagnostic**, not a silent omission.
 - Do not commit third party assets: no VRChat SDK, no purchased avatars or plugins, in any form.
   Script GUIDs and field names are facts about a file format and are fine to record.

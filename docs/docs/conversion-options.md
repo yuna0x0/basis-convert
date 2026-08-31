@@ -40,7 +40,7 @@ there if you undo the conversion. See [Authored motion](what-converts/authored-m
   the body instead of resting on it.
 - **A checkbox per prefab**, so an accessory parented onto an avatar is not converted with it. Prefabs
   that hold nothing convertible are summarised rather than listed.
-- **A checkbox per rig, constraint and toggle**, each with what it affects.
+- **A checkbox per rig, constraint, toggle and motion**, each with what it affects.
 - **The tuning weights** described in [Physics](what-converts/physics.md).
 
 {/*

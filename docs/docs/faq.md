@@ -27,8 +27,8 @@ component instead.
 
 ### Can I convert clothing separately from the avatar?
 
-Yes. Select the clothing object and convert that. A conversion replaces only components on the
-objects it is about to write to, so anything already converted stays as it is.
+Yes. Select the clothing object and convert that. A conversion replaces only what it wrote
+itself, so anything already converted stays as it is.
 
 ### An undo left a file behind.
 
@@ -38,8 +38,9 @@ animation it was baked from, and converting again writes over it rather than add
 
 ### I converted twice by accident.
 
-Converting again offers to replace what the previous conversion wrote on the same objects, and
-one undo reverts the whole thing.
+Converting again offers to replace what the previous conversion wrote, naming what will go, and
+one undo reverts the removal and the rewrite together. Components somewhere else on the avatar,
+and Vixxy controls you made yourself, are left alone.
 
 ### My avatar's idle animation does not play.
 
