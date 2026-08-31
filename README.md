@@ -1,15 +1,18 @@
 # Watari
 
-Bring an avatar you already own into [Basis](https://basisvr.org/), whether it was built for
-VRChat or ships as a VRM, with its physics, constraints, menus and motion intact.
+Bring an avatar you already own into [Basis](https://basisvr.org/), with its physics,
+constraints, menus and motion intact, whatever it was built for.
 
 Import the avatar into a Basis project, pick it in the scene, and convert:
 
 - **VRChat PhysBones, VRM spring bones and legacy Dynamic Bone** become Basis jiggle physics
 - **VRChat constraints** become their Basis equivalents
 - **The avatar descriptor** becomes a `BasisAvatar` component
-- **Menu toggles, selectors and radial puppets** become HVR Vixxy controls
+- **Menu toggles, selectors, radial puppets and VRM expressions** become HVR Vixxy controls
 - **Animation that plays on its own** becomes authored motion, baked to a clip
+
+An avatar carrying none of those still gets its humanoid rig checked against what Basis's IK
+needs.
 
 Clothing and accessories convert with the avatar they are worn on.
 

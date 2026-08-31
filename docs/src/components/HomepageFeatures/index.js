@@ -7,19 +7,20 @@ const features = [
     title: 'Physics, constraints, menus and motion',
     description: (
       <>
-        PhysBones and Dynamic Bone become Basis jiggle physics, VRChat constraints become their
-        Basis equivalents, the avatar descriptor becomes a <code>BasisAvatar</code>, menu toggles
-        are rebuilt as HVR Vixxy controls, and animation that plays on its own becomes authored
-        motion.
+        PhysBones, VRM spring bones and Dynamic Bone become Basis jiggle physics, VRChat
+        constraints become their Basis equivalents, the avatar descriptor becomes a{' '}
+        <code>BasisAvatar</code>, menu toggles and VRM expressions are rebuilt as HVR Vixxy
+        controls, and animation that plays on its own becomes authored motion.
       </>
     ),
   },
   {
-    title: 'Whole avatars, clothing included',
+    title: 'Whatever the avatar was built for',
     description: (
       <>
-        Clothing and accessories are prefabs of their own, with physics of their own. A conversion
-        reads every prefab the avatar is built from, and any of them can be left out.
+        Sources are read by what an avatar carries rather than where it came from, so a VRChat
+        avatar, a VRM, and one using nothing but Dynamic Bone all convert. Clothing and
+        accessories are prefabs of their own and are read as such; any of them can be left out.
       </>
     ),
   },

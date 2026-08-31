@@ -12,7 +12,7 @@ const defaultLocale = 'en';
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Watari',
-  tagline: 'Converter for Basis: VRChat and VRM avatars',
+  tagline: 'Converter for Basis: physics, constraints, menus and motion',
   favicon: 'img/favicon.ico',
 
   // Set to the GitHub Pages address until a custom domain is pointed at it. With a custom

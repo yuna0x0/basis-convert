@@ -4,8 +4,8 @@ Orientation for AI agents and for anyone picking this repo up cold.
 
 ## What this is
 
-Editor tooling for bringing avatars and the content worn on them into Basis, from the platforms
-and the formats they were built for. It installs into a Basis project as a UPM package.
+Editor tooling for bringing avatars and the content worn on them into Basis, whatever they were
+built for. It installs into a Basis project as a UPM package.
 
 Working today: VRChat PhysBones and colliders, VRM spring bones in both formats, legacy Dynamic
 Bone, all six VRChat constraint types, the avatar descriptor, menu toggles, selectors and radial
@@ -42,7 +42,9 @@ The scope is wider than what is built. Avatars first, then props and worlds; VRC
 whatever else is worth reading, which now includes VRM. Reading, mapping and writing are separate
 stages so that a new source is a new reader and nothing else has to move. Do not narrow the
 vocabulary in code or docs to "VRChat avatars", or to social VR platforms: a VRM file is a
-format, not a platform, and both are in scope.
+format rather than a platform, an avatar carrying nothing but Dynamic Bone belongs to neither,
+and all of them are in scope. What decides whether something converts is the components it
+carries, not where it came from.
 
 ## Read this first
 

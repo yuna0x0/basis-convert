@@ -2,8 +2,9 @@
 
 ## Scope
 
-Bring avatars and what is worn on them into Basis, from the platforms and the formats they were
-built for. Two axes, both open:
+Bring avatars and what is worn on them into Basis, whatever they were built for. What decides
+whether something converts is the components it carries, not where it came from. Two axes, both
+open:
 
 - **Content**: avatars first, then props, then worlds, meaning Basis's own content types
   `BasisAvatar`, `BasisProp` and `BasisScene`. Only the first is written today. Clothing and
