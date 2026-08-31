@@ -175,7 +175,7 @@ namespace yuna0x0.Basis.Convert.Tests
             bool reported = false;
             foreach (ConversionDiagnostic diagnostic in plan.AllDiagnostics())
             {
-                if (diagnostic.Code == "vixxy.blendShapes" || diagnostic.Code == "vixxy.notSimple")
+                if (diagnostic.Code == "vixxy.notSimple")
                 {
                     reported = true;
                     TestContext.WriteLine(diagnostic.Message);

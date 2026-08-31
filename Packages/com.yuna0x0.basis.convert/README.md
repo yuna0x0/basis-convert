@@ -4,7 +4,7 @@ Bring an avatar you already own into [Basis](https://basisvr.org/), with its phy
 constraints, menus and motion intact.
 
 - **VRChat PhysBones, VRM spring bones and legacy Dynamic Bone** become Basis jiggle physics
-- **VRChat constraints** become their Basis equivalents
+- **VRChat and VRM constraints** become their Basis equivalents
 - **The avatar descriptor** becomes a `BasisAvatar` component
 - **Menu toggles, selectors, radial puppets and VRM expressions** become HVR Vixxy controls
 - **Animation that plays on its own** becomes authored motion, baked to a clip

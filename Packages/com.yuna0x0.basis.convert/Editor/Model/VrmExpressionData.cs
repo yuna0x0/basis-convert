@@ -50,9 +50,6 @@ namespace yuna0x0.Basis.Convert.Model
         public string Name = string.Empty;
         public VrmExpressionRole Role = VrmExpressionRole.Custom;
 
-        /// <summary>True when the expression is all or nothing rather than a range.</summary>
-        public bool IsBinary;
-
         public List<VrmMorphBinding> Bindings = new List<VrmMorphBinding>();
 
         /// <summary>

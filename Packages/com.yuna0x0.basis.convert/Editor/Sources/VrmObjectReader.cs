@@ -477,11 +477,6 @@ namespace yuna0x0.Basis.Convert.Sources
                 expression.Role = Vrm0Roles[preset];
             }
 
-            if (clip.TryGetBool("IsBinary", out bool binary))
-            {
-                expression.IsBinary = binary;
-            }
-
             // A 0.x binding's weight is already on Unity's scale: UniVRM passes it straight to
             // SetBlendShapeWeight.
             ReadBindings(clip, "Values", 1f, expression);
@@ -501,11 +496,6 @@ namespace yuna0x0.Basis.Convert.Sources
             {
                 Name = clip.GetTopLevelValue("m_Name") ?? string.Empty,
             };
-
-            if (clip.TryGetBool("IsBinary", out bool binary))
-            {
-                expression.IsBinary = binary;
-            }
 
             ReadBindings(clip, "MorphTargetBindings", Vrm10WeightToUnity, expression);
             expression.MaterialBindingCount = CountEntries(clip, "MaterialColorBindings")

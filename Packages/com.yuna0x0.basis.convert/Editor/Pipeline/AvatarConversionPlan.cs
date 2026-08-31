@@ -265,6 +265,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public VrmAvatarSettingsData VrmSettings;
 
         /// <summary>
+        /// The bone a VRM 0.x avatar measures its eye offset from, when it named one. Usually the
+        /// head, but the format lets it be any bone.
+        /// </summary>
+        public Transform VrmEyeOrigin;
+
+        /// <summary>
         /// The licence a VRM avatar carries. Converting one is a modification, so this is read
         /// and shown before anything is written.
         /// </summary>

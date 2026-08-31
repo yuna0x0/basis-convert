@@ -155,6 +155,38 @@ namespace yuna0x0.Basis.Convert.Tests
         }
 
         [Test]
+        public void SourcesPastTheSixteenthAreReportedAsUnread()
+        {
+            // VRChat serializes the first sixteen sources as numbered slots and the rest in an
+            // overflow list, which is not read. Losing them silently would be worse than saying
+            // so.
+            VrcConstraintData source = Constraint(VrcConstraintKind.Parent);
+            source.DeclaredSourceCount = 18;
+            source.Sources.Clear();
+
+            for (int i = 0; i < 16; i++)
+            {
+                source.Sources.Add(new VrcConstraintSource {SourceTransformFileId = 100 + i});
+            }
+
+            BasisConstraintPlan plan = VrcConstraintToBasisMapper.Map(source);
+
+            Assert.That(plan.Sources.Count, Is.EqualTo(16));
+            Assert.That(plan.Diagnostics.HasCode("constraint.source.overflow"), Is.True);
+        }
+
+        [Test]
+        public void EverySourceReadIsNotReportedAsOverflow()
+        {
+            VrcConstraintData source = Constraint(VrcConstraintKind.Rotation);
+            source.DeclaredSourceCount = source.Sources.Count;
+
+            BasisConstraintPlan plan = VrcConstraintToBasisMapper.Map(source);
+
+            Assert.That(plan.Diagnostics.HasCode("constraint.source.overflow"), Is.False);
+        }
+
+        [Test]
         public void WeightOutsideTheAcceptedRangeIsClampedAndReported()
         {
             VrcConstraintData source = Constraint(VrcConstraintKind.Rotation);

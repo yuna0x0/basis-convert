@@ -29,8 +29,8 @@ merged animator holds the layer that implements it. Those are traced and rebuilt
 controls, on the same terms as [menu toggles](menu-toggles.md) from the avatar's own menu.
 
 `Object Toggle` needs no animator at all. It switches objects while its own object is active, and
-a menu item on that object is what makes it active, so the two together say what a toggle and its
-clips say. Objects it does not name keep the state the avatar was authored with, which is the
+a menu item on that object makes it active, so the two together say what a toggle and its clips
+say. Objects it does not name keep the state the avatar was authored with, which is the
 same rule everywhere else.
 
 Paths inside a merged animator's clips are relative to the object the animator was merged at, and

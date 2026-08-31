@@ -555,6 +555,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             plan.VrmSettings = settings;
 
+            if (settings.HeadBoneFileId != 0L
+                && resolver.TryResolveTransform(settings.HeadBoneFileId, out Transform origin))
+            {
+                plan.VrmEyeOrigin = origin;
+            }
+
             if (settings.ThirdPersonOnlyRenderers > 0 || settings.FirstPersonOnlyRenderers > 0)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vrm.firstPerson",
@@ -613,10 +619,16 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 return;
             }
 
+            // VRM 0.x names the bone its offset is measured from, and it need not be the head.
+            // VRM 1.0 always means the head, and says so by naming none.
             Animator animator = plan.SourceRoot.GetComponentInChildren<Animator>(true);
-            Transform head = animator != null && animator.avatar != null && animator.avatar.isHuman
-                ? animator.GetBoneTransform(HumanBodyBones.Head)
-                : null;
+            Transform head = plan.VrmEyeOrigin;
+
+            if (head == null && animator != null && animator.avatar != null
+                && animator.avatar.isHuman)
+            {
+                head = animator.GetBoneTransform(HumanBodyBones.Head);
+            }
 
             // The offset is measured from the head, and it goes on the Basis Avatar component.
             // Without a humanoid rig there is neither, so the eye position is left for Basis.

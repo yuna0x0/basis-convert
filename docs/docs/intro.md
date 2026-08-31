@@ -10,7 +10,7 @@ constraints, menus and motion intact.
 You import the avatar into a Basis project, pick it in the scene, and convert:
 
 - **VRChat PhysBones, VRM spring bones and legacy Dynamic Bone** become Basis jiggle physics
-- **VRChat constraints** become their Basis equivalents
+- **VRChat and VRM constraints** become their Basis equivalents
 - **The avatar descriptor** becomes a `BasisAvatar` component
 - **Menu toggles, selectors, radial puppets and VRM expressions** become HVR Vixxy controls
 - **Animation that plays on its own** becomes authored motion, baked to a clip

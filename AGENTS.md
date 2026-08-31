@@ -22,9 +22,10 @@ next. Then `agent/decisions/`. The short version of how this works:
   project and its components arrive as missing scripts. Native Unity types, animator controllers
   and clips, are read through the editor API instead.
 - **Three stages**: readers produce plain data, mappers are pure and produce plans, writers touch
-  Unity objects. Only writers need a scene, which is what keeps the rest testable headlessly.
+  Unity objects. Only writers need a scene, so the rest stays testable headlessly.
 - **Anything approximated or dropped produces a diagnostic** with a stable code. Roughly a third
-  of the source surface has no Basis equivalent, so silence would misrepresent the result.
+  of the source surface has no Basis equivalent, so silence would misrepresent the result of a
+  conversion.
 
 ## Lessons this project keeps relearning
 
@@ -39,7 +40,7 @@ next. Then `agent/decisions/`. The short version of how this works:
   test passed.
 
 The scope is wider than what is built. Avatars first, then props and worlds; VRChat first, then
-whatever else is worth reading, which now includes VRM. Reading, mapping and writing are separate
+whatever else is worth reading, VRM so far. Reading, mapping and writing are separate
 stages so that a new source is a new reader and nothing else has to move. Do not narrow the
 vocabulary in code or docs to "VRChat avatars", or to social VR platforms: a VRM file is a
 format rather than a platform, an avatar carrying nothing but Dynamic Bone belongs to neither,

@@ -12,9 +12,10 @@ so an avatar using either converts whether or not VRChat was ever involved.
 This page is about PhysBones and Dynamic Bone. Spring bones have their own page, since the two
 VRM formats describe a chain differently: see [VRM](vrm.md).
 
-One rig is written per source component. Jiggle physics walks into every child of the bone it is
-rooted at, so a PhysBone covering a whole head of hair stays one rig rather than becoming one per
-strand.
+One rig is written per chain. A PhysBone is one chain, and jiggle physics walks into every child
+of the bone it is rooted at, so a PhysBone covering a whole head of hair stays one rig rather than
+becoming one per strand. A Dynamic Bone can name several root bones, and each of those becomes a
+rig of its own with the component's settings.
 
 ## What carries across exactly
 
