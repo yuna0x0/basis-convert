@@ -10,6 +10,8 @@ this is the same information in one place.
 ## Not converted at all
 
 - **VRChat contacts.** Basis has no contact system, so anything driven by touch is dropped.
+- **Everything a VRM carries that is not physics**: expressions, look-at, first-person settings
+  and the avatar's metadata. See [VRM spring bones](what-converts/vrm.md).
 - **Two-axis and four-axis puppets.**
 - **Animation that moves or scales something over time.** Only rotation is baked, so a toggle
   or a layer that animates anything else over time is reported rather than half converted. See

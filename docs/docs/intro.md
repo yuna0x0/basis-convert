@@ -4,12 +4,12 @@ sidebar_position: 1
 
 # Watari
 
-Watari brings an avatar you already own into [Basis](https://basisvr.org/), with its
-physics, constraints, menus and motion intact.
+Watari brings an avatar you already own into [Basis](https://basisvr.org/), whether it was built
+for VRChat or ships as a VRM, with its physics, constraints, menus and motion intact.
 
 You import the avatar into a Basis project, pick it in the scene, and convert:
 
-- **VRChat PhysBones and legacy Dynamic Bone** become Basis jiggle physics
+- **VRChat PhysBones, VRM spring bones and legacy Dynamic Bone** become Basis jiggle physics
 - **VRChat constraints** become their Basis equivalents
 - **The avatar descriptor** becomes a `BasisAvatar` component
 - **Menu toggles, selectors and radial puppets** become HVR Vixxy controls

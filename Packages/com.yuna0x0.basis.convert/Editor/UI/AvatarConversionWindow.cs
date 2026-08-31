@@ -207,7 +207,8 @@ namespace yuna0x0.Basis.Convert.UI
             int approximated = CountOf(DiagnosticSeverity.Approximated);
 
             string summary = $"Found {_plan.PhysBonesFound} PhysBones, "
-                + $"{_plan.DynamicBonesFound} Dynamic Bones, {_plan.CollidersFound} colliders "
+                + $"{_plan.DynamicBonesFound} Dynamic Bones, "
+                + $"{_plan.VrmChainsFound} VRM spring chains, {_plan.CollidersFound} colliders "
                 + $"and {_plan.ConstraintsFound} constraints.\n"
                 + $"Would create {_plan.SelectedRigCount} jiggle rigs, "
                 + $"{_plan.SelectedConstraintCount} Basis constraints, "
@@ -1150,9 +1151,9 @@ namespace yuna0x0.Basis.Convert.UI
             {
                 _blocker = "Nothing convertible was found in this prefab. Supported sources are "
                     + "VRChat PhysBones, colliders and constraints, the VRChat avatar descriptor "
-                    + "with the menu and animation behind it, and Dynamic Bone, which plenty of "
-                    + "avatars use without VRChat being involved. If the components were already "
-                    + "stripped, there is nothing left to read.";
+                    + "with the menu and animation behind it, VRM spring bones in both formats, "
+                    + "and Dynamic Bone. If the components were already stripped, there is "
+                    + "nothing left to read.";
             }
         }
 

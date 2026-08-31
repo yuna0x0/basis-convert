@@ -2,13 +2,15 @@
 
 ## Scope
 
-Bring content from other social VR platforms into Basis. Two axes, both open:
+Bring avatars and what is worn on them into Basis, from the platforms and the formats they were
+built for. Two axes, both open:
 
 - **Content**: avatars first, then props, then worlds, meaning Basis's own content types
   `BasisAvatar`, `BasisProp` and `BasisScene`. Only the first is written today. Clothing and
   accessories are not a content type: they are objects on an avatar, and they convert with it.
-- **Source platform**: VRChat first, because that is where the content and the demand are.
-  Nothing in the architecture assumes it. A different source is a new reader.
+- **Source**: VRChat first, because that is where the content and the demand are, then VRM,
+  which is a format rather than a platform and carries VRoid Studio and everything exported for
+  it. Nothing in the architecture assumes either. A different source is a new reader.
 
 The pipeline is three stages, kept apart so those axes stay independent:
 
@@ -48,6 +50,14 @@ the original. Everything else maps directly.
   `BasisAvatar`. The viseme ordering is identical between the two, so it is positional. The
   animator, human scale, renderer list and mouth position are deliberately left for Basis's own
   automatic setup, which fills empty values when its inspector is first opened.
+- **VRM spring bones. Done.** Both formats: 0.x, where one component carries a group of chains
+  and one set of parameters, and 1.0, where each bone carries a joint and the avatar's own
+  component lists which joints make up which chain. Per-joint parameters become jiggle's curves
+  over distance from the root, which is the same axis. A spring names the bones it moves while a
+  jiggle rig simulates the whole subtree, so bones the spring never named are excluded. Colliders
+  come across, including 1.0's capsules and planes; its two inside variants have no equivalent
+  and are reported. Nothing a VRM carries besides physics is read yet: expressions, look-at,
+  first-person and the metadata. See `../research/vrm-spring-bones.md`.
 - **Legacy physics. Dynamic Bone done.** Its fields map onto jiggle more directly than
   PhysBones do: damping is drag and inert is ignoreRootMotion, both on the same 0 to 1 scale,
   and the distribution curves are jiggle's curves. One component can drive several roots, which

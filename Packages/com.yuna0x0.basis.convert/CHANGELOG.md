@@ -8,6 +8,14 @@ Notable changes to this package. The format follows
 
 ### Added
 
+- VRM spring bones are read and become jiggle physics, in both VRM 0.x and VRM 1.0. UniVRM does
+  not need to be installed: a VRM avatar in a Basis project carries its spring bones as missing
+  scripts, and the data is read from the prefab file the same way every other source is. VRM 1.0
+  carries a parameter per joint, and Basis evaluates its parameters over distance from the chain
+  root, so a chain that varies along its length becomes a curve rather than an average. Bones
+  hanging off a chain that the spring never named are excluded, since a jiggle rig would
+  otherwise swing them.
+
 - Menu controls that share one parameter and each set a different value are rebuilt as a single
   Vixxy control with a choice per value, rather than being reported as untraceable. This covers
   outfit and hairstyle selectors, which are common and were the largest remaining gap.

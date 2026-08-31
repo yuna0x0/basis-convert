@@ -85,6 +85,7 @@ namespace yuna0x0.Basis.Convert.Reporting
 
             text.AppendLine($"- PhysBones found: {plan.PhysBonesFound}");
             text.AppendLine($"- Dynamic Bones found: {plan.DynamicBonesFound}");
+            text.AppendLine($"- VRM spring chains found: {plan.VrmChainsFound}");
             text.AppendLine($"- Colliders found: {plan.CollidersFound}");
             text.AppendLine($"- Constraints found: {plan.ConstraintsFound}");
             text.AppendLine($"- Jiggle rigs planned: {plan.Rigs.Count}");

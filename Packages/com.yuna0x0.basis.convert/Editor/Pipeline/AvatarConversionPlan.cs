@@ -251,6 +251,10 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public int ModularAvatarVrchatOnlyFound;
 
         public int PhysBonesFound;
+
+        /// <summary>VRM spring chains found, from either VRM format.</summary>
+        public int VrmChainsFound;
+
         public int CollidersFound;
         public int ConstraintsFound;
         public int DynamicBonesFound;

@@ -23,6 +23,17 @@ namespace yuna0x0.Basis.Convert.Sources
         DynamicBoneCollider,
         DynamicBonePlaneCollider,
 
+        // UniVRM, both formats. VRM 0.x puts a group of chains on one component; VRM 1.0 puts
+        // parameters on each bone and lists the chains on the avatar's own component. The guids
+        // were read from UniVRM's .meta files and are unchanged across its last several
+        // releases. See agent/research/vrm-spring-bones.md.
+        VrmSpringBone,
+        VrmSpringBoneColliderGroup,
+        Vrm10Instance,
+        Vrm10SpringBoneJoint,
+        Vrm10SpringBoneCollider,
+        Vrm10SpringBoneColliderGroup,
+
         // Modular Avatar, all of it. Naming every component keeps them out of the unknown
         // script report, and lets each be reported for what it does on Basis. The GUIDs were
         // read from Modular Avatar's own .meta files, not derived.
@@ -126,6 +137,14 @@ namespace yuna0x0.Basis.Convert.Sources
                 { ("f9ac8d30c6a0d9642a11e5be4c440740", LooseScriptFileId), SourceComponentKind.DynamicBone },
                 { ("baedd976e12657241bf7ff2d1c685342", LooseScriptFileId), SourceComponentKind.DynamicBoneCollider },
                 { ("4e535bdf3689369408cc4d078260ef6a", LooseScriptFileId), SourceComponentKind.DynamicBonePlaneCollider },
+
+                // UniVRM, read from its own .meta files in the package cache.
+                { ("00ea06e1753e16f4ca870c39c067c86b", LooseScriptFileId), SourceComponentKind.VrmSpringBone },
+                { ("646b65a4a57afd34d8c4ed557efb46a5", LooseScriptFileId), SourceComponentKind.VrmSpringBoneColliderGroup },
+                { ("bfba4ccd3f854e64f868ce83553071a9", LooseScriptFileId), SourceComponentKind.Vrm10Instance },
+                { ("0a942e03b39600e41a1b161e958048f7", LooseScriptFileId), SourceComponentKind.Vrm10SpringBoneJoint },
+                { ("35bfb658269b2af478e501de243deda6", LooseScriptFileId), SourceComponentKind.Vrm10SpringBoneCollider },
+                { ("177ea458e237fee41b0902e3006c744b", LooseScriptFileId), SourceComponentKind.Vrm10SpringBoneColliderGroup },
 
                 // Modular Avatar, read off clothing prefabs in the reference library and
                 // identified by their serialized fields rather than by a published list.

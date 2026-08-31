@@ -4,14 +4,14 @@ Orientation for AI agents and for anyone picking this repo up cold.
 
 ## What this is
 
-Editor tooling for bringing content from other social VR platforms into Basis. It installs into
-a Basis project as a UPM package.
+Editor tooling for bringing avatars and the content worn on them into Basis, from the platforms
+and the formats they were built for. It installs into a Basis project as a UPM package.
 
-Working today: VRChat PhysBones and colliders, legacy Dynamic Bone, all six VRChat constraint
-types, the avatar descriptor, menu toggles, selectors and radial puppets rebuilt as HVR Vixxy
-controls, animation that plays on its own rebuilt as authored motion, and a check of the humanoid
-rig against what Basis's IK needs. A conversion can be narrowed to some of those, or to
-individual items, from the window.
+Working today: VRChat PhysBones and colliders, VRM spring bones in both formats, legacy Dynamic
+Bone, all six VRChat constraint types, the avatar descriptor, menu toggles, selectors and radial
+puppets rebuilt as HVR Vixxy controls, animation that plays on its own rebuilt as authored
+motion, and a check of the humanoid rig against what Basis's IK needs. A conversion can be
+narrowed to some of those, or to individual items, from the window.
 
 ## Picking this up cold
 
@@ -39,9 +39,10 @@ next. Then `agent/decisions/`. The short version of how this works:
   test passed.
 
 The scope is wider than what is built. Avatars first, then props and worlds; VRChat first, then
-whatever else is worth reading. Reading, mapping and writing are separate stages so that a new
-source platform is a new reader and nothing else has to move. Do not narrow the vocabulary in
-code or docs to "VRChat avatars" as though that were the whole of it.
+whatever else is worth reading, which now includes VRM. Reading, mapping and writing are separate
+stages so that a new source is a new reader and nothing else has to move. Do not narrow the
+vocabulary in code or docs to "VRChat avatars", or to social VR platforms: a VRM file is a
+format, not a platform, and both are in scope.
 
 ## Read this first
 

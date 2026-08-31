@@ -15,6 +15,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public bool HasVrchatDescriptor;
         public bool HasVrchatComponents;
         public bool HasDynamicBone;
+        public bool HasVrmSpringBones;
         public bool HasHumanoidRig;
 
         /// <summary>A short name for what this appears to be.</summary>
@@ -27,6 +28,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     return "VRChat avatar";
                 }
 
+                if (HasVrmSpringBones && HasHumanoidRig)
+                {
+                    return "VRM avatar";
+                }
+
                 if (HasHumanoidRig)
                 {
                     return HasVrchatComponents
@@ -36,7 +42,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                             : "Humanoid avatar";
                 }
 
-                if (HasVrchatComponents || HasDynamicBone)
+                if (HasVrchatComponents || HasDynamicBone || HasVrmSpringBones)
                 {
                     // Not "prop": in Basis that names BasisProp, a spawnable content type this
                     // does not produce.
@@ -66,6 +72,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
             {
                 yield return "Dynamic Bone";
             }
+
+            if (HasVrmSpringBones)
+            {
+                yield return "VRM spring bones";
+            }
         }
 
         public string Describe()
@@ -79,6 +90,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// look before converting.
         /// </summary>
         public bool LooksInconsistent =>
-            HasHumanoidRig && !HasVrchatComponents && !HasDynamicBone && !HasVrchatDescriptor;
+            HasHumanoidRig && !HasVrchatComponents && !HasDynamicBone && !HasVrchatDescriptor
+            && !HasVrmSpringBones;
     }
 }

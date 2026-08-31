@@ -33,6 +33,9 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `motion.baked` | An animator layer that plays on its own was rebuilt as authored motion. |
 | `motion.switched` | A menu toggle animated over time, so it was rebuilt as a motion the control switches on. |
 | `motion.rotationOnly` | That layer also animates something other than rotation, which a baked motion clip cannot hold. |
+| `vrm.stiffness` | A VRM chain's stiffness force was fitted onto jiggle stiffness, which is a narrower scale. |
+| `vrm.branchesExcluded` | Bones hanging off a VRM chain that the spring never named were excluded, so they stay as still as VRM left them. |
+| `vrm.collider.inside` | A VRM collider held bones inside its shape. Basis only pushes out, so it now pushes the opposite way. |
 | `contacts.dropped` | VRChat contacts were found. Basis has no contact system. |
 | `modularAvatar.menus` | Modular Avatar menu and animator components were found. See [Modular Avatar](what-converts/modular-avatar.md). |
 | `source.unknownScript` | A component whose script this version does not recognise. Please report it. |

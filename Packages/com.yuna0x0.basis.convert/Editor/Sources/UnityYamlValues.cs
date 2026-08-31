@@ -10,6 +10,9 @@ namespace yuna0x0.Basis.Convert.Sources
     /// </summary>
     public static class UnityYamlValues
     {
+        private static readonly Regex FileIdPattern = new Regex(
+            @"fileID:\s*(?<fileId>-?\d+)", RegexOptions.Compiled);
+
         private static readonly Regex ComponentPattern = new Regex(
             @"(?<axis>[xyzw])\s*:\s*(?<value>-?[\d.eE+]+)",
             RegexOptions.Compiled);
@@ -24,6 +27,25 @@ namespace yuna0x0.Basis.Convert.Sources
             return !string.IsNullOrEmpty(raw)
                 && float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture,
                     out value);
+        }
+
+        /// <summary>
+        /// The fileID out of a `{fileID: 123}` reference anywhere in a line. Zero, which Unity
+        /// writes for an unset reference, is read as absent.
+        /// </summary>
+        public static bool TryParseFileId(string raw, out long fileId)
+        {
+            fileId = 0L;
+            if (string.IsNullOrEmpty(raw))
+            {
+                return false;
+            }
+
+            Match match = FileIdPattern.Match(raw);
+            return match.Success
+                && long.TryParse(match.Groups["fileId"].Value, NumberStyles.Integer,
+                    CultureInfo.InvariantCulture, out fileId)
+                && fileId != 0L;
         }
 
         public static bool TryParseInt(string raw, out int value)

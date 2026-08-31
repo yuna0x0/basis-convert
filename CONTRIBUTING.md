@@ -42,7 +42,8 @@ prefab carrying a descriptor, a PhysBone and a constraint as the missing scripts
 plus an expression menu, parameters, an animator and its clips. Between them the menu and the
 animator cover a plain toggle, a selector sharing one parameter, a radial puppet, a toggle
 guarded by one of VRChat's own parameters, a toggle whose clip animates over time, and a layer
-with nothing steering it. `SampleClothing` is the Modular Avatar half. Prefer extending these
+with nothing steering it. `SampleClothing` is the Modular Avatar half, and `SampleVrmAvatar` holds one avatar per VRM
+format. Prefer extending these
 over reaching for a real avatar, so the suite means something on a machine that has no purchased
 assets. The animator half is generated through
 `Tools/Watari/Development/Regenerate Test Fixtures`, because hand-writing a state machine

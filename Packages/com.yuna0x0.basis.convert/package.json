@@ -2,7 +2,7 @@
   "name": "com.yuna0x0.basis.convert",
   "displayName": "Watari (Converter for Basis)",
   "version": "0.1.2",
-  "description": "Convert avatars and the clothing worn on them from other social VR platforms for use with Basis: physics, constraints, the avatar descriptor, menu toggles and authored motion.",
+  "description": "Convert avatars and the clothing worn on them for use with Basis, from VRChat, VRM and the physics plugins in between: physics, constraints, the avatar descriptor, menu toggles and authored motion.",
   "unity": "6000.5",
   "author": {
     "name": "yuna0x0",
@@ -23,7 +23,9 @@
     "migration",
     "converter",
     "editor-tool",
-    "vrchat"
+    "vrchat",
+    "vrm",
+    "vroid"
   ],
   "hideInEditor": false,
   "vpmDependencies": {

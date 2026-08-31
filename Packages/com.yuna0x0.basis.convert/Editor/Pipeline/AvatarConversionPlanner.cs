@@ -148,6 +148,10 @@ namespace yuna0x0.Basis.Convert.Pipeline
             plan.ModularAvatarToggles.AddRange(
                 ModularAvatarToggleResolver.Resolve(documents, resolver, source));
 
+            // VRM chains are read in a pass of their own: a spring names joint components that
+            // sit anywhere in the file, so they cannot be resolved as the documents go past.
+            PlanVrmChains(documents, resolver, plan, source);
+
             foreach (UnityYamlDocument document in documents)
             {
                 if (document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
@@ -394,6 +398,238 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// One Dynamic Bone can drive several chains, so it produces one rig per root rather
         /// than one per component.
         /// </summary>
+        /// <summary>
+        /// Plans the jiggle rigs a VRM avatar's spring bones describe.
+        /// <para>
+        /// Both formats end up here. VRM 0.x names its chains on one component; VRM 1.0 puts a
+        /// joint on each bone and lists which joints make up which chain on the avatar's own
+        /// component, so the joints are gathered first and the chains resolved against them.
+        /// </para>
+        /// </summary>
+        private static void PlanVrmChains(
+            List<UnityYamlDocument> documents, PrefabObjectResolver resolver,
+            AvatarConversionPlan plan, ConversionSource source)
+        {
+            Dictionary<long, VrmSpringJointData> joints = new Dictionary<long, VrmSpringJointData>();
+            Dictionary<long, VrmColliderData> colliders = new Dictionary<long, VrmColliderData>();
+            Dictionary<long, VrmColliderGroupData> groups =
+                new Dictionary<long, VrmColliderGroupData>();
+            List<VrmSpringChainData> chains = new List<VrmSpringChainData>();
+
+            foreach (UnityYamlDocument document in documents)
+            {
+                if (document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
+                    || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))
+                {
+                    continue;
+                }
+
+                switch (KnownScriptIdentities.Resolve(guid, scriptFileId))
+                {
+                    case SourceComponentKind.Vrm10SpringBoneJoint:
+                        joints[document.FileId] = VrmDocumentReader.ReadJoint(document);
+                        break;
+                    case SourceComponentKind.Vrm10SpringBoneCollider:
+                        colliders[document.FileId] = VrmDocumentReader.ReadCollider(document);
+                        break;
+                    case SourceComponentKind.Vrm10SpringBoneColliderGroup:
+                        groups[document.FileId] =
+                            VrmDocumentReader.ReadColliderGroup(document, true);
+                        break;
+                    case SourceComponentKind.VrmSpringBoneColliderGroup:
+                        groups[document.FileId] =
+                            VrmDocumentReader.ReadColliderGroup(document, false);
+                        break;
+                    case SourceComponentKind.VrmSpringBone:
+                        chains.AddRange(VrmDocumentReader.ReadSpringBone0X(document));
+                        break;
+                    case SourceComponentKind.Vrm10Instance:
+                        chains.AddRange(VrmDocumentReader.ReadInstanceSprings(document));
+                        break;
+                }
+            }
+
+            if (chains.Count == 0)
+            {
+                return;
+            }
+
+            Dictionary<long, PlannedJiggleCollider> mapped =
+                new Dictionary<long, PlannedJiggleCollider>();
+
+            foreach (VrmSpringChainData chain in chains)
+            {
+                ResolveVrmJoints(chain, joints);
+                plan.VrmChainsFound++;
+
+                if (chain.Joints.Count == 0
+                    || !resolver.TryResolveTransform(chain.RootTransformFileId,
+                        out Transform rootBone))
+                {
+                    plan.Unresolved++;
+                    plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vrm.unresolved",
+                        $"A VRM spring chain{Named(chain)} could not be tied to a bone and was "
+                        + "skipped.");
+                    continue;
+                }
+
+                JiggleRigPlan rigPlan = VrmSpringBoneToJiggleMapper.Map(chain);
+                rigPlan.Preset = JigglePresetLibrary.GuessFrom(
+                    string.IsNullOrEmpty(chain.Name) ? rootBone.name : chain.Name);
+
+                PlannedJiggleRig planned = new PlannedJiggleRig
+                {
+                    Plan = rigPlan,
+                    SourceHost = rootBone,
+                    SourceRootBone = rootBone,
+                    Source = source,
+                };
+
+                ExcludeBonesOutsideTheChain(chain, joints, resolver, rootBone, rigPlan, planned);
+                AttachVrmColliders(chain, groups, colliders, mapped, resolver, plan, planned,
+                    source);
+
+                plan.Rigs.Add(planned);
+            }
+        }
+
+        private static string Named(VrmSpringChainData chain) =>
+            string.IsNullOrEmpty(chain.Name) ? string.Empty : $" named '{chain.Name}'";
+
+        /// <summary>
+        /// Turns a VRM 1.0 spring's joint references into the joints themselves, and takes the
+        /// first as the bone the chain hangs from.
+        /// </summary>
+        private static void ResolveVrmJoints(
+            VrmSpringChainData chain, IReadOnlyDictionary<long, VrmSpringJointData> joints)
+        {
+            if (!chain.IsVrm10)
+            {
+                return;
+            }
+
+            foreach (long jointFileId in chain.JointComponentFileIds)
+            {
+                if (joints.TryGetValue(jointFileId, out VrmSpringJointData joint))
+                {
+                    chain.Joints.Add(joint);
+                }
+            }
+
+            if (chain.Joints.Count > 0)
+            {
+                chain.RootTransformFileId = chain.Joints[0].OwnerGameObjectFileId;
+            }
+        }
+
+        /// <summary>
+        /// A VRM 1.0 spring names the bones it moves. Jiggle simulates everything under the
+        /// root, so a bone hanging off the chain that the spring never named would start moving
+        /// where VRM left it still. Those are excluded rather than left to swing.
+        /// </summary>
+        private static void ExcludeBonesOutsideTheChain(
+            VrmSpringChainData chain, IReadOnlyDictionary<long, VrmSpringJointData> joints,
+            PrefabObjectResolver resolver, Transform rootBone, JiggleRigPlan rigPlan,
+            PlannedJiggleRig planned)
+        {
+            if (!chain.IsVrm10)
+            {
+                return;
+            }
+
+            HashSet<Transform> inChain = new HashSet<Transform>();
+            foreach (VrmSpringJointData joint in chain.Joints)
+            {
+                if (resolver.TryResolveTransform(joint.OwnerGameObjectFileId, out Transform bone))
+                {
+                    inChain.Add(bone);
+                }
+            }
+
+            int excluded = 0;
+            foreach (Transform candidate in rootBone.GetComponentsInChildren<Transform>(true))
+            {
+                if (candidate == rootBone || inChain.Contains(candidate)
+                    || candidate.parent == null || !inChain.Contains(candidate.parent))
+                {
+                    continue;
+                }
+
+                planned.SourceExcludedTransforms.Add(candidate);
+                excluded++;
+            }
+
+            if (excluded > 0)
+            {
+                rigPlan.Diagnostics.Add(DiagnosticSeverity.Mapped, "vrm.branchesExcluded",
+                    $"{excluded} bones hang off this chain that the spring did not name. A "
+                    + "jiggle rig simulates everything under its root, so they were excluded to "
+                    + "leave them as still as VRM did.");
+            }
+        }
+
+        /// <summary>
+        /// Attaches the colliders a chain's groups name. VRM 1.0 groups reference collider
+        /// components; 0.x groups hold their spheres inline, so both are turned into the same
+        /// shared collider list the rest of the converter uses.
+        /// </summary>
+        private static void AttachVrmColliders(
+            VrmSpringChainData chain, IReadOnlyDictionary<long, VrmColliderGroupData> groups,
+            IReadOnlyDictionary<long, VrmColliderData> colliders,
+            Dictionary<long, PlannedJiggleCollider> mapped, PrefabObjectResolver resolver,
+            AvatarConversionPlan plan, PlannedJiggleRig planned, ConversionSource source)
+        {
+            foreach (long groupFileId in chain.ColliderGroupFileIds)
+            {
+                if (!groups.TryGetValue(groupFileId, out VrmColliderGroupData group))
+                {
+                    planned.Plan.Diagnostics.Add(DiagnosticSeverity.Warning,
+                        "physics.collider.unresolved",
+                        "A referenced collider group was not found in the file and was dropped.");
+                    continue;
+                }
+
+                foreach (long colliderFileId in group.ColliderFileIds)
+                {
+                    if (colliders.TryGetValue(colliderFileId, out VrmColliderData collider))
+                    {
+                        Attach(colliderFileId, collider);
+                    }
+                }
+
+                // A 0.x group holds its spheres rather than referencing them, so they are keyed
+                // by where they sit in the group.
+                for (int i = 0; i < group.InlineColliders.Count; i++)
+                {
+                    Attach(unchecked((groupFileId * 397) + i + 1), group.InlineColliders[i]);
+                }
+            }
+
+            void Attach(long key, VrmColliderData collider)
+            {
+                if (!mapped.TryGetValue(key, out PlannedJiggleCollider entry))
+                {
+                    entry = new PlannedJiggleCollider
+                    {
+                        Plan = VrmColliderToJiggleMapper.Map(collider),
+                        Source = source,
+                    };
+
+                    if (resolver.TryResolveTransform(collider.OwnerGameObjectFileId,
+                            out Transform on))
+                    {
+                        entry.SourceTransform = on;
+                    }
+
+                    mapped[key] = entry;
+                    plan.Colliders.Add(entry);
+                    plan.CollidersFound++;
+                }
+
+                planned.Colliders.Add(entry);
+            }
+        }
+
         private static void PlanDynamicBone(
             UnityYamlDocument document, PrefabObjectResolver resolver,
             IReadOnlyDictionary<long, PlannedJiggleCollider> colliders,
@@ -496,6 +732,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 HasVrchatComponents = plan.PhysBonesFound > 0 || plan.ConstraintsFound > 0
                     || plan.ContactsFound > 0,
                 HasDynamicBone = plan.DynamicBonesFound > 0,
+                HasVrmSpringBones = plan.VrmChainsFound > 0,
                 HasHumanoidRig = animator != null && animator.avatar != null
                     && animator.avatar.isHuman,
             };
