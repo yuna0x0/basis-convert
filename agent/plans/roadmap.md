@@ -51,14 +51,24 @@ the original. Everything else maps directly.
   `BasisAvatar`. The viseme ordering is identical between the two, so it is positional. The
   animator, human scale, renderer list and mouth position are deliberately left for Basis's own
   automatic setup, which fills empty values when its inspector is first opened.
-- **VRM spring bones. Done.** Both formats: 0.x, where one component carries a group of chains
-  and one set of parameters, and 1.0, where each bone carries a joint and the avatar's own
-  component lists which joints make up which chain. Per-joint parameters become jiggle's curves
-  over distance from the root, which is the same axis. A spring names the bones it moves while a
-  jiggle rig simulates the whole subtree, so bones the spring never named are excluded. Colliders
-  come across, including 1.0's capsules and planes; its two inside variants have no equivalent
-  and are reported. Nothing a VRM carries besides physics is read yet: expressions, look-at,
-  first-person and the metadata. See `../research/vrm-spring-bones.md`.
+- **VRM. Done, and checked against real avatars.** Spring bones in both formats become jiggle
+  rigs, with per-joint parameters becoming jiggle's curves over distance from the root and bones
+  a spring never named excluded. Expressions become Vixxy controls, the emotions and custom ones
+  only, since Basis drives visemes, blinking and gaze itself. The eye offset becomes the Basis
+  eye position. The licence is read and shown before converting. VRM 1.0's rotation, aim and roll
+  constraints become Basis constraints, none of them exactly. See
+  `../research/vrm-spring-bones.md`, which records what two real avatars showed.
+
+  Still unread: what a VRM says about where it looks, its first-person renderer flags, which are
+  reported instead, and its metadata beyond the licence.
+
+  **Verifying the 0.x reader against real components is backlogged, not planned.** A current
+  UniVRM migrates a 0.x file to 1.0 components on import, so the 0.x path only covers prefabs
+  authored in an older project and exported into a Basis one. Checking it would need an old
+  UniVRM installed, which is unlikely to compile on the Unity version Basis targets given 0.131.0
+  already does not. The reader is built from field names read out of UniVRM's own source and is
+  covered by a fixture. A bug report from someone with such a prefab would be better evidence
+  than anything synthetic, so wait for one.
 - **Legacy physics. Dynamic Bone done.** Its fields map onto jiggle more directly than
   PhysBones do: damping is drag and inert is ignoreRootMotion, both on the same 0 to 1 scale,
   and the distribution curves are jiggle's curves. One component can drive several roots, which
