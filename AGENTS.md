@@ -86,6 +86,23 @@ tens of gigabytes and slow to rebuild.
 - **Menus belong to us, not to Basis.** `Tools/<ProductName>/...`, never under Basis's own menu.
   See `agent/decisions/0002`.
 
+## Write short
+
+Nobody reads a wall of text. This applies hardest to the changelog and release notes, and to
+commit messages, docs, diagnostics and code comments after that.
+
+- **One line per changelog entry.** Say what changed. A second line only if the entry names a
+  diagnostic code or a caveat a user would hit. Never a paragraph.
+- **Cut the reasoning.** Why a thing was done belongs in `agent/decisions/` or the worklog,
+  not in the changelog. A user reading release notes wants the list.
+- **No throat-clearing.** Drop "which is what", "it follows that", "rather than", "the same
+  point X calls Y", restated context, and sentences that only lead into the next one.
+- **Name things directly.** "Converting twice stacked a second control" beats "the rule that
+  protects hand-made components elsewhere said nothing there".
+
+Docs pages may be longer than a changelog entry, but the same rule holds inside a paragraph:
+state it once and move on.
+
 ## Trademark
 
 Basis, BasisVR and Basis Framework are trademarks of the Basis Project. Their policy permits
