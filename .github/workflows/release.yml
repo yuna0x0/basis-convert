@@ -128,19 +128,37 @@ jobs:
 
       # Immutable releases are enabled on this repository, so a published release's assets and
       # its tag are locked: nothing can be attached, changed or deleted afterwards, and the tag
-      # cannot be reused. Every asset therefore has to be uploaded before the release is
-      # published, which is what this action does for an ordinary release.
+      # cannot be reused even if the repository is. Everything therefore has to be attached
+      # before the release is published, and a release that fails halfway cannot be retried
+      # under the same version.
       #
-      # A prerelease is the exception: this action leaves those published while it uploads, which
-      # immutability rejects. If one is ever needed, set draft: true here and publish the draft
-      # in a step after the uploads.
-      - name: Publish the release
+      # Staging a draft and publishing it separately is the shape GitHub documents for this.
+      # Doing it explicitly, rather than relying on the action to upload before it publishes,
+      # keeps the guarantee ours: the action is pinned to a floating major tag and orders those
+      # two steps internally, so that ordering could change without anything here changing.
+      # It also means a prerelease, which the action would otherwise leave published while it
+      # uploads, needs no special case.
+      - name: Stage the release as a draft
+        id: draft
         uses: softprops/action-gh-release@v3
         with:
-          draft: false
+          draft: true
           body_path: release-notes.md
           files: |
             ${{ env.PACKAGE_PATH }}/package.json
             ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip
             ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.unitypackage
             dist/*.tgz
+
+      # Everything is attached by now, so publishing is the step that makes it immutable.
+      - name: Publish the draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ID: ${{ steps.draft.outputs.id }}
+        run: |
+          if [ -z "$RELEASE_ID" ]; then
+            echo "The draft step reported no release id." >&2
+            exit 1
+          fi
+          gh api -X PATCH "repos/${{ github.repository }}/releases/$RELEASE_ID" \
+            -F draft=false -F make_latest=true --jq '.html_url'

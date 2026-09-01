@@ -87,8 +87,9 @@ expected. If the source avatar is not yours to share, the settings alone are usu
 ## Releasing
 
 Releases are immutable: once published, a release's assets and its tag are locked, and the tag
-cannot be reused. Everything a release ships has to be attached before it is published, which
-the release workflow does. A prerelease would need `draft: true` and a separate publish step.
+cannot be reused. Everything a release ships has to be attached before it is published, so the
+workflow stages a draft, attaches every asset to it, and publishes that draft as a separate
+step. Keep that shape for prereleases too; nothing about it is specific to a full release.
 
 ## Documentation
 
