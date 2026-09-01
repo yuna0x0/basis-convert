@@ -15,8 +15,6 @@ It is not needed. VRChat components arrive as missing scripts, which is what Wat
 It changes layers and the physics collision matrix, which are project-wide. Basis uses layer 3
 and layers 6 to 11 for its player, avatar and interaction handling, so this breaks Basis itself.
 
-Author in the VRChat project, convert in the Basis project.
-
 :::
 
 Four ways to install it.
