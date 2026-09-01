@@ -126,6 +126,14 @@ jobs:
           fi
           cat release-notes.md
 
+      # Immutable releases are enabled on this repository, so a published release's assets and
+      # its tag are locked: nothing can be attached, changed or deleted afterwards, and the tag
+      # cannot be reused. Every asset therefore has to be uploaded before the release is
+      # published, which is what this action does for an ordinary release.
+      #
+      # A prerelease is the exception: this action leaves those published while it uploads, which
+      # immutability rejects. If one is ever needed, set draft: true here and publish the draft
+      # in a step after the uploads.
       - name: Publish the release
         uses: softprops/action-gh-release@v3
         with:

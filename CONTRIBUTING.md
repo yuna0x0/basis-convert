@@ -84,6 +84,12 @@ does. Describe what changed and why; skip tool or process detail.
 Include the source component's settings, what the converted result looked like, and what you
 expected. If the source avatar is not yours to share, the settings alone are usually enough.
 
+## Releasing
+
+Releases are immutable: once published, a release's assets and its tag are locked, and the tag
+cannot be reused. Everything a release ships has to be attached before it is published, which
+the release workflow does. A prerelease would need `draft: true` and a separate publish step.
+
 ## Documentation
 
 The documentation site is a Docusaurus project in `docs/`, run with pnpm:
