@@ -126,18 +126,8 @@ jobs:
           fi
           cat release-notes.md
 
-      # Immutable releases are enabled on this repository, so a published release's assets and
-      # its tag are locked: nothing can be attached, changed or deleted afterwards, and the tag
-      # cannot be reused even if the repository is. Everything therefore has to be attached
-      # before the release is published, and a release that fails halfway cannot be retried
-      # under the same version.
-      #
-      # Staging a draft and publishing it separately is the shape GitHub documents for this.
-      # Doing it explicitly, rather than relying on the action to upload before it publishes,
-      # keeps the guarantee ours: the action is pinned to a floating major tag and orders those
-      # two steps internally, so that ordering could change without anything here changing.
-      # It also means a prerelease, which the action would otherwise leave published while it
-      # uploads, needs no special case.
+      # Releases are immutable: publishing locks the assets and the tag for good. So everything
+      # is attached to a draft first, and publishing is a step of its own. Prereleases included.
       - name: Stage the release as a draft
         id: draft
         uses: softprops/action-gh-release@v3
@@ -150,7 +140,6 @@ jobs:
             ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.unitypackage
             dist/*.tgz
 
-      # Everything is attached by now, so publishing is the step that makes it immutable.
       - name: Publish the draft
         env:
           GH_TOKEN: ${{ github.token }}

@@ -13,6 +13,10 @@ namespace yuna0x0.Basis.Convert.Sources
     {
         public int ClassId;
         public long FileId;
+        /// <summary>
+        /// A back reference to a component defined in a prefab this one is built from. It
+        /// carries the identity and none of the data, so it is resolved but never read.
+        /// </summary>
         public bool Stripped;
 
         /// <summary>Body lines, excluding the header and the type line that follows it.</summary>

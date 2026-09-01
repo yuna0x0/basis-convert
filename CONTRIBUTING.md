@@ -86,10 +86,8 @@ expected. If the source avatar is not yours to share, the settings alone are usu
 
 ## Releasing
 
-Releases are immutable: once published, a release's assets and its tag are locked, and the tag
-cannot be reused. Everything a release ships has to be attached before it is published, so the
-workflow stages a draft, attaches every asset to it, and publishes that draft as a separate
-step. Keep that shape for prereleases too; nothing about it is specific to a full release.
+Releases are immutable: publishing locks the assets and the tag for good. The workflow attaches
+everything to a draft and publishes it as a separate step. Keep that shape for prereleases too.
 
 ## Documentation
 

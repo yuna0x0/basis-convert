@@ -5,15 +5,10 @@ using yuna0x0.Basis.Convert.Sources;
 namespace yuna0x0.Basis.Convert.Tests
 {
     /// <summary>
-    /// A prefab built on another writes a "stripped" entry for each component of the base it
-    /// needs to refer to. The entry carries the script identity and nothing else: no radius, no
-    /// shape, no owning GameObject. The real component is in the base's file.
-    /// <para>
-    /// Reading one as though it were a component gave a collider with no data, which reported as
-    /// an unresolved collider, and once the base was read as well it counted the same collider
-    /// twice. A real avatar showed both: 16 colliders reported where the avatar has 11, with
-    /// five of them called unresolved.
-    /// </para>
+    /// A prefab built on another writes a "stripped" entry per component of the base it refers
+    /// to, carrying the identity and no data. Reading one as a component gave a collider with
+    /// nothing in it, and double counted it once the base was read: 16 colliders on an avatar
+    /// that has 11, five of them called unresolved.
     /// </summary>
     public class StrippedDocumentTests
     {

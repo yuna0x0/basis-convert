@@ -8,16 +8,13 @@ using yuna0x0.Basis.Convert.Pipeline;
 namespace yuna0x0.Basis.Convert.Tests
 {
     /// <summary>
-    /// A prefab variant stores only what it overrides. Everything it inherits, physics included,
-    /// stays in the base prefab's file, so a conversion that reads the variant's file alone sees
-    /// none of it. An avatar sold as a variant would convert with no physics at all.
+    /// A variant stores only what it overrides, so reading its file alone finds none of the
+    /// physics it inherits.
     /// <para>
-    /// The fixtures are built here rather than committed. A variant of `SampleAvatar` cannot be
-    /// saved, because Unity refuses to write a prefab holding a missing script and that fixture
-    /// is built out of them on purpose; and a variant file written by hand does not load. So the
-    /// base and its variant are made with the prefab API while the base is still plain, and the
-    /// PhysBone is appended to the base's file afterwards. The variant's own file never mentions
-    /// it, which is the situation under test.
+    /// The fixtures are built here because neither shortcut works: Unity will not save a prefab
+    /// holding a missing script, which `SampleAvatar` is made of, and a hand-written variant
+    /// file does not load. So both prefabs are made with the API while the base is still plain,
+    /// and the PhysBone is appended to the base afterwards.
     /// </para>
     /// </summary>
     public class PrefabVariantTests

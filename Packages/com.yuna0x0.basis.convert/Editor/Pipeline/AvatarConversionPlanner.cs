@@ -96,12 +96,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             return plan;
         }
 
-        /// <summary>
-        /// A prefab variant's own file holds only what it overrides. Everything it inherits,
-        /// including physics and constraints, stays in the base prefab's file, which this reads
-        /// nothing from, so a variant converts as though the inherited components were not
-        /// there. Reported rather than passed over in silence.
-        /// </summary>
+        /// <summary>Names the prefabs a variant inherits from, since they were read too.</summary>
         private static void ReportVariantSources(
             AvatarConversionPlan plan, List<ConversionSource> sources)
         {
@@ -151,12 +146,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
         }
 
         /// <summary>
-        /// Reads one prefab into a plan, tagging what it finds with where it came from.
-        /// <para>
-        /// A prefab variant's own file holds only its overrides, so everything it inherits is
-        /// read from the files above it as well. Those are resolved onto this prefab's own
-        /// objects, which is what lets the rest of the pipeline treat them no differently.
-        /// </para>
+        /// Reads one prefab into a plan, tagging what it finds with where it came from. A
+        /// variant's file holds only its overrides, so the prefabs above it are read too,
+        /// resolved onto this one's objects so the rest of the pipeline sees no difference.
         /// </summary>
         private static void ReadSource(AvatarConversionPlan plan, ConversionSource source,
             JiggleMappingProfile profile, HashSet<string> unknownIdentities)
@@ -219,9 +211,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (UnityYamlDocument document in documents)
             {
-                // A stripped document is a back reference to a component defined in a prefab
-                // this one is built from, holding none of its data. The definition is read from
-                // that file instead, so reading the stub as well would count it twice.
+                // Stripped: defined in a prefab above this one, and read from that file.
                 if (document.Stripped
                     || document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
                     || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))
@@ -433,9 +423,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (UnityYamlDocument document in documents)
             {
-                // A stripped document is a back reference to a component defined in a prefab
-                // this one is built from, holding none of its data. The definition is read from
-                // that file instead, so reading the stub as well would count it twice.
+                // Stripped: defined in a prefab above this one, and read from that file.
                 if (document.Stripped
                     || document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
                     || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))
@@ -522,9 +510,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (UnityYamlDocument document in documents)
             {
-                // A stripped document is a back reference to a component defined in a prefab
-                // this one is built from, holding none of its data. The definition is read from
-                // that file instead, so reading the stub as well would count it twice.
+                // Stripped: defined in a prefab above this one, and read from that file.
                 if (document.Stripped
                     || document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
                     || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))
@@ -614,9 +600,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (UnityYamlDocument document in documents)
             {
-                // A stripped document is a back reference to a component defined in a prefab
-                // this one is built from, holding none of its data. The definition is read from
-                // that file instead, so reading the stub as well would count it twice.
+                // Stripped: defined in a prefab above this one, and read from that file.
                 if (document.Stripped
                     || document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
                     || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))
@@ -774,9 +758,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (UnityYamlDocument document in documents)
             {
-                // A stripped document is a back reference to a component defined in a prefab
-                // this one is built from, holding none of its data. The definition is read from
-                // that file instead, so reading the stub as well would count it twice.
+                // Stripped: defined in a prefab above this one, and read from that file.
                 if (document.Stripped
                     || document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
                     || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))

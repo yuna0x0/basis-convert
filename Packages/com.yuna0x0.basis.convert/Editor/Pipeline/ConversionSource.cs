@@ -13,8 +13,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
     /// its results placed at the path where that prefab sits.
     /// </para>
     /// <para>
-    /// A source may also be a variant, whose own file holds only its overrides. The prefabs it
-    /// inherits from are read as well; see <see cref="InheritedAssetPaths"/>.
+    /// A variant's file holds only its overrides, so the prefabs it inherits from are read as
+    /// well; see <see cref="InheritedAssetPaths"/>.
     /// </para>
     /// </summary>
     public sealed class ConversionSource
@@ -50,14 +50,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
         }
 
         /// <summary>
-        /// The prefab this one is a variant of, or null when it is not a variant of one. A
-        /// variant's own file holds only what it overrides; everything inherited lives in the
-        /// base file and is not read from here.
-        /// <para>
-        /// A prefab made from an FBX is a variant of that model, which is the ordinary way an
-        /// avatar prefab is built and carries nothing to miss: a model holds the imported
-        /// hierarchy and no authored components. Only a variant of another prefab is returned.
-        /// </para>
+        /// The prefab this one is a variant of, or null if it is not a variant of one. A prefab
+        /// made from an FBX is a variant of that model, which is not one: a model holds the
+        /// imported hierarchy and no authored components, so there is nothing there to read.
         /// </summary>
         public string BaseAssetPath()
         {
@@ -78,9 +73,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
         }
 
         /// <summary>
-        /// Every prefab this one inherits from, nearest first. A variant of a variant carries
-        /// components in each file above it, and each has to be read for the conversion to see
-        /// them. Empty for a prefab that is not a variant of another prefab.
+        /// Every prefab this one inherits from, nearest first, since a variant of a variant
+        /// carries components in each file above it. Empty when it is not a variant.
         /// </summary>
         public List<string> InheritedAssetPaths()
         {

@@ -112,12 +112,8 @@ namespace yuna0x0.Basis.Convert.Sources
 
         /// <summary>
         /// Reads a prefab's documents but resolves them onto the objects of a variant built from
-        /// it. A variant's own file holds only its overrides, so its inherited components have to
-        /// be read from the base's file, while the objects they belong to are the variant's.
-        /// <para>
-        /// This works because the variant's asset loads fully merged, and every object in it
-        /// records the base object it came from, which is exactly what the base's file ids name.
-        /// </para>
+        /// it. The variant's asset loads fully merged, and each object records the base object it
+        /// came from, which is what the base's file ids name.
         /// </summary>
         public static PrefabObjectResolver CreateForInherited(
             string variantAssetPath, string inheritedAssetPath,
@@ -129,9 +125,8 @@ namespace yuna0x0.Basis.Convert.Sources
         }
 
         /// <summary>
-        /// The one live object a file id in the inherited prefab corresponds to, if there is
-        /// exactly one. A variant instantiates its base once, so more than one match means the
-        /// identity is not the one being looked for and is left alone.
+        /// The live object a file id in the inherited prefab corresponds to. A variant
+        /// instantiates its base once, so anything but a single match is left alone.
         /// </summary>
         private bool TryResolveInherited(long fileId, out Object resolved)
         {
@@ -160,9 +155,7 @@ namespace yuna0x0.Basis.Convert.Sources
                 return false;
             }
 
-            // In inherited mode the ids are the base file's, so they are matched by
-            // correspondence first; a local id that happened to collide would be a different
-            // object entirely.
+            // In inherited mode the ids are the base file's, so a local id could collide.
             if (TryResolveInherited(fileId, out resolved))
             {
                 return true;
@@ -290,10 +283,8 @@ namespace yuna0x0.Basis.Convert.Sources
                 instanceFileId = handleFileId;
             }
 
-            // GetCorrespondingObjectFromSource steps one prefab up, so a variant of a variant
-            // needs the whole chain walked: an object is indexed under its identity in every
-            // file it descends from, not only its immediate parent. The depth cap is there
-            // because a broken chain must not spin.
+            // Steps one prefab up, so a variant of a variant needs the whole chain walked. The
+            // cap is there because a broken chain must not spin.
             Object source = live;
             for (int depth = 0; depth < 16; depth++)
             {
