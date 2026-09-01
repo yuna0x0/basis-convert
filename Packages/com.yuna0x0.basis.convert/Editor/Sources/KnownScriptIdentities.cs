@@ -91,6 +91,10 @@ namespace yuna0x0.Basis.Convert.Sources
         MaSyncParameterSequence,
         MaRenameVRChatCollisionTags,
         MaVRChatSettings,
+
+        // Third party authoring tools that carry no runtime behaviour of their own. Named so a
+        // report says what they are rather than printing a guid.
+        AvatarModifySupport,
     }
 
     /// <summary>
@@ -202,6 +206,11 @@ namespace yuna0x0.Basis.Convert.Sources
                 { ("934543afe4744213b5621aa13a67e3b4", LooseScriptFileId), SourceComponentKind.MaSyncParameterSequence },
                 { ("04802bf95b218724a9f4b97003067857", LooseScriptFileId), SourceComponentKind.MaRenameVRChatCollisionTags },
                 { ("89c938d7d8a741df99f2eda501b3a6fe", LooseScriptFileId), SourceComponentKind.MaVRChatSettings },
+
+                // Avatar Modify Support. Its behaviour implements VRChat's IEditorOnly and holds
+                // nothing but exported blendshape and colour preset data for its own editor
+                // window, so it has no runtime behaviour to carry over.
+                { ("2efed2fd1a16dec49b4612e16363e973", LooseScriptFileId), SourceComponentKind.AvatarModifySupport },
             };
 
         /// <summary>VRM 1.0's node constraints, which are read for counting but not converted.</summary>
@@ -250,6 +259,16 @@ namespace yuna0x0.Basis.Convert.Sources
         {
             return kind >= SourceComponentKind.MaGlobalCollider
                 && kind <= SourceComponentKind.MaVRChatSettings;
+        }
+
+        /// <summary>
+        /// Third party editor-time tools whose components carry no runtime behaviour. Nothing is
+        /// converted for these, and nothing is lost by not converting them; they are named so a
+        /// report can say which tool a component belongs to.
+        /// </summary>
+        public static bool IsEditorOnlyAuthoringTool(SourceComponentKind kind)
+        {
+            return kind == SourceComponentKind.AvatarModifySupport;
         }
 
         public static SourceComponentKind Resolve(string guid, long fileId)

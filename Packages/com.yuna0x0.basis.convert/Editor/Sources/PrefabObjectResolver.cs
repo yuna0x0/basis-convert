@@ -32,6 +32,13 @@ namespace yuna0x0.Basis.Convert.Sources
 
         public GameObject Root { get; private set; }
 
+        /// <summary>
+        /// Set when the documents being read come from a prefab this one inherits from rather
+        /// than from its own file. Their file ids are identities in that file, so they are
+        /// looked up as the object each live object corresponds to instead of as local ids.
+        /// </summary>
+        private string _inheritedGuid;
+
         private readonly struct SourceIdentity
         {
             private readonly string _guid;
@@ -101,6 +108,48 @@ namespace yuna0x0.Basis.Convert.Sources
             return resolver;
         }
 
+        /// <summary>
+        /// Reads a prefab's documents but resolves them onto the objects of a variant built from
+        /// it. A variant's own file holds only its overrides, so its inherited components have to
+        /// be read from the base's file, while the objects they belong to are the variant's.
+        /// <para>
+        /// This works because the variant's asset loads fully merged, and every object in it
+        /// records the base object it came from, which is exactly what the base's file ids name.
+        /// </para>
+        /// </summary>
+        public static PrefabObjectResolver CreateForInherited(
+            string variantAssetPath, string inheritedAssetPath,
+            IReadOnlyList<UnityYamlDocument> inheritedDocuments)
+        {
+            PrefabObjectResolver resolver = Create(variantAssetPath, inheritedDocuments);
+            resolver._inheritedGuid = AssetDatabase.AssetPathToGUID(inheritedAssetPath);
+            return string.IsNullOrEmpty(resolver._inheritedGuid) ? null : resolver;
+        }
+
+        /// <summary>
+        /// The one live object a file id in the inherited prefab corresponds to, if there is
+        /// exactly one. A variant instantiates its base once, so more than one match means the
+        /// identity is not the one being looked for and is left alone.
+        /// </summary>
+        private bool TryResolveInherited(long fileId, out Object resolved)
+        {
+            resolved = null;
+            if (_inheritedGuid == null)
+            {
+                return false;
+            }
+
+            if (_bySourceIdentity.TryGetValue(
+                    new SourceIdentity(_inheritedGuid, fileId, 0L), out List<Object> matches)
+                && matches.Count == 1)
+            {
+                resolved = matches[0];
+                return true;
+            }
+
+            return false;
+        }
+
         public bool TryResolve(long fileId, out Object resolved)
         {
             resolved = null;
@@ -109,7 +158,15 @@ namespace yuna0x0.Basis.Convert.Sources
                 return false;
             }
 
-            if (_byLocalFileId.TryGetValue(fileId, out resolved))
+            // In inherited mode the ids are the base file's, so they are matched by
+            // correspondence first; a local id that happened to collide would be a different
+            // object entirely.
+            if (TryResolveInherited(fileId, out resolved))
+            {
+                return true;
+            }
+
+            if (_inheritedGuid == null && _byLocalFileId.TryGetValue(fileId, out resolved))
             {
                 return true;
             }
@@ -130,7 +187,13 @@ namespace yuna0x0.Basis.Convert.Sources
                 return false;
             }
 
-            if (!document.Stripped && _byLocalFileId.TryGetValue(document.FileId, out resolved))
+            if (TryResolveInherited(document.FileId, out resolved))
+            {
+                return true;
+            }
+
+            if (_inheritedGuid == null && !document.Stripped
+                && _byLocalFileId.TryGetValue(document.FileId, out resolved))
             {
                 return true;
             }
@@ -221,14 +284,6 @@ namespace yuna0x0.Basis.Convert.Sources
                 _byLocalFileId[localFileId] = live;
             }
 
-            Object source = PrefabUtility.GetCorrespondingObjectFromSource(live);
-            if (source == null
-                || !AssetDatabase.TryGetGUIDAndLocalFileIdentifier(
-                    source, out string sourceGuid, out long sourceFileId))
-            {
-                return;
-            }
-
             long instanceFileId = 0L;
             Object handle = PrefabUtility.GetPrefabInstanceHandle(live);
             if (handle != null
@@ -238,10 +293,26 @@ namespace yuna0x0.Basis.Convert.Sources
                 instanceFileId = handleFileId;
             }
 
-            Add(new SourceIdentity(sourceGuid, sourceFileId, instanceFileId), live);
-            if (instanceFileId != 0L)
+            // GetCorrespondingObjectFromSource steps one prefab up, so a variant of a variant
+            // needs the whole chain walked: an object is indexed under its identity in every
+            // file it descends from, not only its immediate parent. The depth cap is there
+            // because a broken chain must not spin.
+            Object source = live;
+            for (int depth = 0; depth < 16; depth++)
             {
-                Add(new SourceIdentity(sourceGuid, sourceFileId, 0L), live);
+                source = PrefabUtility.GetCorrespondingObjectFromSource(source);
+                if (source == null
+                    || !AssetDatabase.TryGetGUIDAndLocalFileIdentifier(
+                        source, out string sourceGuid, out long sourceFileId))
+                {
+                    return;
+                }
+
+                Add(new SourceIdentity(sourceGuid, sourceFileId, instanceFileId), live);
+                if (instanceFileId != 0L)
+                {
+                    Add(new SourceIdentity(sourceGuid, sourceFileId, 0L), live);
+                }
             }
         }
 

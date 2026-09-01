@@ -8,8 +8,11 @@ Notable changes to this package. The format follows
 
 ### Added
 
-- A prefab variant is reported as `source.prefabVariant`. A variant's own file holds only its
-  overrides, so physics and constraints it inherits from the base prefab are not read.
+- A prefab variant converts the physics, colliders and constraints it inherits. Its own file
+  holds only its overrides, so every prefab above it is read too, reported as
+  `source.prefabVariant`.
+- Avatar Modify Support is named rather than reported as an unrecognised script. It is
+  editor-only and carries nothing to convert, reported as `source.editorOnlyTool`.
 
 ### Fixed
 

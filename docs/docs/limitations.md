@@ -54,11 +54,11 @@ missing scripts and only the file still holds their values. Two things follow fr
 - **A change made to a prefab instance in the scene, rather than to the prefab, is not seen.**
   Collider assignments are commonly made that way, and show up as an unresolved collider
   reference in the report.
-- **A prefab variant is read from its own file only.** A variant stores what it overrides;
-  everything it inherits stays in the base prefab. Physics, colliders and constraints that come
-  from the base are not read, so a variant converts as though they were not there. The report
-  says so as `source.prefabVariant`. Convert the base prefab, or unpack the variant completely
-  first.
+- **A prefab variant is read from every prefab above it as well.** A variant stores only what it
+  overrides, so the base it inherits from is read too, and the components found there are placed
+  on the variant's own objects. The report names the base as `source.prefabVariant`. A prefab
+  built from an FBX is a variant of that model in Unity's terms; a model holds no components, so
+  nothing extra is read for one.
 
 ## Things a conversion does not touch
 

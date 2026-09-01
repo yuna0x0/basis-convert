@@ -250,6 +250,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// </summary>
         public int ModularAvatarVrchatOnlyFound;
 
+        /// <summary>Components of editor-time tools that carry no runtime behaviour.</summary>
+        public int EditorOnlyToolsFound;
+
+        /// <summary>Prefabs read because a source inherits from them, being a variant.</summary>
+        public int InheritedSourcesRead;
+
         public int PhysBonesFound;
 
         /// <summary>VRM spring chains found, from either VRM format.</summary>

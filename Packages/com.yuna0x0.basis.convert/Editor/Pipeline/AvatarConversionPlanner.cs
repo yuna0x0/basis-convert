@@ -113,12 +113,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
-                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "source.prefabVariant",
+                plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "source.prefabVariant",
                     $"{source.Name} is a variant of {System.IO.Path.GetFileNameWithoutExtension(basePath)} "
-                    + $"({basePath}). Only what the variant overrides is stored in its own file, so "
-                    + "any physics, colliders or constraints it inherits were not read and have "
-                    + "not been converted. Convert the base prefab, or unpack the variant "
-                    + "completely first.");
+                    + $"({basePath}). A variant's own file holds only its overrides, so the base "
+                    + "was read as well and what it carries was converted onto this variant's "
+                    + "own objects.");
             }
         }
 
@@ -151,7 +150,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
             return string.Join(", ", listed) + $" and {names.Count - limit} more";
         }
 
-        /// <summary>Reads one prefab into a plan, tagging what it finds with where it came from.</summary>
+        /// <summary>
+        /// Reads one prefab into a plan, tagging what it finds with where it came from.
+        /// <para>
+        /// A prefab variant's own file holds only its overrides, so everything it inherits is
+        /// read from the files above it as well. Those are resolved onto this prefab's own
+        /// objects, which is what lets the rest of the pipeline treat them no differently.
+        /// </para>
+        /// </summary>
         private static void ReadSource(AvatarConversionPlan plan, ConversionSource source,
             JiggleMappingProfile profile, HashSet<string> unknownIdentities)
         {
@@ -166,6 +172,34 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 return;
             }
 
+            ReadDocuments(plan, source, profile, unknownIdentities, documents, resolver);
+
+            foreach (string inherited in source.InheritedAssetPaths())
+            {
+                List<UnityYamlDocument> inheritedDocuments = UnityYamlScanner.ScanFile(inherited);
+                PrefabObjectResolver inheritedResolver =
+                    PrefabObjectResolver.CreateForInherited(
+                        source.AssetPath, inherited, inheritedDocuments);
+
+                if (inheritedResolver == null || inheritedResolver.Root == null)
+                {
+                    plan.Diagnostics.Add(DiagnosticSeverity.Warning, "source.inheritedUnreadable",
+                        $"{source.Name} inherits from {inherited}, which could not be read, so "
+                        + "anything it carries was not converted.");
+                    continue;
+                }
+
+                plan.InheritedSourcesRead++;
+                ReadDocuments(plan, source, profile, unknownIdentities,
+                    inheritedDocuments, inheritedResolver);
+            }
+        }
+
+        /// <summary>One file's worth of documents, resolved against the objects they belong to.</summary>
+        private static void ReadDocuments(AvatarConversionPlan plan, ConversionSource source,
+            JiggleMappingProfile profile, HashSet<string> unknownIdentities,
+            List<UnityYamlDocument> documents, PrefabObjectResolver resolver)
+        {
             Dictionary<long, PlannedJiggleCollider> colliders =
                 MapColliders(documents, resolver, plan);
 
@@ -254,6 +288,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
+                if (KnownScriptIdentities.IsEditorOnlyAuthoringTool(kind))
+                {
+                    plan.EditorOnlyToolsFound++;
+                    continue;
+                }
+
                 if (kind == SourceComponentKind.DynamicBone)
                 {
                     plan.DynamicBonesFound++;
@@ -335,6 +375,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     $"{plan.ModularAvatarVrchatOnlyFound} Modular Avatar components act on "
                     + "VRChat's own systems: its colliders, its head chop, its MMD layers. There "
                     + "is nothing for them to act on under Basis.");
+            }
+
+            if (plan.EditorOnlyToolsFound > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "source.editorOnlyTool",
+                    $"{plan.EditorOnlyToolsFound} components of an editor-time authoring tool "
+                    + "were found. They carry no runtime behaviour, so there was nothing to "
+                    + "convert and nothing was lost. The tool itself does not run under Basis.");
             }
 
             if (plan.ContactsFound > 0)

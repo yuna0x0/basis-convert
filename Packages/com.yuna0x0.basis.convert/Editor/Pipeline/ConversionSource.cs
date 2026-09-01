@@ -72,6 +72,47 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             return AssetDatabase.GetAssetPath(baseAsset);
         }
+
+        /// <summary>
+        /// Every prefab this one inherits from, nearest first. A variant of a variant carries
+        /// components in each file above it, and each has to be read for the conversion to see
+        /// them. Empty for a prefab that is not a variant of another prefab.
+        /// </summary>
+        public List<string> InheritedAssetPaths()
+        {
+            List<string> paths = new List<string>();
+            if (Root == null)
+            {
+                return paths;
+            }
+
+            GameObject at = Root;
+            for (int depth = 0; depth < 16; depth++)
+            {
+                if (PrefabUtility.GetPrefabAssetType(at) != PrefabAssetType.Variant)
+                {
+                    break;
+                }
+
+                GameObject next = PrefabUtility.GetCorrespondingObjectFromSource(at);
+                if (next == null
+                    || PrefabUtility.GetPrefabAssetType(next) == PrefabAssetType.Model)
+                {
+                    break;
+                }
+
+                string path = AssetDatabase.GetAssetPath(next);
+                if (string.IsNullOrEmpty(path) || paths.Contains(path))
+                {
+                    break;
+                }
+
+                paths.Add(path);
+                at = next;
+            }
+
+            return paths;
+        }
     }
 
     /// <summary>

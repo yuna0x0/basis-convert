@@ -134,19 +134,18 @@ the original. Everything else maps directly.
   still reads the whole avatar, so the counts and the detected source kind do not change with
   what is ticked. Diagnostics follow the selection, and what was left out is stated as left out
   in the window and in the report. See [decision 0008](../decisions/0008-conversion-options.md).
-- **Several source prefabs. Done, except variants.** A conversion reads every prefab the
+- **Several source prefabs. Done, variants included.** A conversion reads every prefab the
   hierarchy is built from, not just the avatar's own, because clothing, hair and accessories are
   prefabs of their own carrying their own physics. See
   [decision 0009](../decisions/0009-several-source-prefabs.md).
 
-  **A prefab variant is still only read from its own file**, which holds nothing but its
-  overrides. Everything it inherits stays in the base prefab and is not read, so a variant of an
-  avatar carrying 61 PhysBones converts with none of them, and its inherited colliders report as
-  unresolved. Found by converting a real variant, not by a test. It is reported as
-  `source.prefabVariant` rather than passed over, and the fix is to read the base chain and
-  resolve its file ids onto the variant's objects: `PrefabObjectResolver` already matches live
-  objects by the guid and file id of the object they correspond to, which is the same route a
-  variant's entries need.
+  **A prefab variant is read from every prefab above it as well.** A variant's own file holds
+  nothing but its overrides, so reading it alone found none of what it inherits: a variant of an
+  avatar carrying 61 PhysBones converted with zero. Each file in the chain is now read and
+  resolved onto the variant's own objects, through the correspondence route
+  `PrefabObjectResolver` already used for nested prefabs, so nothing downstream had to change.
+  Reported as `source.prefabVariant`. A prefab built from an FBX is a variant of that model in
+  Unity's terms and is deliberately not treated as one, since a model carries no components.
 - **Modular Avatar. Partly done.** Its components are identified and reported for what they are.
   The hierarchy ones, `MergeArmature`, `BoneProxy`, `MeshSettings`, `BlendshapeSync` and
   `Parameters`, do their job on Basis and are left to it. The ones that target VRChat cannot:

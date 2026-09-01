@@ -9,13 +9,15 @@ namespace yuna0x0.Basis.Convert.Tests
 {
     /// <summary>
     /// A prefab variant stores only what it overrides. Everything it inherits, physics included,
-    /// stays in the base prefab's file, which a conversion reads nothing from. That cannot be
-    /// silent: an avatar sold as a variant would otherwise convert with none of its physics and
-    /// nothing in the report to say so.
+    /// stays in the base prefab's file, so a conversion that reads the variant's file alone sees
+    /// none of it. An avatar sold as a variant would convert with no physics at all.
     /// <para>
-    /// The base is built here rather than taken from `SampleAvatar`, because that fixture carries
-    /// the missing scripts a VRChat avatar arrives as and Unity refuses to save a prefab holding
-    /// one. What is under test is whether a variant is recognised, which needs no components.
+    /// The fixtures are built here rather than committed. A variant of `SampleAvatar` cannot be
+    /// saved, because Unity refuses to write a prefab holding a missing script and that fixture
+    /// is built out of them on purpose; and a variant file written by hand does not load. So the
+    /// base and its variant are made with the prefab API while the base is still plain, and the
+    /// PhysBone is appended to the base's file afterwards. The variant's own file never mentions
+    /// it, which is the situation under test.
     /// </para>
     /// </summary>
     public class PrefabVariantTests
@@ -24,6 +26,9 @@ namespace yuna0x0.Basis.Convert.Tests
             "Packages/com.yuna0x0.basis.convert/Tests/Editor/Fixtures/SampleAvatar/SampleAvatar.prefab";
 
         private const string Folder = "Assets/WatariVariantTests";
+
+        private const string PhysBoneScript =
+            "  m_Script: {fileID: 1661641543, guid: 2a2c05204084d904aa4945ccff20d8e5, type: 3}";
 
         private string _basePath;
         private string _variantPath;
@@ -37,17 +42,22 @@ namespace yuna0x0.Basis.Convert.Tests
             }
 
             GameObject root = new GameObject("VariantTestBase");
-            new GameObject("Child").transform.SetParent(root.transform, false);
+            GameObject chain = new GameObject("Chain");
+            chain.transform.SetParent(root.transform, false);
+            new GameObject("ChainEnd").transform.SetParent(chain.transform, false);
 
             _basePath = Path.Combine(Folder, "VariantTestBase.prefab");
             GameObject baseAsset = PrefabUtility.SaveAsPrefabAsset(root, _basePath);
             Object.DestroyImmediate(root);
 
             // Saving an instance of a prefab under a new path is what makes a variant of it.
+            // Done while the base is still plain, since a missing script would block the save.
             GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(baseAsset);
             _variantPath = Path.Combine(Folder, "VariantTestVariant.prefab");
             PrefabUtility.SaveAsPrefabAsset(instance, _variantPath);
             Object.DestroyImmediate(instance);
+
+            AddPhysBoneToBase();
         }
 
         [TearDown]
@@ -59,12 +69,91 @@ namespace yuna0x0.Basis.Convert.Tests
             }
         }
 
+        /// <summary>
+        /// Appends a PhysBone to the base prefab's file, rooted at its Chain object. It arrives
+        /// as a missing script, which is exactly how a VRChat component reaches a Basis project
+        /// and why the pipeline reads the file rather than the objects.
+        /// </summary>
+        private void AddPhysBoneToBase()
+        {
+            GameObject baseAsset = AssetDatabase.LoadAssetAtPath<GameObject>(_basePath);
+            Transform chain = baseAsset.transform.Find("Chain");
+            Assert.That(chain, Is.Not.Null);
+
+            AssetDatabase.TryGetGUIDAndLocalFileIdentifier(
+                chain.gameObject, out string _, out long chainGameObjectId);
+            AssetDatabase.TryGetGUIDAndLocalFileIdentifier(
+                chain, out string _, out long chainTransformId);
+
+            const long physBoneId = 8100000000000000001L;
+
+            File.WriteAllText(_basePath, AddComponentTo(
+                File.ReadAllText(_basePath), chainGameObjectId, physBoneId));
+
+            File.AppendAllText(_basePath,
+                $"--- !u!114 &{physBoneId}\n"
+                + "MonoBehaviour:\n"
+                + "  m_ObjectHideFlags: 0\n"
+                + "  m_CorrespondingSourceObject: {fileID: 0}\n"
+                + "  m_PrefabInstance: {fileID: 0}\n"
+                + "  m_PrefabAsset: {fileID: 0}\n"
+                + $"  m_GameObject: {{fileID: {chainGameObjectId}}}\n"
+                + "  m_Enabled: 1\n"
+                + "  m_EditorHideFlags: 0\n"
+                + PhysBoneScript + "\n"
+                + "  m_Name:\n"
+                + "  m_EditorClassIdentifier:\n"
+                + "  version: 1\n"
+                + "  integrationType: 0\n"
+                + $"  rootTransform: {{fileID: {chainTransformId}}}\n"
+                + "  ignoreTransforms: []\n"
+                + "  endpointPosition: {x: 0, y: 0, z: 0}\n"
+                + "  multiChildType: 0\n"
+                + "  pull: 0.3\n"
+                + "  spring: 0.6\n"
+                + "  stiffness: 0.2\n"
+                + "  gravity: 0.1\n"
+                + "  gravityFalloff: 0\n"
+                + "  immobileType: 0\n"
+                + "  immobile: 0.25\n"
+                + "  limitType: 0\n"
+                + "  maxAngleX: 45\n"
+                + "  radius: 0.05\n"
+                + "  allowCollision: 1\n"
+                + "  allowGrabbing: 1\n"
+                + "  allowPosing: 1\n"
+                + "  isAnimated: 0\n");
+
+            AssetDatabase.ImportAsset(_basePath, ImportAssetOptions.ForceSynchronousImport);
+
+            Assert.That(AvatarConversionPlanner.Plan(_basePath).PhysBonesFound, Is.EqualTo(1),
+                "The appended PhysBone has to be readable for these tests to mean anything.");
+        }
+
+        /// <summary>
+        /// Lists the new component on the GameObject that owns it. Without this Unity treats the
+        /// appended block as orphaned and drops it on import, saying the object "does not
+        /// reference component MonoBehaviour".
+        /// </summary>
+        private static string AddComponentTo(string yaml, long gameObjectId, long componentId)
+        {
+            string anchor = $"--- !u!1 &{gameObjectId}\n";
+            int start = yaml.IndexOf(anchor, System.StringComparison.Ordinal);
+            Assert.That(start, Is.GreaterThanOrEqualTo(0), "The Chain GameObject is not in the file.");
+
+            int layer = yaml.IndexOf("\n  m_Layer:", start, System.StringComparison.Ordinal);
+            Assert.That(layer, Is.GreaterThan(start), "The component list did not end as expected.");
+
+            return yaml.Insert(layer, $"\n  - component: {{fileID: {componentId}}}");
+        }
+
         [Test]
         public void AVariantNamesTheBaseItInheritsFrom()
         {
             ConversionSource source = ConversionSource.ForAsset(_variantPath);
 
             Assert.That(source.BaseAssetPath(), Is.EqualTo(_basePath));
+            Assert.That(source.InheritedAssetPaths(), Is.EqualTo(new[] { _basePath }));
         }
 
         [Test]
@@ -73,29 +162,69 @@ namespace yuna0x0.Basis.Convert.Tests
             ConversionSource source = ConversionSource.ForAsset(_basePath);
 
             Assert.That(source.BaseAssetPath(), Is.Null);
+            Assert.That(source.InheritedAssetPaths(), Is.Empty);
+        }
+
+        /// <summary>
+        /// The point of the whole exercise. The variant's own file does not mention the PhysBone;
+        /// it converts with it anyway, because the base is read too.
+        /// </summary>
+        [Test]
+        public void AVariantConvertsTheComponentsItInherits()
+        {
+            Assert.That(File.ReadAllText(_variantPath), Does.Not.Contain(PhysBoneScript),
+                "The variant's own file must not hold the PhysBone, or nothing is being tested.");
+
+            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(_variantPath);
+
+            Assert.That(plan.PhysBonesFound, Is.EqualTo(1),
+                "A variant inherits its base's PhysBones, so it has to find it.");
+            Assert.That(plan.Rigs.Count, Is.EqualTo(1), "And plan a jiggle rig from it.");
+            Assert.That(plan.InheritedSourcesRead, Is.EqualTo(1));
+        }
+
+        /// <summary>
+        /// The rig has to land on the variant's own transform, not the base's, or applying the
+        /// plan would write into the wrong asset.
+        /// </summary>
+        [Test]
+        public void AnInheritedRigResolvesOntoTheVariantsOwnObjects()
+        {
+            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(_variantPath);
+            GameObject variantAsset = AssetDatabase.LoadAssetAtPath<GameObject>(_variantPath);
+
+            Assert.That(plan.Rigs, Is.Not.Empty);
+
+            foreach (PlannedJiggleRig rig in plan.Rigs)
+            {
+                Assert.That(rig.SourceRootBone, Is.Not.Null, "The rig root did not resolve.");
+                Assert.That(rig.SourceRootBone.IsChildOf(variantAsset.transform), Is.True,
+                    $"{rig.SourceRootBone.name} resolved outside the variant being converted.");
+            }
         }
 
         [Test]
-        public void AVariantIsReportedBecauseItsInheritedComponentsAreNotRead()
+        public void AVariantIsReported()
         {
             AvatarConversionPlan plan = AvatarConversionPlanner.Plan(_variantPath);
 
             Assert.That(plan.Diagnostics.HasCode("source.prefabVariant"), Is.True,
-                "A variant's inherited components are not read, so it has to be reported.");
+                "Reading a second file is worth saying, since its objects are not in this one.");
         }
 
         /// <summary>
         /// An avatar prefab is normally made from an FBX, which Unity calls a variant of that
-        /// model. There is nothing in a model but the imported hierarchy, so there is nothing to
-        /// miss and nothing to report. Found by converting a real avatar, which reported itself.
+        /// model. A model holds the imported hierarchy and no authored components, so there is
+        /// nothing to read and nothing to report. Found by converting a real avatar, which
+        /// reported itself.
         /// </summary>
         [Test]
-        public void APrefabMadeFromAModelIsNotReportedAsAVariant()
+        public void APrefabMadeFromAModelIsNotTreatedAsAVariant()
         {
             string modelPath = ModelFixturePath();
             if (string.IsNullOrEmpty(modelPath))
             {
-                Assert.Ignore("No model fixture in this project to build a prefab from.");
+                Assert.Ignore("No model in this project to build a prefab from.");
             }
 
             GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
@@ -104,16 +233,28 @@ namespace yuna0x0.Basis.Convert.Tests
             PrefabUtility.SaveAsPrefabAsset(instance, path);
             Object.DestroyImmediate(instance);
 
-            ConversionSource source = ConversionSource.ForAsset(path);
-
-            Assert.That(PrefabUtility.GetPrefabAssetType(
+            Assert.That(
+                PrefabUtility.GetPrefabAssetType(
                     AssetDatabase.LoadAssetAtPath<GameObject>(path)),
                 Is.EqualTo(PrefabAssetType.Variant),
-                "Unity should call a prefab made from a model a variant; the point of the test "
-                + "is that it is not reported as one.");
+                "Unity calls a prefab made from a model a variant; the point of the test is that "
+                + "the converter does not treat it as one.");
 
-            Assert.That(source.BaseAssetPath(), Is.Null,
-                "A model carries no components to miss, so this is not worth reporting.");
+            ConversionSource source = ConversionSource.ForAsset(path);
+
+            Assert.That(source.BaseAssetPath(), Is.Null);
+            Assert.That(source.InheritedAssetPaths(), Is.Empty);
+            Assert.That(AvatarConversionPlanner.Plan(path).Diagnostics
+                .HasCode("source.prefabVariant"), Is.False);
+        }
+
+        [Test]
+        public void APlainPrefabIsNotReportedAsAVariant()
+        {
+            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(PlainFixturePath);
+
+            Assert.That(plan.Diagnostics.HasCode("source.prefabVariant"), Is.False,
+                "The fixture is a plain prefab, not a variant.");
         }
 
         /// <summary>Any imported model in the project, since none ships with the package.</summary>
@@ -129,15 +270,6 @@ namespace yuna0x0.Basis.Convert.Tests
             }
 
             return null;
-        }
-
-        [Test]
-        public void APlainPrefabIsNotReportedAsAVariant()
-        {
-            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(PlainFixturePath);
-
-            Assert.That(plan.Diagnostics.HasCode("source.prefabVariant"), Is.False,
-                "The fixture is a plain prefab, not a variant.");
         }
     }
 }
