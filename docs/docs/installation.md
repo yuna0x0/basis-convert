@@ -8,6 +8,19 @@ Watari installs into a Basis project as a Unity package. It builds against the B
 Jiggle Physics and HVR Basis Comms, all of which ship with the Basis framework, so a Basis
 project already has everything it needs.
 
+:::danger Do not install the VRChat SDK into a Basis project
+
+It is not needed here, and it does not stay out of the way. Layers and the physics collision
+matrix are project-wide settings, and Basis has already set them for itself: it uses layer 3 and
+layers 6 to 11 for its player, avatar and interaction handling. A second SDK configuring those
+for its own runtime changes the project, not just the avatar, and Basis is what breaks.
+
+Nothing is lost by leaving it out. VRChat components arrive in a Basis project as missing
+scripts, and that is exactly what Watari reads. Keep the two projects separate: author in the
+VRChat project, import the avatar into the Basis project, and convert it there.
+
+:::
+
 Four ways to install it, in the order most people will want them.
 
 ## VPM
