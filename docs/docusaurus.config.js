@@ -114,8 +114,11 @@ const config = {
             ],
           },
         ],
+        // The year matches LICENSE, which records first publication rather than the build.
         copyright:
-          'MIT licensed. Basis, BasisVR and Basis Framework are trademarks of the Basis Project. This is an independent tool, not affiliated with or endorsed by them.',
+          'Copyright © 2026 yuna0x0. MIT licensed. ' +
+          'Basis, BasisVR and Basis Framework are trademarks of the Basis Project. ' +
+          'This is an independent tool, not affiliated with or endorsed by them.',
       },
       prism: {
         theme: themes.github,
