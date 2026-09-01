@@ -7,9 +7,6 @@ the name given, then replace the comment in that page with the markdown the comm
 |---|---|---|
 | `favicon.ico` | site-wide | Site icon. Referenced by `docusaurus.config.js`. |
 | `hero-window.png` | landing page | The Convert Avatar window beside a converted avatar. The one image that says what this tool is. |
-| `feature-physics.svg` | landing page | Icon for "Physics, constraints, menus and motion". What a conversion produces. |
-| `feature-components.svg` | landing page | Icon for "Read by component, not by platform". Reading an avatar for what it carries. |
-| `feature-reported.svg` | landing page | Icon for "Nothing lost quietly". The report, and that nothing is written unconfirmed. |
 | `install-alcom.png` | Installing | ALCOM with the listing added and Watari ready to install. |
 | `install-package-manager.png` | Installing | Unity's Package Manager with the git URL filled in. |
 | `window-scanned.png` | Converting an avatar | The window after a scan: detected type, summary, diagnostics. |
@@ -20,6 +17,5 @@ the name given, then replace the comment in that page with the markdown the comm
 Screenshots of the window read best cropped to the window itself, taken on the dark editor theme,
 and at a width where the diagnostics text is legible without zooming.
 
-The three feature icons are drawn rather than captured. Keep them to one 24 by 24 grid and one
-stroke weight so a fourth can be added later, and stroke them in `currentColor` so both themes
-work without a second file. They render about 200px wide.
+The landing page's three feature icons are not files. They come from `lucide-react`, imported by
+name in `HomepageFeatures`, so a fourth is an import rather than an asset.
