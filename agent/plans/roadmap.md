@@ -102,21 +102,20 @@ the original. Everything else maps directly.
   different value, and a radial puppet, which becomes a control presented as a slider between the
   two ends of its blend tree. See [decision 0012](../decisions/0012-controls-with-more-than-two-states.md).
 
-  Animation that plays with nothing steering it is rebuilt as `BasisAuthoredMotion`, with the
-  clip baked to a `BasisMotionClip` beside the animation it came from. See
+  Animation is rebuilt as `BasisAuthoredMotion`, with the clip baked to a `BasisMotionClip`
+  beside the animation it came from, both when nothing steers it and when a menu switches it on.
+  A switched motion becomes a Vixxy activation on the `BasisAuthoredMotion` component, which
+  `HVR_VixxyPermitted` lists among the types an activation may toggle. See
   [decision 0013](../decisions/0013-baked-motion-assets.md). What remains:
 
-  - **Motion a menu switches on.** A toggle whose clip animates over time is still reported and
-    dropped. It should become an authored motion the control enables:
-    `HVR_VixxyPermitted` lists `BasisAuthoredMotion` among the types a Vixxy activation may
-    toggle, and the component raises `EnabledStateChanged` for exactly that.
   - **Gimmick layers steered by more than one of the avatar's own parameters.** A layer is read
     only when one of them steers it. VRChat's own parameters no longer count towards that: a
     layer guarded by `IsLocal` or `InStation` is still the toggle's, and the guard is reported as
     dropped. A built-in that steers a transition on its own, as a gesture does, still means the
     layer belongs to it.
   - **Two and four axis puppets.** They drive two parameters at once, which no single Vixxy
-    control expresses.
+    control expresses, and the aggregator that would combine two is unbuilt upstream (above).
+    Counted and reported as dropped under `expressions.puppets`.
 
   Material properties are done. A clip sets one channel at a time, `material._Color.r` and its
   siblings, so the channels are gathered back into one property, typed by how they were named:
@@ -135,9 +134,19 @@ the original. Everything else maps directly.
   still reads the whole avatar, so the counts and the detected source kind do not change with
   what is ticked. Diagnostics follow the selection, and what was left out is stated as left out
   in the window and in the report. See [decision 0008](../decisions/0008-conversion-options.md).
-- **Several source prefabs. Done.** A conversion reads every prefab the hierarchy is built from,
-  not just the avatar's own, because clothing, hair and accessories are prefabs of their own
-  carrying their own physics. See [decision 0009](../decisions/0009-several-source-prefabs.md).
+- **Several source prefabs. Done, except variants.** A conversion reads every prefab the
+  hierarchy is built from, not just the avatar's own, because clothing, hair and accessories are
+  prefabs of their own carrying their own physics. See
+  [decision 0009](../decisions/0009-several-source-prefabs.md).
+
+  **A prefab variant is still only read from its own file**, which holds nothing but its
+  overrides. Everything it inherits stays in the base prefab and is not read, so a variant of an
+  avatar carrying 61 PhysBones converts with none of them, and its inherited colliders report as
+  unresolved. Found by converting a real variant, not by a test. It is reported as
+  `source.prefabVariant` rather than passed over, and the fix is to read the base chain and
+  resolve its file ids onto the variant's objects: `PrefabObjectResolver` already matches live
+  objects by the guid and file id of the object they correspond to, which is the same route a
+  variant's entries need.
 - **Modular Avatar. Partly done.** Its components are identified and reported for what they are.
   The hierarchy ones, `MergeArmature`, `BoneProxy`, `MeshSettings`, `BlendshapeSync` and
   `Parameters`, do their job on Basis and are left to it. The ones that target VRChat cannot:
@@ -159,8 +168,13 @@ the original. Everything else maps directly.
   - Modular Avatar object paths are resolved against the avatar root, as
     `AvatarObjectReference` does. A path naming something outside the prefab being converted is
     reported rather than guessed at.
-  - A layer steered by two of the avatar's own parameters is still left alone. Vixxy has an
-    aggregator that may cover some of those; it has not been looked at.
+  - A layer steered by two of the avatar's own parameters is still left alone. Vixxy's
+    `HVRVixxyAggregator`, the obvious candidate, cannot carry them: its whole body sits behind
+    `HVR_AGGREGATOR_IS_AVAILABLE`, which nothing defines, its `IHVRVixxyAggregator` base is
+    commented out, and the `orchestrator.ProvideValue` it calls does not exist on
+    `HVRVixxyOrchestrator`, so it would not compile if the define were turned on. It is
+    unfinished upstream work rather than a gated feature. Nothing in Vixxy expresses two inputs
+    today, so this and the axis puppets below both wait on Vixxy rather than on us.
 - **Props and worlds. Backlog.** Both are in scope. Neither is blocked on effort.
 
   - **`BasisProp`** has nothing to read from. VRChat has no prop content type, and the nearest

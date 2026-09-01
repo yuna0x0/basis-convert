@@ -44,6 +44,34 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 ? null
                 : new ConversionSource { AssetPath = assetPath, Root = root };
         }
+
+        /// <summary>
+        /// The prefab this one is a variant of, or null when it is not a variant of one. A
+        /// variant's own file holds only what it overrides; everything inherited lives in the
+        /// base file and is not read from here.
+        /// <para>
+        /// A prefab made from an FBX is a variant of that model, which is the ordinary way an
+        /// avatar prefab is built and carries nothing to miss: a model holds the imported
+        /// hierarchy and no authored components. Only a variant of another prefab is returned.
+        /// </para>
+        /// </summary>
+        public string BaseAssetPath()
+        {
+            if (Root == null
+                || PrefabUtility.GetPrefabAssetType(Root) != PrefabAssetType.Variant)
+            {
+                return null;
+            }
+
+            GameObject baseAsset = PrefabUtility.GetCorrespondingObjectFromSource(Root);
+            if (baseAsset == null
+                || PrefabUtility.GetPrefabAssetType(baseAsset) == PrefabAssetType.Model)
+            {
+                return null;
+            }
+
+            return AssetDatabase.GetAssetPath(baseAsset);
+        }
     }
 
     /// <summary>

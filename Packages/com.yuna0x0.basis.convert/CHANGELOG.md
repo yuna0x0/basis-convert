@@ -6,6 +6,16 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- A prefab variant is reported as `source.prefabVariant`. A variant's own file holds only its
+  overrides, so physics and constraints it inherits from the base prefab are not read.
+
+### Fixed
+
+- The report guide named `constraint.solveInLocalSpace`; the code is
+  `constraint.solveInLocalSpace.dropped`.
+
 ## [0.2.0] - 2026-08-31
 
 ### Added

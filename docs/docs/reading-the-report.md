@@ -26,7 +26,7 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `physbone.limitType.tooWide` | The angle limit was wider than jiggle physics can express, so no limit was written rather than a tighter one. |
 | `physbone.isAnimated` | The PhysBone was marked as animated. Nothing reads that on Basis. |
 | `collider.limit` | More colliders were referenced than a jiggle rig can hold. The extras were dropped. |
-| `constraint.solveInLocalSpace` | A VRChat constraint setting with no Basis equivalent. |
+| `constraint.solveInLocalSpace.dropped` | A VRChat constraint solved in local space. Basis constraints solve in world space, so the setting was dropped. |
 | `vixxy.notSimple` | A menu toggle that animates over time or drives something a Vixxy control cannot hold. |
 | `vixxy.puppetEnds` | A radial puppet blended through motions between its ends. A slider interpolates between its ends in a straight line. |
 | `vixxy.builtinGuard` | The toggle's layer also waited on a VRChat parameter such as `IsLocal`. Basis has no equivalent, so the control switches whenever it is used. |
@@ -47,6 +47,7 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `vrm.collider.inside` | A VRM collider held bones inside its shape. Basis only pushes out, so it now pushes the opposite way. |
 | `contacts.dropped` | VRChat contacts were found. Basis has no contact system. |
 | `modularAvatar.menus` | Modular Avatar menu and animator components were found. See [Modular Avatar](what-converts/modular-avatar.md). |
+| `source.prefabVariant` | The avatar is a prefab variant. Only its overrides live in its own file, so anything it inherits was not read. Convert the base prefab, or unpack the variant. |
 | `source.unknownScript` | A component whose script this version does not recognise. Please report it. |
 
 ## The rig section

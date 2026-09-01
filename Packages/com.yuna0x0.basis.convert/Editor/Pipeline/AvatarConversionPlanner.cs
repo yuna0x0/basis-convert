@@ -46,6 +46,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             HashSet<string> unknownIdentities = new HashSet<string>();
             ReadSource(plan, source, profile, unknownIdentities);
+            ReportVariantSources(plan, plan.Sources);
             Finish(plan, unknownIdentities);
             return plan;
         }
@@ -89,8 +90,36 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     + Names(sources) + ".");
             }
 
+            ReportVariantSources(plan, sources);
+
             Finish(plan, unknownIdentities);
             return plan;
+        }
+
+        /// <summary>
+        /// A prefab variant's own file holds only what it overrides. Everything it inherits,
+        /// including physics and constraints, stays in the base prefab's file, which this reads
+        /// nothing from, so a variant converts as though the inherited components were not
+        /// there. Reported rather than passed over in silence.
+        /// </summary>
+        private static void ReportVariantSources(
+            AvatarConversionPlan plan, List<ConversionSource> sources)
+        {
+            foreach (ConversionSource source in sources)
+            {
+                string basePath = source.BaseAssetPath();
+                if (string.IsNullOrEmpty(basePath))
+                {
+                    continue;
+                }
+
+                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "source.prefabVariant",
+                    $"{source.Name} is a variant of {System.IO.Path.GetFileNameWithoutExtension(basePath)} "
+                    + $"({basePath}). Only what the variant overrides is stored in its own file, so "
+                    + "any physics, colliders or constraints it inherits were not read and have "
+                    + "not been converted. Convert the base prefab, or unpack the variant "
+                    + "completely first.");
+            }
         }
 
         /// <summary>

@@ -29,7 +29,8 @@ namespace yuna0x0.Basis.Convert.Sources
         /// <summary>Label. Empty means the object's own name is used.</summary>
         public string Name = string.Empty;
 
-        /// <summary>VRChat's control type: 101 button, 102 toggle, 103 submenu, 104 and up puppets.</summary>
+        /// <summary>VRChat's control type: 101 button, 102 toggle, 103 submenu, 201 two axis,
+        /// 202 four axis and 203 radial puppet.</summary>
         public int ControlType;
 
         public string Parameter = string.Empty;

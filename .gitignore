@@ -29,6 +29,7 @@
 
 # Test and coverage output
 test-results.xml
+test-results.xml.meta
 [Cc]ode[Cc]overage/
 
 # OS
