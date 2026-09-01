@@ -243,6 +243,46 @@ namespace yuna0x0.Basis.Convert.Tests
             Assert.That(source.InheritedAssetPaths(), Is.Empty);
             Assert.That(AvatarConversionPlanner.Plan(path).Diagnostics
                 .HasCode("source.prefabVariant"), Is.False);
+
+            Assert.That(source.ModelAssetPath(), Is.EqualTo(modelPath),
+                "The model is still named, so an empty conversion can say why.");
+        }
+
+        /// <summary>
+        /// A prefab saved from an imported model without unpacking converts as though it were
+        /// empty, because the components are in the model file and that is not read. Saying so
+        /// beats the generic message, whose only suggested cause does not apply here.
+        /// </summary>
+        [Test]
+        public void APrefabSavedFromAModelSaysItNeedsUnpacking()
+        {
+            string modelPath = ModelFixturePath();
+            if (string.IsNullOrEmpty(modelPath))
+            {
+                Assert.Ignore("No model in this project to build a prefab from.");
+            }
+
+            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
+            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(model);
+            string path = Path.Combine(Folder, "NotUnpacked.prefab");
+            PrefabUtility.SaveAsPrefabAsset(instance, path);
+            Object.DestroyImmediate(instance);
+
+            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(path);
+
+            Assert.That(plan.ComponentsRead, Is.Zero,
+                "Nothing is readable in a prefab that only points at a model.");
+            Assert.That(plan.Diagnostics.HasCode("source.notUnpacked"), Is.True);
+        }
+
+        /// <summary>The message is for an empty conversion, not for every model-based prefab.</summary>
+        [Test]
+        public void APrefabThatConvertedSomethingIsNotToldToUnpack()
+        {
+            AvatarConversionPlan plan = AvatarConversionPlanner.Plan(PlainFixturePath);
+
+            Assert.That(plan.ComponentsRead, Is.GreaterThan(0));
+            Assert.That(plan.Diagnostics.HasCode("source.notUnpacked"), Is.False);
         }
 
         [Test]

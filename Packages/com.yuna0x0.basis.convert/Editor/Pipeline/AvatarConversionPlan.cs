@@ -256,6 +256,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>Prefabs read because a source inherits from them, being a variant.</summary>
         public int InheritedSourcesRead;
 
+        /// <summary>Recognised components read out of the source files, whatever became of them.</summary>
+        public int ComponentsRead;
+
         public int PhysBonesFound;
 
         /// <summary>VRM spring chains found, from either VRM format.</summary>

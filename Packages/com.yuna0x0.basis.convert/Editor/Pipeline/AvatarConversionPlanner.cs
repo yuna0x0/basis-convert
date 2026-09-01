@@ -226,6 +226,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
+                plan.ComponentsRead++;
+
                 if (VrcConstraintDocumentReader.TryGetKind(kind, out VrcConstraintKind constraintKind))
                 {
                     plan.ConstraintsFound++;
@@ -408,6 +410,36 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     $"A component with script identity {identity} was not recognised and was "
                     + "skipped.");
             }
+
+            ReportUnpackNeeded(plan);
+        }
+
+        /// <summary>
+        /// A prefab saved from an imported model without unpacking holds only its overrides,
+        /// while the components stay in the model file, which is binary. It converts as though
+        /// it were empty, so when nothing was found that is the likeliest reason and is worth
+        /// naming: the alternative is a reader guessing at the generic causes instead.
+        /// </summary>
+        private static void ReportUnpackNeeded(AvatarConversionPlan plan)
+        {
+            // Components read, not things planned: a bare humanoid gets an empty Basis Avatar
+            // whether or not anything was read, so counting that would hide exactly the case
+            // this is for.
+            if (plan.ComponentsRead > 0 || plan.Sources.Count == 0)
+            {
+                return;
+            }
+
+            string model = plan.Sources[0].ModelAssetPath();
+            if (string.IsNullOrEmpty(model))
+            {
+                return;
+            }
+
+            plan.Diagnostics.Add(DiagnosticSeverity.Warning, "source.notUnpacked",
+                $"Nothing was found, and this prefab was saved from {model} without unpacking. "
+                + "Its components are still inside that file, which is not read. Unpack the "
+                + "prefab completely and save it again.");
         }
 
         /// <summary>

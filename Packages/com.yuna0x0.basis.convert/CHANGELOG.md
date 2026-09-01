@@ -6,6 +6,11 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- A prefab saved from an imported model without unpacking now says so, naming the model, instead
+  of the generic message for finding nothing. Reported as `source.notUnpacked`.
+
 ## [0.3.0] - 2026-09-01
 
 ### Added

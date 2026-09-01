@@ -1166,11 +1166,20 @@ namespace yuna0x0.Basis.Convert.UI
 
             if (_plan.TotalPlanned == 0)
             {
-                _blocker = "Nothing convertible was found in this prefab. It reads VRChat "
-                    + "PhysBones, colliders, constraints and the avatar descriptor with the menu "
-                    + "and animation behind it, VRM spring bones and expressions, and Dynamic "
-                    + "Bone. If the components were stripped before export, there is nothing "
-                    + "left to read.";
+                string model = _plan.ComponentsRead == 0 && _plan.Sources.Count > 0
+                    ? _plan.Sources[0].ModelAssetPath()
+                    : null;
+
+                _blocker = string.IsNullOrEmpty(model)
+                    ? "Nothing convertible was found in this prefab. It reads VRChat "
+                      + "PhysBones, colliders, constraints and the avatar descriptor with the "
+                      + "menu and animation behind it, VRM spring bones and expressions, and "
+                      + "Dynamic Bone. If the components were stripped before export, there is "
+                      + "nothing left to read."
+                    : $"Nothing was found, because this prefab was saved from {model} without "
+                      + "unpacking. Its components are still inside that file, which is not "
+                      + "read. Unpack the prefab completely (right click, Prefab, Unpack "
+                      + "Completely), save it again, and convert that.";
             }
         }
 

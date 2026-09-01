@@ -73,6 +73,29 @@ namespace yuna0x0.Basis.Convert.Pipeline
         }
 
         /// <summary>
+        /// The imported model this prefab was made from, or null. Such a prefab holds only its
+        /// overrides while the components stay inside the model file, which is binary and not
+        /// read, so it converts as though it were empty until it is unpacked.
+        /// </summary>
+        public string ModelAssetPath()
+        {
+            if (Root == null
+                || PrefabUtility.GetPrefabAssetType(Root) != PrefabAssetType.Variant)
+            {
+                return null;
+            }
+
+            GameObject baseAsset = PrefabUtility.GetCorrespondingObjectFromSource(Root);
+            if (baseAsset == null
+                || PrefabUtility.GetPrefabAssetType(baseAsset) != PrefabAssetType.Model)
+            {
+                return null;
+            }
+
+            return AssetDatabase.GetAssetPath(baseAsset);
+        }
+
+        /// <summary>
         /// Every prefab this one inherits from, nearest first, since a variant of a variant
         /// carries components in each file above it. Empty when it is not a variant.
         /// </summary>
