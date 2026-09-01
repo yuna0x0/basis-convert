@@ -9,10 +9,8 @@ sidebar_position: 8
 No, and you should not install it into a Basis project. VRChat components arrive as missing
 scripts, and their data is read from the prefab file instead.
 
-Installing it anyway is not a harmless extra. Layers and the physics collision matrix belong to
-the project rather than to any avatar, and Basis has already set them for itself, so a second SDK
-configuring them breaks Basis. Keep the two projects separate. See
-[Installing](installation.md).
+It also changes layers and the collision matrix, which are project-wide, so it breaks Basis
+itself. See [Installing](installation.md).
 
 ### My avatar shows missing scripts everywhere. Is that a problem?
 

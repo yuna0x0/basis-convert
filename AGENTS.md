@@ -99,9 +99,16 @@ commit messages, docs, diagnostics and code comments after that.
   point X calls Y", restated context, and sentences that only lead into the next one.
 - **Name things directly.** "Converting twice stacked a second control" beats "the rule that
   protects hand-made components elsewhere said nothing there".
+- **No filler about the reader.** "in the order most people will want them", "you will probably",
+  "simply", "just". Say what the thing is. Four install methods are "Four ways to install it."
+- **No rhetorical flourish.** "It does not stay out of the way", "Nothing is lost by leaving it
+  out", "is not a harmless extra". Aphorisms and reversals read as padding. State the fact.
+- **One sentence per point.** Do not restate a point in different words, and do not add a
+  sentence whose only job is to introduce or soften the next one.
 
 Docs pages may be longer than a changelog entry, but the same rule holds inside a paragraph:
-state it once and move on.
+state it once and move on. This applies to what an agent writes back in chat too, not only to
+what it commits.
 
 ## Trademark
 

@@ -5,7 +5,7 @@
   padding: 2rem 0;
 }
 
-/* Docusaurus themes the primary colour per mode, so one rule covers light and dark. */
+/* Primary colour is themed per mode, so one rule covers light and dark. */
 .featureIcon {
   color: var(--ifm-color-primary);
   margin-bottom: 0.5rem;

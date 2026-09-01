@@ -39,7 +39,7 @@ const features = [
   },
 ];
 
-// The icon repeats the heading, so it is decorative and hidden from screen readers.
+// Decorative: each icon repeats its heading.
 function Feature({Icon, title, description}) {
   return (
     <div className={clsx('col col--4')}>

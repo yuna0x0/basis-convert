@@ -10,7 +10,7 @@ twitch, an accessory that turns: on VRChat these are FX layers with nothing stee
 
 ## Two kinds
 
-**Motion the avatar simply has.** A layer with no parameter steering it, whose state holds a
+**Motion the avatar has.** A layer with no parameter steering it, whose state holds a
 clip that turns transforms over time. It plays from the moment the avatar loads.
 
 **Motion a menu switches on.** A Vixxy control stores a value per choice, not a curve, so a

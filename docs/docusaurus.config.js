@@ -114,8 +114,7 @@ const config = {
             ],
           },
         ],
-        // The year matches LICENSE, which records first publication rather than the build.
-        // The trademark notice sits on its own line, being someone else's mark and not ours.
+        // Year matches LICENSE: first publication, not the build.
         copyright:
           'Copyright © 2026 yuna0x0. MIT licensed.' +
           '<div class="footer__trademark">' +

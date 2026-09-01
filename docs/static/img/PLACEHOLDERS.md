@@ -18,4 +18,4 @@ Screenshots of the window read best cropped to the window itself, taken on the d
 and at a width where the diagnostics text is legible without zooming.
 
 The landing page's three feature icons are not files. They come from `lucide-react`, imported by
-name in `HomepageFeatures`, so a fourth is an import rather than an asset.
+name in `HomepageFeatures`.

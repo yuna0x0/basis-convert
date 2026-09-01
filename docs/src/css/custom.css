@@ -26,7 +26,7 @@
   --ifm-hero-text-color: #ffffff;
 }
 
-/* Someone else's trademark notice: set apart from our own copyright line, and quieter. */
+/* Trademark notice: separate line, quieter than our copyright. */
 .footer__trademark {
   margin-top: 0.5rem;
   font-size: 0.85em;
