@@ -4,6 +4,8 @@ import styles from './styles.module.css';
 
 const features = [
   {
+    // IMAGE PLACEHOLDER: what a conversion produces. Save as
+    // docs/static/img/feature-physics.svg, then add the Svg line below.
     title: 'Physics, constraints, menus and motion',
     description: (
       <>
@@ -15,6 +17,8 @@ const features = [
     ),
   },
   {
+    // IMAGE PLACEHOLDER: reading an avatar for what it carries. Save as
+    // docs/static/img/feature-components.svg, then add the Svg line below.
     title: 'Read by component, not by platform',
     description: (
       <>
@@ -25,6 +29,8 @@ const features = [
     ),
   },
   {
+    // IMAGE PLACEHOLDER: the report, and that nothing is written unconfirmed. Save as
+    // docs/static/img/feature-reported.svg, then add the Svg line below.
     title: 'Nothing lost quietly',
     description: (
       <>
@@ -35,6 +41,16 @@ const features = [
   },
 ];
 
+/*
+  IMAGE PLACEHOLDER wiring, the same for all three. Once an svg exists, give its feature
+    Svg: require('@site/static/img/feature-physics.svg').default,
+  and take it here, so the icon inherits the text colour and needs no second file for dark mode:
+    function Feature({Svg, title, description}) {
+      ...
+          <Svg className={styles.featureSvg} role="img" aria-hidden="true" />
+          <h3>{title}</h3>
+  styles.module.css has no .featureSvg rule yet; it needs one for the size.
+*/
 function Feature({title, description}) {
   return (
     <div className={clsx('col col--4')}>
