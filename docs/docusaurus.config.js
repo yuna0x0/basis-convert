@@ -115,10 +115,13 @@ const config = {
           },
         ],
         // The year matches LICENSE, which records first publication rather than the build.
+        // The trademark notice sits on its own line, being someone else's mark and not ours.
         copyright:
-          'Copyright © 2026 yuna0x0. MIT licensed. ' +
+          'Copyright © 2026 yuna0x0. MIT licensed.' +
+          '<div class="footer__trademark">' +
           'Basis, BasisVR and Basis Framework are trademarks of the Basis Project. ' +
-          'This is an independent tool, not affiliated with or endorsed by them.',
+          'This is an independent tool, not affiliated with or endorsed by them.' +
+          '</div>',
       },
       prism: {
         theme: themes.github,
