@@ -20,6 +20,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public int VixxyControlsWritten;
         public int AuthoredMotionsWritten;
 
+        /// <summary>Missing scripts removed after writing, when the option asked for it.</summary>
+        public int SourceComponentsRemoved;
+
         /// <summary>Baked motion clips written to the project, which an undo does not remove.</summary>
         public List<string> MotionAssets = new List<string>();
         public List<JiggleRig> Written = new List<JiggleRig>();
@@ -160,7 +163,40 @@ namespace yuna0x0.Basis.Convert.Pipeline
             WriteVixxyControls(plan, roots, target, motions, undoName, result);
 
             Undo.CollapseUndoOperations(group);
+
+            // After the collapse, because it is outside what the undo restores.
+            RemoveSourceComponents(plan, target, result);
+
             return result;
+        }
+
+        /// <summary>
+        /// Removes the missing scripts the conversion read from. Unity offers no way to undo
+        /// this, so it is reported as one-way and left off unless asked for.
+        /// </summary>
+        private static void RemoveSourceComponents(
+            AvatarConversionPlan plan, Transform target, ConversionResult result)
+        {
+            if (plan.Options == null || !plan.Options.RemoveSourceComponents || target == null)
+            {
+                return;
+            }
+
+            int removed = 0;
+            foreach (Transform t in target.GetComponentsInChildren<Transform>(true))
+            {
+                removed += GameObjectUtility.RemoveMonoBehavioursWithMissingScript(t.gameObject);
+            }
+
+            result.SourceComponentsRemoved = removed;
+
+            if (removed > 0)
+            {
+                result.Diagnostics.Add(DiagnosticSeverity.Warning, "apply.sourceRemoved",
+                    $"{removed} components the conversion read from were removed, as asked. "
+                    + "An undo does not bring them back, and this avatar cannot be converted "
+                    + "again; the prefab it came from still has them.");
+            }
         }
 
         private static void WriteDescriptor(

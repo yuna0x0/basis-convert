@@ -36,6 +36,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// </summary>
         public bool Motion = true;
 
+        /// <summary>
+        /// Remove the components a conversion read from, once it has written its own. They arrive
+        /// as missing scripts, and Unity refuses to save a prefab holding one, so an avatar keeps
+        /// them until asked. Deliberately not part of <see cref="IsEverything"/>: this removes
+        /// source data rather than producing output, and it cannot be undone.
+        /// </summary>
+        public bool RemoveSourceComponents;
+
         public bool IsEverything =>
             Physics && Colliders && Constraints && Descriptor && Toggles && Motion;
 
