@@ -60,8 +60,9 @@ It is off by default, and unlike everything else here it cannot be undone. The p
 came from still holds them, so converting it again means starting from that prefab. The report
 says what was removed as `apply.sourceRemoved`.
 
-Building an avatar does not need this: the Basis build strips missing scripts itself before it
-stages the prefab it bundles.
+Whether a build needs this depends on the project. Basis ships the NDMF integration, and when
+NDMF itself is also installed the build strips missing scripts before it stages the prefab it
+bundles. NDMF is not part of Basis, so without it nothing strips them.
 
 ## What narrowing does not change
 
