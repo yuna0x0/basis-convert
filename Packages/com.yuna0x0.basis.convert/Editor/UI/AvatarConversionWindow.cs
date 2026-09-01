@@ -99,8 +99,6 @@ namespace yuna0x0.Basis.Convert.UI
             _options.Descriptor = EditorPrefs.GetBool(PrefsPrefix + "descriptor", true);
             _options.Toggles = EditorPrefs.GetBool(PrefsPrefix + "toggles", true);
             _options.Motion = EditorPrefs.GetBool(PrefsPrefix + "motion", true);
-            _options.RemoveSourceComponents =
-                EditorPrefs.GetBool(PrefsPrefix + "removeSource", false);
         }
 
         private void SaveOptions()
@@ -112,8 +110,6 @@ namespace yuna0x0.Basis.Convert.UI
             EditorPrefs.SetBool(PrefsPrefix + "descriptor", _options.Descriptor);
             EditorPrefs.SetBool(PrefsPrefix + "toggles", _options.Toggles);
             EditorPrefs.SetBool(PrefsPrefix + "motion", _options.Motion);
-            EditorPrefs.SetBool(PrefsPrefix + "removeSource",
-                _options.RemoveSourceComponents);
         }
 
         public void SetTarget(GameObject target)
@@ -361,28 +357,6 @@ namespace yuna0x0.Basis.Convert.UI
                     Tally(_plan.SelectedAuthoredMotionCount, _plan.AuthoredMotions.Count,
                         "motions, baked to clips in the project"),
                     _plan.AuthoredMotions.Count > 0);
-
-                // Under Advanced because it removes source data rather than choosing output,
-                // and because an undo does not bring it back.
-                if (_advanced)
-                {
-                    EditorGUILayout.Space();
-                    _options.RemoveSourceComponents = EditorGUILayout.ToggleLeft(
-                        new GUIContent("Remove the components it read from",
-                            "Deletes the missing scripts a conversion read. Unity refuses to "
-                            + "save a prefab holding one, so this is what lets the converted "
-                            + "avatar be saved as a prefab. Cannot be undone."),
-                        _options.RemoveSourceComponents);
-
-                    if (_options.RemoveSourceComponents)
-                    {
-                        EditorGUILayout.HelpBox(
-                            "The components a conversion reads are removed after it writes. An "
-                            + "undo does not bring them back and this avatar cannot be converted "
-                            + "again, though the prefab it came from still has them.",
-                            MessageType.Warning);
-                    }
-                }
 
                 if (changed.changed)
                 {

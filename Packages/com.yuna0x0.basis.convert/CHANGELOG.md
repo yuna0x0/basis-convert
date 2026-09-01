@@ -6,11 +6,6 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
-### Added
-
-- An advanced option to remove the components a conversion read from, so the result can be saved
-  as a prefab. Off by default, and not undoable. Reported as `apply.sourceRemoved`.
-
 ## [0.3.1] - 2026-09-01
 
 ### Changed

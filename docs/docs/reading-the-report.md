@@ -47,7 +47,6 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `vrm.collider.inside` | A VRM collider held bones inside its shape. Basis only pushes out, so it now pushes the opposite way. |
 | `contacts.dropped` | VRChat contacts were found. Basis has no contact system. |
 | `modularAvatar.menus` | Modular Avatar menu and animator components were found. See [Modular Avatar](what-converts/modular-avatar.md). |
-| `apply.sourceRemoved` | The components the conversion read from were removed, because the option asked. Not undoable. |
 | `source.notUnpacked` | Nothing was found, and the prefab was saved from an imported model without unpacking. Its components are still in that file. |
 | `source.prefabVariant` | The avatar is a prefab variant, so the prefab it inherits from was read as well. Names that base. |
 | `source.editorOnlyTool` | Components of an editor-time authoring tool, which carry no runtime behaviour. Nothing to convert, nothing lost. |

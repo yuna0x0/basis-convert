@@ -42,27 +42,12 @@ there if you undo the conversion. See [Authored motion](what-converts/authored-m
   that hold nothing convertible are summarised rather than listed.
 - **A checkbox per rig, constraint, toggle and motion**, each with what it affects.
 - **The tuning weights** described in [Physics](what-converts/physics.md).
-- **Remove the components it read from**, off by default. See below.
 
 {/*
   IMAGE PLACEHOLDER: the advanced view with the prefab list and per-item checkboxes expanded.
   Save as docs/static/img/options-advanced.png, then replace this comment with:
   ![The advanced options](/img/options-advanced.png)
 */}
-
-## Removing the components it read from
-
-VRChat and VRM components arrive as missing scripts, and Unity refuses to save a prefab holding
-one. So a converted avatar cannot be saved as a prefab while they are still on it. This option
-removes them once the conversion has written its own components.
-
-It is off by default, and unlike everything else here it cannot be undone. The prefab the avatar
-came from still holds them, so converting it again means starting from that prefab. The report
-says what was removed as `apply.sourceRemoved`.
-
-Whether a build needs this depends on the project. Basis ships the NDMF integration, and when
-NDMF itself is also installed the build strips missing scripts before it stages the prefab it
-bundles. NDMF is not part of Basis, so without it nothing strips them.
 
 ## What narrowing does not change
 
