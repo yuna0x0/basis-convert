@@ -286,9 +286,15 @@ namespace yuna0x0.Basis.Convert.Pipeline
             return items;
         }
 
+        /// <summary>
+        /// A stripped document is excluded: it is a back reference to a component defined in a
+        /// prefab this one is built from and holds none of its data, which is read from that
+        /// file instead.
+        /// </summary>
         private static bool IsKind(UnityYamlDocument document, SourceComponentKind kind)
         {
-            return document.ClassId == UnityYamlScanner.ClassIdMonoBehaviour
+            return !document.Stripped
+                && document.ClassId == UnityYamlScanner.ClassIdMonoBehaviour
                 && document.TryGetScriptIdentity(out string guid, out long fileId)
                 && KnownScriptIdentities.Resolve(guid, fileId) == kind;
         }

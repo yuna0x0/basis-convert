@@ -12,6 +12,10 @@ namespace yuna0x0.Basis.Convert.Pipeline
     /// prefab. The component data for each lives in its own file, so each is read separately and
     /// its results placed at the path where that prefab sits.
     /// </para>
+    /// <para>
+    /// A source may also be a variant, whose own file holds only its overrides. The prefabs it
+    /// inherits from are read as well; see <see cref="InheritedAssetPaths"/>.
+    /// </para>
     /// </summary>
     public sealed class ConversionSource
     {

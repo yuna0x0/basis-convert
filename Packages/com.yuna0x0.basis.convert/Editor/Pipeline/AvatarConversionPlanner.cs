@@ -219,7 +219,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (UnityYamlDocument document in documents)
             {
-                if (document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
+                // A stripped document is a back reference to a component defined in a prefab
+                // this one is built from, holding none of its data. The definition is read from
+                // that file instead, so reading the stub as well would count it twice.
+                if (document.Stripped
+                    || document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
                     || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))
                 {
                     continue;
@@ -429,7 +433,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (UnityYamlDocument document in documents)
             {
-                if (document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
+                // A stripped document is a back reference to a component defined in a prefab
+                // this one is built from, holding none of its data. The definition is read from
+                // that file instead, so reading the stub as well would count it twice.
+                if (document.Stripped
+                    || document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
                     || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))
                 {
                     continue;
@@ -514,7 +522,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (UnityYamlDocument document in documents)
             {
-                if (document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
+                // A stripped document is a back reference to a component defined in a prefab
+                // this one is built from, holding none of its data. The definition is read from
+                // that file instead, so reading the stub as well would count it twice.
+                if (document.Stripped
+                    || document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
                     || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))
                 {
                     continue;
@@ -602,7 +614,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (UnityYamlDocument document in documents)
             {
-                if (document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
+                // A stripped document is a back reference to a component defined in a prefab
+                // this one is built from, holding none of its data. The definition is read from
+                // that file instead, so reading the stub as well would count it twice.
+                if (document.Stripped
+                    || document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
                     || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))
                 {
                     continue;
@@ -758,7 +774,11 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             foreach (UnityYamlDocument document in documents)
             {
-                if (document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
+                // A stripped document is a back reference to a component defined in a prefab
+                // this one is built from, holding none of its data. The definition is read from
+                // that file instead, so reading the stub as well would count it twice.
+                if (document.Stripped
+                    || document.ClassId != UnityYamlScanner.ClassIdMonoBehaviour
                     || !document.TryGetScriptIdentity(out string guid, out long scriptFileId))
                 {
                     continue;

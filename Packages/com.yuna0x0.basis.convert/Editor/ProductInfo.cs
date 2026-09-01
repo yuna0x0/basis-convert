@@ -13,9 +13,6 @@ namespace yuna0x0.Basis.Convert
     {
         public const string Name = "Watari";
 
-        /// <summary>What it is, for anywhere the name alone does not say enough.</summary>
-        public const string Tagline = "Converter for Basis";
-
         public const string ToolsMenu = "Tools/" + Name + "/";
         public const string GameObjectMenu = "GameObject/" + Name + "/";
     }

@@ -16,6 +16,8 @@ Notable changes to this package. The format follows
 
 ### Fixed
 
+- Components a prefab only refers to, rather than defines, were read as though they were its
+  own. On a variant this counted colliders twice and reported the copies as unresolved.
 - The report guide named `constraint.solveInLocalSpace`; the code is
   `constraint.solveInLocalSpace.dropped`.
 

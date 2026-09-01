@@ -8,15 +8,17 @@ namespace yuna0x0.Basis.Convert.Sources
     /// <summary>
     /// Ties a file identifier in a prefab's YAML to the live object it refers to.
     /// <para>
-    /// Two routes are needed, because a real avatar is built out of nested prefabs. An object
-    /// authored directly in the file is addressable by its own local file identifier. An object
-    /// coming from a nested prefab appears in the file only as a "stripped" back reference whose
-    /// identifier the AssetDatabase does not know, and is matched instead through the source
-    /// object it corresponds to, disambiguated by its prefab instance when one nested prefab is
-    /// used more than once.
+    /// Three routes are needed, because a real avatar is built out of nested prefabs and
+    /// variants. An object authored directly in the file is addressable by its own local file
+    /// identifier. An object coming from a nested prefab appears in the file only as a "stripped"
+    /// back reference whose identifier the AssetDatabase does not know, and is matched instead
+    /// through the source object it corresponds to, disambiguated by its prefab instance when one
+    /// nested prefab is used more than once. The third is for the documents of a prefab this one
+    /// is a variant of, whose identifiers name objects in that file rather than this one; see
+    /// <see cref="CreateForInherited"/>.
     /// </para>
     /// <para>
-    /// Neither route matches on names, so the duplicate bone names avatars routinely have cannot
+    /// No route matches on names, so the duplicate bone names avatars routinely have cannot
     /// cause a mismatch.
     /// </para>
     /// </summary>
@@ -269,11 +271,6 @@ namespace yuna0x0.Basis.Convert.Sources
             };
 
             return gameObject != null;
-        }
-
-        public bool TryGetDocument(long fileId, out UnityYamlDocument document)
-        {
-            return _documents.TryGetValue(fileId, out document);
         }
 
         private void Index(Object live)
