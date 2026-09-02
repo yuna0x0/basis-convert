@@ -30,7 +30,7 @@ you install that way.
 [ALCOM](https://vrc-get.anatawa12.com/en/alcom/) is an open-source VPM client with a graphical
 interface, and works with any Unity project.
 
-**Add the listing**, once:
+**Add the listing:**
 
 1. Open **Resources** in the sidebar, on the **Repositories** tab.
 2. Press **Add Repository**, enter `https://vpm.yuna0x0.com/index.json`, and confirm the dialog
