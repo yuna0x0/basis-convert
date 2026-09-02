@@ -13,7 +13,7 @@ report** or **Save report**. It is the record of what came across and what did n
 |---|---|
 | Needs attention | It converts, but not the way it worked before. Check it. |
 | Not carried over | The setting has no Basis equivalent and was dropped. |
-| Approximated | Fitted onto a Basis setting that does not mean quite the same thing. |
+| Approximated, check by eye | Fitted onto a Basis setting that does not mean quite the same thing. |
 | Mapped directly | Carried across as it was. Listed so the report is complete. |
 
 Entries are grouped by a stable code, because they repeat: an avatar with sixty PhysBones

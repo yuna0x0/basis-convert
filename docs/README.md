@@ -13,7 +13,8 @@ pnpm build     # production build into build/
 - `docs/` is the content. The sidebar is generated from the folder structure, so a new page is a
   new file with a `sidebar_position` in its front matter.
 - `src/pages/index.js` is the landing page.
-- `static/img/` holds images. Reference them as `/img/<name>.png`.
+- `static/img/` holds images. Reference them with markdown, `![alt](/img/<name>.webp)`: a raw
+  `<img src="/img/...">` skips the asset loader and 404s on the published site.
 
 ## Images
 

@@ -35,22 +35,24 @@ come across cleanly, grouped by kind:
 
 - **Needs attention**: something that will convert, but not the way it worked before.
 - **Not carried over**: a setting with no Basis equivalent.
-- **Approximated**: a setting fitted onto a Basis one that does not mean quite the same thing.
+- **Approximated, check by eye**: a setting fitted onto a Basis one that does not mean quite
+  the same thing.
 
 [Reading the report](reading-the-report.md) covers what these mean in practice.
 
 ## 4. Choose what to convert
 
 By default everything is converted. Under **What to convert** you can switch off whole kinds:
-physics, colliders, constraints, the avatar descriptor, menu toggles, authored motion. Turning on
-**Advanced** adds a checkbox for each individual prefab, rig, constraint, toggle and motion.
+physics, constraints, the avatar descriptor, menu toggles, authored motion. Turning on
+**Advanced** adds colliders, and a checkbox for each individual prefab, rig, constraint, toggle
+and motion.
 
 See [Conversion options](conversion-options.md).
 
 ## 5. Convert
 
-Press **Convert**. The components are written onto the avatar in the scene, under a single undo
-step, and the window reports what it wrote.
+The **Convert** button names how many components it will write. Press it and they go onto the
+avatar in the scene, under a single undo step, and the window reports what it wrote.
 
 If the avatar already carries components from a previous conversion on the same bones, you are
 asked before they are replaced. Anything elsewhere on the avatar is left alone.
@@ -68,7 +70,7 @@ leaves behind. See [Authored motion](what-converts/authored-motion.md).
 
 ## 6. Check the result
 
-Press **Test in Editor** on the `BasisAvatar` component. Jiggle physics and authored motion both
+Press **Test In Editor** on the `BasisAvatar` component. Jiggle physics and authored motion both
 run only once an avatar is calibrated, so plain Play mode will not show anything moving.
 
 Watch the hair, tail and skirt next to how they behaved before. Two parts of the physics mapping

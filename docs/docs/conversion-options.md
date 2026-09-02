@@ -14,10 +14,10 @@ it:
 
 | Option | What it writes |
 |---|---|
-| Physics | Jiggle physics rigs, from PhysBones and from Dynamic Bone |
-| Constraints | Basis constraints, from VRChat constraints |
+| Physics | Jiggle physics rigs, from PhysBones, VRM spring bones and Dynamic Bone |
+| Constraints | Basis constraints, from VRChat and VRM constraints |
 | Avatar descriptor | The `BasisAvatar` component: view position, visemes, blink |
-| Menu toggles | HVR Vixxy controls and their menu items |
+| Menu toggles | HVR Vixxy controls and their menu items, from menu toggles and VRM expressions |
 | Authored motion | `BasisAuthoredMotion`, with a clip baked from each always-on animator layer |
 
 A row is greyed out when the avatar has nothing of that kind, so an empty checkbox always means a

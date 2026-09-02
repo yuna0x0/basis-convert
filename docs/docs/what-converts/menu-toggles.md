@@ -5,9 +5,9 @@ sidebar_position: 5
 # Menu toggles
 
 Basis has no expression menu, and no FX layer. What it has is
-[HVR Vixxy](https://github.com/hai-vr/basis-comms), which ships with Basis and holds a control
-as a set of choices with a value per choice. Menu toggles are rebuilt as Vixxy controls with a
-menu item each.
+[HVR Vixxy](https://docs.hai-vr.dev/docs/basis/avatar-customization/vixxy), which ships with
+Basis and holds a control as a set of choices with a value per choice. Menu toggles are rebuilt
+as Vixxy controls with a menu item each.
 
 ## How a toggle is found
 

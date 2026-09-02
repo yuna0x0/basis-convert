@@ -6,6 +6,10 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The line describing Advanced left out the checkbox per motion, which it has always added.
+
 ## [0.3.2] - 2026-09-02
 
 ### Fixed

@@ -25,7 +25,7 @@ is nothing to convert either.
 
 ### The jiggle physics does not move in Play mode.
 
-Jiggle physics runs on a calibrated avatar. Press **Test in Editor** on the `BasisAvatar`
+Jiggle physics runs on a calibrated avatar. Press **Test In Editor** on the `BasisAvatar`
 component instead.
 
 ### Can I convert clothing separately from the avatar?
@@ -47,7 +47,7 @@ and Vixxy controls you made yourself, are left alone.
 
 ### My avatar's idle animation does not play.
 
-Authored motion runs on a calibrated avatar, the same as jiggle physics: press **Test in Editor**
+Authored motion runs on a calibrated avatar, the same as jiggle physics: press **Test In Editor**
 on the `BasisAvatar` component. If nothing was converted at all, check the report: only layers
 with no parameter steering them are read as motion, and only the rotation in them is baked.
 

@@ -14,9 +14,9 @@ reported as what it is rather than as an unknown script.
 
 ## Left to Modular Avatar
 
-`Merge Armature`, `Bone Proxy`, `Mesh Settings`, `Blendshape Sync` and `Parameters` rearrange the
-hierarchy, which is platform-independent work. They are reported as left alone rather than as
-unrecognised, and nothing is written for them.
+`Merge Armature`, `Bone Proxy`, `Mesh Settings`, `Blendshape Sync`, `Parameters` and the rest of
+the components that rearrange the hierarchy or the meshes do platform-independent work. They
+are reported as left alone rather than as unrecognised, and nothing is written for them.
 
 ## Rebuilt
 
@@ -36,6 +36,14 @@ same rule everywhere else.
 Paths inside a merged animator's clips are relative to the object the animator was merged at, and
 are rebased before anything is resolved. Paths in an `Object Toggle` are not: Modular Avatar
 resolves those against the avatar root, so they are used as written.
+
+## Reported, not rebuilt
+
+- `Shape Changer`, `Material Setter` and `Material Swap` react to a menu item, and are listed
+  with the menu components as `modularAvatar.menus`.
+- Components that act on VRChat's own systems, its colliders, its head chop, its MMD layers.
+  There is nothing for them to act on under Basis, and they are reported as
+  `modularAvatar.vrchatOnly`.
 
 ## Not covered
 

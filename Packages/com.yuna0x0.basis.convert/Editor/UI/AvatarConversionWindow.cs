@@ -387,8 +387,8 @@ namespace yuna0x0.Basis.Convert.UI
             using (new EditorGUI.IndentLevelScope())
             {
                 EditorGUILayout.LabelField(
-                    "Advanced adds a checkbox per prefab, rig, constraint and toggle, and the "
-                    + "two tuning weights.", EditorStyles.wordWrappedLabel);
+                    "Advanced adds a checkbox per prefab, rig, constraint, toggle and motion, "
+                    + "and the two tuning weights.", EditorStyles.wordWrappedLabel);
 
                 // Colliders only appear under Advanced, so say so here rather than let the
                 // setting act on a conversion from somewhere the reader cannot see it.

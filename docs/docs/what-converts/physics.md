@@ -50,5 +50,5 @@ be changed in the window.
 
 ## Checking the result
 
-Press **Test in Editor** on the `BasisAvatar` component. Jiggle physics only runs on a calibrated
+Press **Test In Editor** on the `BasisAvatar` component. Jiggle physics only runs on a calibrated
 avatar, so plain Play mode shows nothing moving.
