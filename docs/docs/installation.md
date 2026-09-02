@@ -30,15 +30,21 @@ you install that way.
 [ALCOM](https://vrc-get.anatawa12.com/en/alcom/) is an open-source VPM client with a graphical
 interface, and works with any Unity project.
 
-1. Open **Resources** in the sidebar. It opens on the **Repositories** tab.
-2. Press **Add Repository**, enter `https://vpm.yuna0x0.com/index.json`, and confirm the dialog
-   that lists what the repository holds. It is saved to ALCOM itself, not to a project, so this
-   is done once.
-3. Open **Projects** and select your Basis project.
-4. Find **Watari (Converter for Basis)** in its package list and press the **+** on that row.
-   The version column takes a specific version instead.
+**Add the listing**, once:
 
-Updates appear in the same list, as a newer version in that column.
+1. Open **Resources** in the sidebar, on the **Repositories** tab.
+2. Press **Add Repository**, enter `https://vpm.yuna0x0.com/index.json`, and confirm the dialog
+   listing what it holds. This is stored in ALCOM, not in a project.
+
+**Install it into your project:**
+
+3. Open **Projects**. If your Basis project is not listed, press the arrow next to
+   **Create New Project**, choose **Add Existing Project**, and pick the project folder.
+4. Press **Manage** on its row.
+5. Find **Watari (Converter for Basis)** and press the **+** at the end of its row.
+
+To install a particular version, choose it from the version dropdown on that row instead of
+pressing **+**. Updates later show up as a newer version in the same place.
 
 {/*
   IMAGE PLACEHOLDER: ALCOM with the listing added and Watari ready to install.
