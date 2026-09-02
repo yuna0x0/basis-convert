@@ -260,15 +260,32 @@ namespace yuna0x0.Basis.Convert.UI
 
         }
 
+        /// <summary>
+        /// The prefab names for the summary line, capped. This sits above the scroll view, so an
+        /// avatar built from a hundred prefabs would otherwise push the rest of the window out of
+        /// reach. The Prefabs list below names every one of them, and the same cap is used in the
+        /// report.
+        /// </summary>
         private string SourceNames()
         {
+            const int limit = 6;
             List<string> names = new List<string>();
+
             foreach (ConversionSource source in _plan.Sources)
             {
-                names.Add(source.Name);
+                if (!names.Contains(source.Name))
+                {
+                    names.Add(source.Name);
+                }
             }
 
-            return string.Join(", ", names);
+            if (names.Count <= limit)
+            {
+                return string.Join(", ", names);
+            }
+
+            return string.Join(", ", names.GetRange(0, limit))
+                + $" and {names.Count - limit} more";
         }
 
         private int CountOf(DiagnosticSeverity severity)

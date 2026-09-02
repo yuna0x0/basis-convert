@@ -10,6 +10,8 @@ Notable changes to this package. The format follows
 
 - Detected, Read from, What to convert and Prefabs cut their text off instead of wrapping when
   the window was narrow.
+- Read from named every prefab, so an avatar built from dozens of them filled the window above
+  the scroll view. It names six and counts the rest, as the report does.
 
 ## [0.3.1] - 2026-09-01
 
