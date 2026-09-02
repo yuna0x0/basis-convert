@@ -173,7 +173,8 @@ the original. Everything else maps directly.
     commented out, and the `orchestrator.ProvideValue` it calls does not exist on
     `HVRVixxyOrchestrator`, so it would not compile if the define were turned on. It is
     unfinished upstream work rather than a gated feature. Nothing in Vixxy expresses two inputs
-    today, so this and the axis puppets below both wait on Vixxy rather than on us.
+    today, so this and the axis puppets below both wait on Vixxy rather than on us. The newest
+    worklog lists this and the other deferred work under "Later", with what starts each.
 - **Props and worlds. Backlog.** Both are in scope. Neither is blocked on effort.
 
   - **`BasisProp`** has nothing to read from. VRChat has no prop content type, and the nearest
