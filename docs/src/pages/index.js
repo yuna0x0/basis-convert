@@ -2,7 +2,6 @@ import React from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import useBaseUrl from '@docusaurus/useBaseUrl';
 import Layout from '@theme/Layout';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 
@@ -35,12 +34,6 @@ export default function Home() {
       description="Convert an avatar's VRChat, VRM and Dynamic Bone components into their Basis equivalents.">
       <Hero />
       <main>
-        <div className="container margin-top--lg text--center">
-          <img
-            src={useBaseUrl('/img/hero-window.webp')}
-            alt="The Convert Avatar window beside an avatar in the scene"
-          />
-        </div>
         <HomepageFeatures />
       </main>
     </Layout>

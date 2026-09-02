@@ -19,10 +19,9 @@ width the docs column renders, so they stay sharp on a high density display, and
 from about 450KB to 35KB each. `magick <in> -resize '1600x>' -strip -quality 82 <out>.webp`. The `>` keeps a narrower
 shot at its own size rather than upscaling it.
 
-Portrait shots need a width cap: at column width `window-scanned.webp` would be about 1000px
-tall. It is wrapped in `<div className="screenshot-tall">`, which caps it at 480 in
-`custom.css`, and the file is saved at 960, twice that. Do the same for any other portrait
-shot.
+A portrait shot is capped in the page, not in the file. Wrap it in
+`<div className="screenshot-tall">`, which `custom.css` holds to 480px or the column width,
+whichever is smaller. `window-scanned.webp` would be about 1000px tall without it.
 
 Keep the markdown `![](/img/...)` syntax inside the wrapper. A raw `<img src="/img/...">` skips
 the asset loader, so the path keeps no `baseUrl` and 404s on the published site, which is
