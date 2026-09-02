@@ -93,8 +93,11 @@ sense of how such tools work. The ALCOM instructions were VCC's workflow with AL
 invented rather than read, and stood in two repositories until a reader hit them.
 
 - **Read the tool, not a tool like it.** UI strings live in the source: ALCOM's are
-  `vrc-get-gui/locales/en.json5` in `vrc-get/vrc-get`, and its screens are the route folders
-  beside them. A CLI's are its own `--help` or README. Quote those.
+  `vrc-get-gui/locales/en.json5` in `vrc-get/vrc-get`. A CLI's are its own `--help` or README.
+  Quote those.
+- **A route is not a label.** ALCOM's sidebar entry for `/packages/repositories` reads
+  **Resources**; `packages` appears nowhere in the interface. Read the component that renders the
+  link, `components/SideBar.tsx`, not the folder it points at.
 - **Vendor documentation is second best, and version specific.** Unity renamed "Add package from
   git URL" to "Install package from git URL"; the page for the version in
   `ProjectSettings/ProjectVersion.txt` is the one that counts.
