@@ -22,7 +22,7 @@ the same entry.
 The window scans the avatar as soon as one is selected. It reports what it detected, how many
 components it found, and what a conversion would produce. Nothing has been written yet.
 
-![The window after scanning an avatar](/img/window-scanned.webp)
+<img src="/img/window-scanned.webp" alt="The window after scanning an avatar" width="480" />
 
 ## 3. Read what it found
 
