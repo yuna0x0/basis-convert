@@ -32,3 +32,9 @@
   font-size: 0.85em;
   opacity: 0.7;
 }
+
+/* Portrait screenshots run about 1000px tall at column width. */
+.screenshot-tall img {
+  max-width: 480px;
+  height: auto;
+}

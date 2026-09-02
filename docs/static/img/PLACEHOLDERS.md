@@ -20,8 +20,13 @@ from about 450KB to 35KB each. `magick <in> -resize '1600x>' -strip -quality 82 
 shot at its own size rather than upscaling it.
 
 Portrait shots need a width cap: at column width `window-scanned.webp` would be about 1000px
-tall. The page writes it as an `<img>` tag with `width="480"` rather than markdown syntax, and
-the file is saved at 960, twice that. Do the same for any other portrait shot.
+tall. It is wrapped in `<div className="screenshot-tall">`, which caps it at 480 in
+`custom.css`, and the file is saved at 960, twice that. Do the same for any other portrait
+shot.
+
+Keep the markdown `![](/img/...)` syntax inside the wrapper. A raw `<img src="/img/...">` skips
+the asset loader, so the path keeps no `baseUrl` and 404s on the published site, which is
+served under `/watari-basis/`.
 
 The landing page's three feature icons are not files. They come from `lucide-react`, imported by
 name in `HomepageFeatures`.

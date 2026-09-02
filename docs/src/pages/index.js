@@ -2,6 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import Layout from '@theme/Layout';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 
@@ -36,7 +37,7 @@ export default function Home() {
       <main>
         <div className="container margin-top--lg text--center">
           <img
-            src="/watari-basis/img/hero-window.webp"
+            src={useBaseUrl('/img/hero-window.webp')}
             alt="The Convert Avatar window beside an avatar in the scene"
           />
         </div>
