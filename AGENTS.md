@@ -86,6 +86,25 @@ tens of gigabytes and slow to rebuild.
 - **Menus belong to us, not to Basis.** `Tools/<ProductName>/...`, never under Basis's own menu.
   See `agent/decisions/0002`.
 
+## Someone else's UI is not guessable
+
+Steps through another tool's interface are facts to be checked, not prose to be written from a
+sense of how such tools work. The ALCOM instructions were VCC's workflow with ALCOM's name on it,
+invented rather than read, and stood in two repositories until a reader hit them.
+
+- **Read the tool, not a tool like it.** UI strings live in the source: ALCOM's are
+  `vrc-get-gui/locales/en.json5` in `vrc-get/vrc-get`, and its screens are the route folders
+  beside them. A CLI's are its own `--help` or README. Quote those.
+- **Vendor documentation is second best, and version specific.** Unity renamed "Add package from
+  git URL" to "Install package from git URL"; the page for the version in
+  `ProjectSettings/ProjectVersion.txt` is the one that counts.
+- **Our own menus come from the code.** `ProductInfo.ToolsMenu` and the `MenuItem` attributes,
+  not memory.
+- **If it cannot be checked, do not write the steps.** Name the screen and stop, or leave it out.
+  A vague instruction that is right beats a precise one that is invented.
+
+This is "read the code, not the docs" under Lessons, applied to interfaces.
+
 ## Write short
 
 Nobody reads a wall of text. This applies hardest to the changelog and release notes, and to

@@ -89,7 +89,7 @@ name**.
 
 No extra tooling, and useful for trying an unreleased version.
 
-**Window > Package Manager > + > Add package from git URL**:
+**Window > Package Manager > + > Install package from git URL**:
 
 ```
 https://github.com/yuna0x0/watari-basis.git?path=/Packages/com.yuna0x0.basis.convert
