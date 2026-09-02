@@ -37,9 +37,9 @@ export default function Home() {
         {/*
           IMAGE PLACEHOLDER: a wide screenshot or short clip of the Convert Avatar window
           beside a converted avatar, shown under the hero.
-          Save as docs/static/img/hero-window.png, then replace this comment with:
+          Save as docs/static/img/hero-window.webp, then replace this comment with:
           <div className="container margin-top--lg text--center">
-            <img src="/watari-basis/img/hero-window.png" alt="The Convert Avatar window" />
+            <img src="/watari-basis/img/hero-window.webp" alt="The Convert Avatar window" />
           </div>
         */}
         <HomepageFeatures />

@@ -30,27 +30,27 @@ you install that way.
 [ALCOM](https://vrc-get.anatawa12.com/en/alcom/) is an open-source VPM client with a graphical
 interface, and works with any Unity project.
 
-**Add the listing:**
+**Add the listing.** This is stored in ALCOM, not in a project.
 
-1. Open **Resources** in the sidebar, on the **Repositories** tab.
-2. Press **Add Repository**, enter `https://vpm.yuna0x0.com/index.json`, and confirm the dialog
-   listing what it holds. This is stored in ALCOM, not in a project.
+1. Open **Resources** in the sidebar, on the **Repositories** tab, and press **Add Repository**.
+2. Enter `https://vpm.yuna0x0.com/index.json` and confirm. It then sits in the list.
 
-**Install it into your project:**
+![Adding the listing as a repository in ALCOM](/img/install-alcom-repository.webp)
 
-3. Open **Projects**. If your Basis project is not listed, press the arrow next to
+**Install it into your project.**
+
+3. Open **Projects**. If your Basis project is not listed, press the arrow beside
    **Create New Project**, choose **Add Existing Project**, and pick the project folder.
 4. Press **Manage** on its row.
+
+![Adding an existing project and opening Manage](/img/install-alcom-project.webp)
+
 5. Find **Watari (Converter for Basis)** and press the **+** at the end of its row.
 
-To install a particular version, choose it from the version dropdown on that row instead of
-pressing **+**. Updates later show up as a newer version in the same place.
+![Installing Watari from the project's package list](/img/install-alcom-package.webp)
 
-{/*
-  IMAGE PLACEHOLDER: ALCOM with the listing added and Watari ready to install.
-  Save as docs/static/img/install-alcom.png, then replace this comment with:
-  ![Installing through ALCOM](/img/install-alcom.png)
-*/}
+For a particular version, pick it from the **Installed** dropdown on that row instead of pressing
+**+**. Updates later appear as a newer number under **Latest**.
 
 ### vrc-get
 
@@ -108,8 +108,8 @@ re-adding them, or by changing the version at the end of the URL.
 
 {/*
   IMAGE PLACEHOLDER: Unity's Package Manager with the git URL field filled in.
-  Save as docs/static/img/install-package-manager.png, then replace this comment with:
-  ![Adding the package by git URL](/img/install-package-manager.png)
+  Save as docs/static/img/install-package-manager.webp, then replace this comment with:
+  ![Adding the package by git URL](/img/install-package-manager.webp)
 */}
 
 ## Manual

@@ -28,8 +28,8 @@ there if you undo the conversion. See [Authored motion](what-converts/authored-m
 
 {/*
   IMAGE PLACEHOLDER: the What to convert section with its checkboxes and counts.
-  Save as docs/static/img/options-basic.png, then replace this comment with:
-  ![The basic options](/img/options-basic.png)
+  Save as docs/static/img/options-basic.webp, then replace this comment with:
+  ![The basic options](/img/options-basic.webp)
 */}
 
 ## Advanced
@@ -45,8 +45,8 @@ there if you undo the conversion. See [Authored motion](what-converts/authored-m
 
 {/*
   IMAGE PLACEHOLDER: the advanced view with the prefab list and per-item checkboxes expanded.
-  Save as docs/static/img/options-advanced.png, then replace this comment with:
-  ![The advanced options](/img/options-advanced.png)
+  Save as docs/static/img/options-advanced.webp, then replace this comment with:
+  ![The advanced options](/img/options-advanced.webp)
 */}
 
 ## What narrowing does not change

@@ -23,8 +23,8 @@ components it found, and what a conversion would produce. Nothing has been writt
 {/*
   IMAGE PLACEHOLDER: the Convert Avatar window after scanning an avatar, showing the detected
   type, the summary and the diagnostics.
-  Save as docs/static/img/window-scanned.png, then replace this comment with:
-  ![The window after scanning an avatar](/img/window-scanned.png)
+  Save as docs/static/img/window-scanned.webp, then replace this comment with:
+  ![The window after scanning an avatar](/img/window-scanned.webp)
 */}
 
 ## 3. Read what it found
@@ -61,8 +61,8 @@ leaves behind. See [Authored motion](what-converts/authored-motion.md).
 {/*
   IMAGE PLACEHOLDER: the window after a conversion, with the green result line and the summary
   of what was written.
-  Save as docs/static/img/window-converted.png, then replace this comment with:
-  ![The window after converting](/img/window-converted.png)
+  Save as docs/static/img/window-converted.webp, then replace this comment with:
+  ![The window after converting](/img/window-converted.webp)
 */}
 
 ## 6. Check the result
