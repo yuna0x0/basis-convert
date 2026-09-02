@@ -182,14 +182,12 @@ namespace yuna0x0.Basis.Convert.UI
         {
             EditorGUILayout.Space();
 
-            EditorGUILayout.LabelField("Detected", _plan.Profile.Kind, EditorStyles.boldLabel);
-            EditorGUILayout.LabelField(" ", string.Join(", ", _plan.Profile.Signals()),
-                EditorStyles.label);
+            WrappedField("Detected", _plan.Profile.Kind, boldValue: true);
+            WrappedField(" ", string.Join(", ", _plan.Profile.Signals()));
 
             if (_plan.Sources.Count > 1)
             {
-                EditorGUILayout.LabelField("Read from",
-                    $"{_plan.Sources.Count} prefabs: {SourceNames()}", EditorStyles.label);
+                WrappedField("Read from", $"{_plan.Sources.Count} prefabs: {SourceNames()}");
             }
 
             // A VRM states who may wear it and what may be done to it. Converting changes the
@@ -440,7 +438,7 @@ namespace yuna0x0.Basis.Convert.UI
                             EditorGUIUtility.PingObject(source.Root);
                         }
 
-                        EditorGUILayout.LabelField(detail, EditorStyles.label);
+                        GUILayout.Label(detail, EditorStyles.wordWrappedLabel);
                     }
                 }
 
@@ -523,10 +521,33 @@ namespace yuna0x0.Basis.Convert.UI
             {
                 bool result = EditorGUILayout.ToggleLeft(label, value && available,
                     GUILayout.Width(170f));
-                EditorGUILayout.LabelField(detail, EditorStyles.label);
+                GUILayout.Label(detail, EditorStyles.wordWrappedLabel);
                 return available ? result : value;
             }
         }
+
+        /// <summary>
+        /// A prefix and a value that wraps. `EditorGUILayout.LabelField` sizes its rect to one
+        /// line whatever the style, so a long value is clipped rather than wrapped;
+        /// `GUILayout.Label` sizes to the text at the width it is given.
+        /// </summary>
+        private static void WrappedField(string label, string value, bool boldValue = false)
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.LabelField(label, GUILayout.Width(EditorGUIUtility.labelWidth));
+                GUILayout.Label(value, boldValue ? BoldWrapped : EditorStyles.wordWrappedLabel);
+            }
+        }
+
+        private static GUIStyle _boldWrapped;
+
+        /// <summary>Built on first use: a GUIStyle cannot be made before the GUI is running.</summary>
+        private static GUIStyle BoldWrapped =>
+            _boldWrapped ??= new GUIStyle(EditorStyles.wordWrappedLabel)
+            {
+                fontStyle = FontStyle.Bold,
+            };
 
         private static string Tally(int selected, int total, string noun)
         {

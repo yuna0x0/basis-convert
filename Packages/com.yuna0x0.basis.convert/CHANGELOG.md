@@ -6,6 +6,11 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Detected, Read from, What to convert and Prefabs cut their text off instead of wrapping when
+  the window was narrow.
+
 ## [0.3.1] - 2026-09-01
 
 ### Changed
