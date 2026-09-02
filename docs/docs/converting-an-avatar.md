@@ -17,15 +17,12 @@ Drag the avatar into a scene, then add any clothing and accessories you want on 
 **Tools > Watari > Convert Avatar to Basis**, or right-click the avatar in the hierarchy and pick
 the same entry.
 
+![Opening the window from the Tools menu](/img/convert-menu.webp)
+
 The window scans the avatar as soon as one is selected. It reports what it detected, how many
 components it found, and what a conversion would produce. Nothing has been written yet.
 
-{/*
-  IMAGE PLACEHOLDER: the Convert Avatar window after scanning an avatar, showing the detected
-  type, the summary and the diagnostics.
-  Save as docs/static/img/window-scanned.webp, then replace this comment with:
-  ![The window after scanning an avatar](/img/window-scanned.webp)
-*/}
+![The window after scanning an avatar](/img/window-scanned.webp)
 
 ## 3. Read what it found
 

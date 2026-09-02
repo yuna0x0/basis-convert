@@ -34,14 +34,12 @@ export default function Home() {
       description="Convert an avatar's VRChat, VRM and Dynamic Bone components into their Basis equivalents.">
       <Hero />
       <main>
-        {/*
-          IMAGE PLACEHOLDER: a wide screenshot or short clip of the Convert Avatar window
-          beside a converted avatar, shown under the hero.
-          Save as docs/static/img/hero-window.webp, then replace this comment with:
-          <div className="container margin-top--lg text--center">
-            <img src="/watari-basis/img/hero-window.webp" alt="The Convert Avatar window" />
-          </div>
-        */}
+        <div className="container margin-top--lg text--center">
+          <img
+            src="/watari-basis/img/hero-window.webp"
+            alt="The Convert Avatar window beside an avatar in the scene"
+          />
+        </div>
         <HomepageFeatures />
       </main>
     </Layout>
