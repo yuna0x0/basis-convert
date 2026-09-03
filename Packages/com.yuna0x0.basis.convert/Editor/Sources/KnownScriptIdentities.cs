@@ -33,11 +33,16 @@ namespace yuna0x0.Basis.Convert.Sources
         VrmFirstPerson,
         VrmMeta,
 
+        /// <summary>
+        /// Where a VRM 0.x avatar looks, in any of the forms UniVRM writes it. Basis drives gaze
+        /// from the eye bones, so there is nothing to convert these into.
+        /// </summary>
+        VrmLookAt,
+
         /// <summary>UniVRM's record of the humanoid bone mapping, which Unity's own avatar holds.</summary>
         UniHumanoid,
 
-        // VRM 1.0's node constraints. Not converted yet, so they are named to be reported for
-        // what they are rather than as unrecognised scripts.
+        // VRM 1.0's node constraints.
         Vrm10RotationConstraint,
         Vrm10AimConstraint,
         Vrm10RollConstraint,
@@ -160,7 +165,17 @@ namespace yuna0x0.Basis.Convert.Sources
                 { ("5b678c1df50cfb547990db24a32856da", LooseScriptFileId), SourceComponentKind.VrmBlendShapeProxy },
                 { ("dedba1309bdf12b42af2362f52eea134", LooseScriptFileId), SourceComponentKind.VrmFirstPerson },
                 { ("690ea0146224b8b4694a1925dddeb352", LooseScriptFileId), SourceComponentKind.VrmMeta },
+
+                // VRM 0.x writes its look at as a head component plus whichever applyer the
+                // author chose, bone or blendshape.
+                { ("e0a1a470564f16f4f94acb4b9ef56367", LooseScriptFileId), SourceComponentKind.VrmLookAt },
+                { ("04a3e59a0190f1647892e3709c075845", LooseScriptFileId), SourceComponentKind.VrmLookAt },
+                { ("a8b72334adf6f7948bd98b4f0a873949", LooseScriptFileId), SourceComponentKind.VrmLookAt },
+                { ("845471fb50db3cd4aa2f7a3fae3cc3a4", LooseScriptFileId), SourceComponentKind.VrmLookAt },
                 { ("97a39af5b64ede64e86b92b5bf94a0e7", LooseScriptFileId), SourceComponentKind.UniHumanoid },
+
+                // VRM 0.x's own record of the same thing.
+                { ("3869812175467a143ab9cd865752b4a9", LooseScriptFileId), SourceComponentKind.UniHumanoid },
                 { ("7a07fbecedce41b4396f286fd7634e1d", LooseScriptFileId), SourceComponentKind.Vrm10RotationConstraint },
                 { ("37b0507e4ae49724898ca17cc3db6f1a", LooseScriptFileId), SourceComponentKind.Vrm10AimConstraint },
                 { ("1e864293edac89b40b9f79c23e7aa547", LooseScriptFileId), SourceComponentKind.Vrm10RollConstraint },

@@ -267,6 +267,15 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>VRM expressions found, whether or not each became a control.</summary>
         public int VrmExpressionsFound;
 
+        /// <summary>VRM 0.x look at components, which Basis has no use for.</summary>
+        public int VrmLookAtFound;
+
+        /// <summary>
+        /// The expressions as read, kept because the ones Basis drives itself, the vowels and
+        /// blink, fill the Basis Avatar's viseme slots rather than becoming controls.
+        /// </summary>
+        public List<VrmExpressionData> VrmExpressions = new List<VrmExpressionData>();
+
         /// <summary>VRM 1.0 node constraints found. Not converted yet.</summary>
         public int VrmConstraintsFound;
 

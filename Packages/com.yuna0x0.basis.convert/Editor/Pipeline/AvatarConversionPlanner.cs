@@ -326,6 +326,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
+                if (kind == SourceComponentKind.VrmLookAt)
+                {
+                    plan.VrmLookAtFound++;
+                    continue;
+                }
+
                 if (KnownScriptIdentities.IsHandledByModularAvatar(kind))
                 {
                     plan.ModularAvatarHierarchyFound++;
@@ -442,6 +448,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     + "convert and nothing was lost. The tool itself does not run under Basis.");
             }
 
+            if (plan.VrmLookAtFound > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vrm.lookAt",
+                    $"{plan.VrmLookAtFound} VRM look at components say how the avatar aims its "
+                    + "eyes. Basis drives gaze from the eye bones itself, so they are not "
+                    + "converted. Where the eyes sit does carry across.");
+            }
+
             if (plan.ContactsFound > 0)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "contacts.dropped",
@@ -452,6 +466,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             BuildProfile(plan);
             EnsureAvatarComponent(plan);
             ApplyVrmEyePosition(plan);
+            ApplyVrmVisemes(plan);
             LoadExpressions(plan);
 
             // Clothing has no descriptor and no expression menu of its own, so this is not part
@@ -851,6 +866,175 @@ namespace yuna0x0.Basis.Convert.Pipeline
         }
 
         /// <summary>
+        /// Fills the Basis Avatar's viseme and blink slots from a VRM's own expressions.
+        /// <para>
+        /// Basis takes fifteen visemes and VRM names five vowels, so five are filled and the ten
+        /// consonants are left unset: the mouth opens on vowels and stays still on the rest,
+        /// which is what the avatar itself could do. A viseme slot holds one blendshape, so an
+        /// expression that drives several is reported rather than approximated by one of them.
+        /// </para>
+        /// <para>
+        /// Basis holds one mesh for all fifteen and one for blink. An avatar that spreads its
+        /// vowels over several renderers gets the one that carries the most of them, and the
+        /// rest are reported as left unset.
+        /// </para>
+        /// </summary>
+        private static void ApplyVrmVisemes(AvatarConversionPlan plan)
+        {
+            if (plan.Descriptor == null || plan.VrmExpressions.Count == 0
+                || plan.SourceRoot == null)
+            {
+                return;
+            }
+
+            BasisAvatarPlan descriptor = plan.Descriptor.Plan;
+
+            // Already filled from a VRChat descriptor: this avatar carries both, and the
+            // descriptor is the one that names all fifteen.
+            if (descriptor.VisemeBlendShapeNames.Count > 0)
+            {
+                return;
+            }
+
+            Dictionary<SkinnedMeshRenderer, Dictionary<int, string>> byRenderer =
+                new Dictionary<SkinnedMeshRenderer, Dictionary<int, string>>();
+
+            VrmMorphBinding blink = null;
+            int compound = 0;
+
+            foreach (VrmExpressionData expression in plan.VrmExpressions)
+            {
+                bool viseme = VrmExpressionToVisemeMapper.TryGetSlot(expression, out int slot);
+                if (!viseme && !VrmExpressionToVisemeMapper.IsBlink(expression))
+                {
+                    continue;
+                }
+
+                VrmMorphBinding binding = VrmExpressionToVisemeMapper.SingleBinding(expression);
+                if (binding == null)
+                {
+                    compound++;
+                    continue;
+                }
+
+                if (!viseme)
+                {
+                    blink ??= binding;
+                    continue;
+                }
+
+                SkinnedMeshRenderer renderer = RendererFor(plan, binding);
+                if (renderer == null)
+                {
+                    continue;
+                }
+
+                if (!byRenderer.TryGetValue(renderer, out Dictionary<int, string> slots))
+                {
+                    slots = new Dictionary<int, string>();
+                    byRenderer[renderer] = slots;
+                }
+
+                slots[slot] = binding.ShapeName;
+            }
+
+            int filled = ApplyVowels(plan, descriptor, byRenderer);
+            ApplyBlink(plan, descriptor, blink);
+
+            if (compound > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vrm.visemeCompound",
+                    $"{compound} of the avatar's mouth or blink expressions move more than one "
+                    + "blendshape at once. A Basis viseme names a single shape, so these were "
+                    + "left unset rather than reduced to one of the shapes they move.");
+            }
+
+            if (filled == 0 && descriptor.BlinkBlendShapeIndex < 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "descriptor.visemesUnset",
+                    "Nothing named this avatar's visemes or blink, so they are unset on the "
+                    + "Basis Avatar component and have to be assigned by hand.");
+            }
+        }
+
+        /// <summary>
+        /// The vowels of whichever renderer carries most of them. Basis holds one mesh for all
+        /// fifteen visemes, so the rest cannot be written even when they were read.
+        /// </summary>
+        private static int ApplyVowels(AvatarConversionPlan plan, BasisAvatarPlan descriptor,
+            Dictionary<SkinnedMeshRenderer, Dictionary<int, string>> byRenderer)
+        {
+            SkinnedMeshRenderer best = null;
+            int bestCount = 0;
+            int total = 0;
+
+            foreach (KeyValuePair<SkinnedMeshRenderer, Dictionary<int, string>> pair in byRenderer)
+            {
+                total += pair.Value.Count;
+                if (pair.Value.Count > bestCount)
+                {
+                    best = pair.Key;
+                    bestCount = pair.Value.Count;
+                }
+            }
+
+            if (best == null)
+            {
+                return 0;
+            }
+
+            for (int i = 0; i < VrmExpressionToVisemeMapper.VisemeCount; i++)
+            {
+                descriptor.VisemeBlendShapeNames.Add(
+                    byRenderer[best].TryGetValue(i, out string name) ? name : string.Empty);
+            }
+
+            plan.Descriptor.SourceVisemeMesh = best;
+
+            plan.Diagnostics.Add(DiagnosticSeverity.Approximated, "vrm.visemes",
+                $"{bestCount} of the fifteen visemes were filled from the avatar's own vowel "
+                + $"expressions, on {best.name}. VRM names the five vowels and no consonants, so "
+                + "the rest are unset: the mouth moves on vowels and holds still on the "
+                + "consonants.");
+
+            if (total > bestCount)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vrm.visemeMeshSplit",
+                    $"{total - bestCount} vowel expressions drive a renderer other than "
+                    + $"{best.name}. Basis reads all fifteen visemes from one mesh, so those "
+                    + "were left unset.");
+            }
+
+            return bestCount;
+        }
+
+        private static void ApplyBlink(AvatarConversionPlan plan, BasisAvatarPlan descriptor,
+            VrmMorphBinding blink)
+        {
+            SkinnedMeshRenderer renderer = blink == null ? null : RendererFor(plan, blink);
+            if (renderer == null)
+            {
+                return;
+            }
+
+            descriptor.BlinkBlendShapeIndex = blink.Index;
+            plan.Descriptor.SourceBlinkMesh = renderer;
+
+            plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "vrm.blink",
+                $"Blink was taken from the avatar's own blink expression, {blink.ShapeName} on "
+                + $"{renderer.name}.");
+        }
+
+        /// <summary>The renderer a binding names, relative to the prefab it was read from.</summary>
+        private static SkinnedMeshRenderer RendererFor(
+            AvatarConversionPlan plan, VrmMorphBinding binding)
+        {
+            Transform root = plan.SourceRoot.transform;
+            Transform at = string.IsNullOrEmpty(binding.Path) ? root : root.Find(binding.Path);
+            return at == null ? null : at.GetComponent<SkinnedMeshRenderer>();
+        }
+
+        /// <summary>
         /// The height and depth of a point offset from the head bone, measured in the avatar
         /// root's space. VRM states the eyes that way and Basis stores them this way.
         /// </summary>
@@ -958,6 +1142,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
             foreach (VrmExpressionData expression in expressions)
             {
                 plan.VrmExpressionsFound++;
+                NameBlendShapes(expression, root);
+                plan.VrmExpressions.Add(expression);
 
                 if (!VrmExpressionToVixxyMapper.IsMenuWorthy(expression))
                 {
@@ -969,8 +1155,6 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
                     continue;
                 }
-
-                NameBlendShapes(expression, root);
 
                 VixxyControlPlan control = VrmExpressionToVixxyMapper.Map(expression);
                 foreach (ConversionDiagnostic diagnostic in control.Diagnostics)
@@ -1311,8 +1495,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             descriptorPlan.Diagnostics.Add(DiagnosticSeverity.Mapped, "descriptor.noSource",
                 "This avatar has a humanoid rig but no VRChat descriptor, so a Basis Avatar "
                 + "component was added empty. Open its inspector once and Basis fills in the "
-                + "animator, scale, renderers, eye and mouth positions itself. Visemes and blink "
-                + "have to be assigned by hand, since there was nothing to read them from.");
+                + "animator, scale, renderers, eye and mouth positions itself.");
 
             plan.Descriptor = new PlannedAvatarDescriptor
             {

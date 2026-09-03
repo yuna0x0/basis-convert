@@ -40,6 +40,8 @@ Everything here is also reported by the tool. This is the same information in on
 - **A radial puppet becomes a slider between the two ends of its blend tree.** Vixxy interpolates
   in a straight line between choices, so motions the tree held in between are approximated by
   that line.
+- **A VRM fills five of the fifteen visemes.** It names the vowels and no consonants, so the
+  mouth moves on `aa`, `E`, `ih`, `oh` and `ou` and holds still on the rest.
 - **None of the three VRM constraints is exact.** VRM's rotation constraint copies a delta from
   the source's rest pose, VRM's aim states no up direction, and nothing in Basis copies rotation
   about a single axis the way a roll constraint does. See [VRM](what-converts/vrm.md).

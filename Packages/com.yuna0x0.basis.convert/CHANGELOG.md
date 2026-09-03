@@ -11,6 +11,10 @@ Notable changes to this package. The format follows
 - A `.vrm` file converts as it imports: spring bones, node constraints, expressions, licence and
   eye offset are read from its components, so it no longer has to be unpacked and saved as a
   prefab first.
+- A VRM's vowel expressions and blink fill the Basis Avatar's visemes. Five of the fifteen, since
+  VRM names no consonants: `vrm.visemes` and `vrm.blink`.
+- VRM 0.x look at components are reported as `vrm.lookAt` rather than as unknown scripts, along
+  with its humanoid description.
 
 ### Fixed
 

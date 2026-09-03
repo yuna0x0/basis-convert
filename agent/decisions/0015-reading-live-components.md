@@ -54,3 +54,13 @@ read by name through `SerializedObject`, which is how private Basis fields are a
 Readers still hand plain data to pure mappers, and only writers touch the scene. A reader that
 takes objects rather than text is still a reader; animator controllers and clips have always been
 read that way. What decides which reader runs is the file, not the platform the avatar came from.
+
+## Addendum, 2026-09-03: VRM 0.x arrives as text
+
+UniVRM 0.x has no ScriptedImporter. An `AssetPostprocessor` turns a `.vrm` into a real `.prefab`
+beside it as it lands, so a 0.x avatar is Unity YAML and the text reader handles it. The component
+path still recognises 0.x components, and was checked against a real 0.x avatar, but nothing in a
+normal project reaches it. It is a fallback, not the route.
+
+This does not change the decision. What decides which reader runs is whether the file holds text,
+and for 0.x the answer is yes.

@@ -61,8 +61,14 @@ A VRM expression is a named set of blendshape weights. The ones an author added,
 emotion presets, become Vixxy controls with a menu item each: off leaves every shape at the
 weight the avatar was authored with, on takes the expression's.
 
-The lip sync shapes, blinking and looking around do not. Basis drives those itself, and a menu
-item would fight it. They are reported as left to Basis.
+The lip sync shapes, blinking and looking around do not become controls. Basis drives those
+itself, and a menu item would fight it.
+
+The five vowels and blink are written to the `BasisAvatar` instead, so a converted VRM talks and
+blinks without anything being assigned by hand. Basis takes fifteen visemes and VRM names five,
+so `aa`, `E`, `ih`, `oh` and `ou` are filled and the ten consonants are left unset: the mouth
+moves on vowels and holds still on the rest. A viseme slot holds one blendshape, so an expression
+that moves several at once is reported rather than reduced to one of them.
 
 VRM refers to a blendshape by its position in the mesh rather than by name, so each one is looked
 up on the renderer it names. A shape that is no longer there, usually because the mesh changed
@@ -121,5 +127,6 @@ camera, add a Basis Head Chop naming it.
   pushes out, so those are written as ordinary colliders and reported: they now push the opposite
   way, and are worth removing if the result looks wrong.
 - **Where the avatar looks.** VRM aims the eyes with curves or an expression per direction;
-  Basis drives gaze from the eye bones. Only the eye offset carries across, not the aiming.
+  Basis drives gaze from the eye bones. Only the eye offset carries across, not the aiming. VRM
+  0.x writes this as components, which are reported as `vrm.lookAt`.
 - **The avatar's metadata**: its title, author and permissions.

@@ -14,6 +14,9 @@ through.
   rather than by name.
 - **Blink**, taken from the eyelid blendshape the descriptor names.
 
+A VRM has no descriptor, and its own expressions fill what they can: the five vowels and blink.
+See [VRM](vrm.md).
+
 ## What Basis fills in itself
 
 Opening the `BasisAvatar` inspector for the first time makes Basis populate the animator, the
