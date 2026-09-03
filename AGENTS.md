@@ -38,6 +38,9 @@ next. Then `agent/decisions/`. The short version of how this works:
 - **Read the output, not just the test results.** A wide angle limit clamping to a tighter one,
   and duplicate collider diagnostics, were both found by reading a generated report while every
   test passed.
+- **Fix the class, not the instance.** `EditorGUILayout.LabelField` sizes its rect to one line
+  whatever style it is handed. Told about four clipped fields, one session fixed those four;
+  the other ten came back as a bug report. When a fault is a misused API, grep for every call.
 
 The scope is wider than what is built. Avatars first, then props and worlds; VRChat first, then
 whatever else is worth reading, VRM so far. Reading, mapping and writing are separate

@@ -9,6 +9,8 @@ Notable changes to this package. The format follows
 ### Fixed
 
 - The line describing Advanced left out the checkbox per motion, which it has always added.
+- Text was cut off rather than wrapped under the conversion result, in the rig and diagnostic
+  lists, beside the tuning weights and under the buttons.
 
 ## [0.3.2] - 2026-09-02
 

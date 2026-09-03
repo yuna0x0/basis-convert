@@ -121,9 +121,7 @@ namespace yuna0x0.Basis.Convert.UI
         private void OnGUI()
         {
             EditorGUILayout.LabelField("Avatar to Basis", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField(
-                "Reads the avatar's prefab directly, so no source SDK needs installing.",
-                EditorStyles.wordWrappedLabel);
+            WrappedLabel("Reads the avatar's prefab directly, so no source SDK needs installing.");
 
             EditorGUILayout.Space();
 
@@ -386,17 +384,17 @@ namespace yuna0x0.Basis.Convert.UI
 
             using (new EditorGUI.IndentLevelScope())
             {
-                EditorGUILayout.LabelField(
+                WrappedLabel(
                     "Advanced adds a checkbox per prefab, rig, constraint, toggle and motion, "
-                    + "and the two tuning weights.", EditorStyles.wordWrappedLabel);
+                    + "and the two tuning weights.");
 
                 // Colliders only appear under Advanced, so say so here rather than let the
                 // setting act on a conversion from somewhere the reader cannot see it.
                 if (!_options.Colliders)
                 {
-                    EditorGUILayout.LabelField(
+                    WrappedLabel(
                         "Colliders are switched off under Advanced, so the rigs will be written "
-                        + "without them.", EditorStyles.wordWrappedLabel);
+                        + "without them.");
                 }
             }
         }
@@ -461,9 +459,7 @@ namespace yuna0x0.Basis.Convert.UI
 
                 if (quiet > 0)
                 {
-                    EditorGUILayout.LabelField(
-                        $"{quiet} more hold nothing this converts.",
-                        EditorStyles.wordWrappedLabel);
+                    WrappedLabel($"{quiet} more hold nothing this converts.");
                 }
             }
         }
@@ -557,6 +553,24 @@ namespace yuna0x0.Basis.Convert.UI
             }
         }
 
+        /// <summary>
+        /// A paragraph that wraps. `EditorGUILayout.LabelField` sizes its rect to one line
+        /// whatever the style, so anything longer than the window is cut off; `GUILayout.Label`
+        /// sizes to the text but ignores the indent level, so the indent is drawn as a space.
+        /// </summary>
+        private static void WrappedLabel(string text, GUIStyle style = null)
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (EditorGUI.indentLevel > 0)
+                {
+                    GUILayout.Space(EditorGUI.indentLevel * 15f);
+                }
+
+                GUILayout.Label(text, style ?? EditorStyles.wordWrappedLabel);
+            }
+        }
+
         private static GUIStyle _boldWrapped;
 
         /// <summary>Built on first use: a GUIStyle cannot be made before the GUI is running.</summary>
@@ -609,10 +623,9 @@ namespace yuna0x0.Basis.Convert.UI
 
             using (new EditorGUI.IndentLevelScope())
             {
-                EditorGUILayout.LabelField(
+                WrappedLabel(
                     "What Basis's full-body IK will make of this rig. These are settings on the "
-                    + "model, not things a conversion changes.",
-                    EditorStyles.wordWrappedLabel);
+                    + "model, not things a conversion changes.");
 
                 foreach (ConversionDiagnostic diagnostic in _plan.RigDiagnostics)
                 {
@@ -621,8 +634,7 @@ namespace yuna0x0.Basis.Convert.UI
                         GUILayout.Space(EditorGUI.indentLevel * 15f);
                         GUILayout.Label(IconFor(diagnostic.Severity), GUILayout.Width(20f),
                             GUILayout.Height(18f));
-                        EditorGUILayout.LabelField(diagnostic.Message,
-                            EditorStyles.wordWrappedLabel);
+                        GUILayout.Label(diagnostic.Message, EditorStyles.wordWrappedLabel);
                     }
                 }
 
@@ -690,11 +702,10 @@ namespace yuna0x0.Basis.Convert.UI
 
             using (new EditorGUI.IndentLevelScope())
             {
-                EditorGUILayout.LabelField(
+                WrappedLabel(
                     "These two settings do not mean the same thing on both sides, so they are "
                     + "fitted rather than converted. Adjust them if the result feels wrong, "
-                    + "then rescan. Everything else maps directly.",
-                    EditorStyles.wordWrappedLabel);
+                    + "then rescan. Everything else maps directly.");
 
                 EditorGUILayout.LabelField("Stiffness, from PhysBone pull and stiffness",
                     EditorStyles.boldLabel);
@@ -710,9 +721,9 @@ namespace yuna0x0.Basis.Convert.UI
                 _profile.DragAtFullSpring = EditorGUILayout.Slider(
                     "Drag at spring 1", _profile.DragAtFullSpring, 0f, 1f);
 
-                EditorGUILayout.LabelField(
+                WrappedLabel(
                     "Higher stiffness holds bones closer to their animated pose. Higher drag "
-                    + "settles them sooner.", EditorStyles.wordWrappedLabel);
+                    + "settles them sooner.");
             }
         }
 
@@ -753,13 +764,12 @@ namespace yuna0x0.Basis.Convert.UI
                     GUILayout.Space(EditorGUI.indentLevel * 15f);
                     GUILayout.Label(IconFor(severity), GUILayout.Width(20f),
                         GUILayout.Height(18f));
-                    EditorGUILayout.LabelField($"{group.Code}  x{group.Count}",
-                        EditorStyles.boldLabel);
+                    GUILayout.Label($"{group.Code}  x{group.Count}", BoldWrapped);
                 }
 
                 using (new EditorGUI.IndentLevelScope())
                 {
-                    EditorGUILayout.LabelField(group.Example, EditorStyles.wordWrappedLabel);
+                    WrappedLabel(group.Example);
                 }
             }
         }
@@ -988,8 +998,7 @@ namespace yuna0x0.Basis.Convert.UI
                             : control.Plan.MenuName;
 
                         EditorGUILayout.LabelField(label, GUILayout.MinWidth(120f));
-                        EditorGUILayout.LabelField(Describe(control.Plan),
-                            EditorStyles.label);
+                        GUILayout.Label(Describe(control.Plan), EditorStyles.wordWrappedLabel);
                     }
                 }
             }
@@ -1091,9 +1100,8 @@ namespace yuna0x0.Basis.Convert.UI
                 }
             }
 
-            EditorGUILayout.LabelField(
-                "Convert writes components you can tune by hand. One undo reverts all of it.",
-                EditorStyles.wordWrappedLabel);
+            WrappedLabel(
+                "Convert writes components you can tune by hand. One undo reverts all of it.");
         }
 
         /// <summary>
@@ -1116,28 +1124,25 @@ namespace yuna0x0.Basis.Convert.UI
                 ? $"Converted {_result.TotalWritten} components, skipped {_result.TotalSkipped}"
                 : $"Converted {_result.TotalWritten} components";
 
-            EditorGUILayout.LabelField(headline, HeadlineStyle(trouble));
-            EditorGUILayout.LabelField(
+            WrappedLabel(headline, HeadlineStyle(trouble));
+            WrappedLabel(
                 $"{_result.RigsWritten} jiggle rigs, {_result.ConstraintsWritten} constraints, "
                 + $"{_result.VixxyControlsWritten} Vixxy controls, "
                 + $"{_result.AuthoredMotionsWritten} authored motions"
-                + (_result.DescriptorWritten ? ", Basis Avatar component." : "."),
-                EditorStyles.label);
+                + (_result.DescriptorWritten ? ", Basis Avatar component." : "."));
 
             if (_result.MotionAssets.Count > 0)
             {
-                EditorGUILayout.LabelField(
+                WrappedLabel(
                     $"Baked {_result.MotionAssets.Count} motion clips into "
                     + $"{System.IO.Path.GetDirectoryName(_result.MotionAssets[0])?.Replace('\\', '/')}. "
-                    + "These stay in the project if you undo.",
-                    EditorStyles.wordWrappedLabel);
+                    + "These stay in the project if you undo.");
             }
 
             EditorGUILayout.Space(2f);
-            EditorGUILayout.LabelField(
-                "To see the jiggle move, press Test in Editor on the Basis Avatar component. "
-                + "Play mode alone does not calibrate the avatar.",
-                EditorStyles.wordWrappedLabel);
+            WrappedLabel(
+                "To see the jiggle move, press Test In Editor on the Basis Avatar component. "
+                + "Play mode alone does not calibrate the avatar.");
         }
 
         /// <summary>
@@ -1147,7 +1152,7 @@ namespace yuna0x0.Basis.Convert.UI
         /// </summary>
         private static GUIStyle HeadlineStyle(bool trouble)
         {
-            GUIStyle style = new GUIStyle(EditorStyles.boldLabel);
+            GUIStyle style = new GUIStyle(EditorStyles.boldLabel) { wordWrap = true };
 
             if (trouble)
             {
