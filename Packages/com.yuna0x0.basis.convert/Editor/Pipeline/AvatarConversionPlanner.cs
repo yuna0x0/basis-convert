@@ -229,23 +229,16 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 }
             }
 
-            List<VrmExpressionData> expressions = read.Instance != null
-                ? VrmComponentReader.ReadExpressions10(read.Instance)
-                : VrmComponentReader.ReadExpressions0X(read.BlendShapeProxy);
-
-            AssembleVrmExpressions(expressions, plan, source);
-
-            if (read.Instance != null)
+            if (read.Instance == null)
             {
-                plan.VrmMeta ??= VrmComponentReader.ReadMeta10(read.Instance);
-                ApplyVrmSettings(
-                    VrmComponentReader.ReadSettings10(read.Instance), resolver, plan);
                 return;
             }
 
-            plan.VrmMeta ??= VrmComponentReader.ReadMeta0X(read.Meta);
-            ApplyVrmSettings(
-                VrmComponentReader.ReadSettings0X(read.FirstPerson), resolver, plan);
+            AssembleVrmExpressions(
+                VrmComponentReader.ReadExpressions10(read.Instance), plan, source);
+
+            plan.VrmMeta ??= VrmComponentReader.ReadMeta10(read.Instance);
+            ApplyVrmSettings(VrmComponentReader.ReadSettings10(read.Instance), resolver, plan);
         }
 
         /// <summary>One file's worth of documents, resolved against the objects they belong to.</summary>

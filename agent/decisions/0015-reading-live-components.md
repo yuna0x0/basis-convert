@@ -64,3 +64,10 @@ normal project reaches it. It is a fallback, not the route.
 
 This does not change the decision. What decides which reader runs is whether the file holds text,
 and for 0.x the answer is yes.
+
+The 0.x branches of the component reader are removed, 248 lines of it. Verified before removing:
+a 0.x `.vrm` re-imported with UniVRM 1.0 is claimed by `VrmScriptedImporter`, arrives as a binary
+asset holding 122 components, every one of them 1.0, and converts through the 1.0 branches
+exactly as a native 1.0 avatar does. So the only way a 0.x avatar can reach the component reader
+is as 1.0 components, and the branches could not fire. Its components stay in the identity table,
+so one is still named rather than reported as an unknown script.

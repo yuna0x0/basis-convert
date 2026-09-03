@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 namespace yuna0x0.Basis.Convert.Sources
 {
     /// <summary>
-    /// Reads UniVRM's spring bones and node constraints from live components rather than from a
+    /// Reads VRM 1.0's spring bones and node constraints from live components rather than from a
     /// prefab's text.
     /// <para>
     /// A `.vrm` is binary glTF behind a ScriptedImporter, so there is no YAML to scan. UniVRM has
@@ -19,6 +19,13 @@ namespace yuna0x0.Basis.Convert.Sources
     /// <para>
     /// Identifiers are each object's own local file id inside the imported asset, which is what
     /// <see cref="PrefabObjectResolver"/> indexes, so the two paths address objects the same way.
+    /// </para>
+    /// <para>
+    /// VRM 0.x is not read here, because nothing can present it this way: UniVRM 0.x has no
+    /// ScriptedImporter and writes a real prefab beside the `.vrm`, which is text, and UniVRM 1.0
+    /// migrates a 0.x file to 1.0 components as it imports. Its components stay in the identity
+    /// table, so one on a binary source is still named rather than reported as an unknown script.
+    /// See `agent/decisions/0015`.
     /// </para>
     /// </summary>
     public static class VrmComponentReader
@@ -39,12 +46,8 @@ namespace yuna0x0.Basis.Convert.Sources
 
             public readonly List<VrmConstraintData> Constraints = new List<VrmConstraintData>();
 
-            /// <summary>The Vrm10Instance, or the 0.x components, if one was found.</summary>
+            /// <summary>The avatar's own component, which names its springs.</summary>
             public Component Instance;
-
-            public Component Meta;
-            public Component FirstPerson;
-            public Component BlendShapeProxy;
 
             public int ComponentsRead;
             public bool Any => ComponentsRead > 0;
@@ -89,29 +92,9 @@ namespace yuna0x0.Basis.Convert.Sources
                         result.Groups[id] = ReadColliderGroup10(component, serialized, id);
                         break;
 
-                    case SourceComponentKind.VrmSpringBoneColliderGroup:
-                        result.Groups[id] = ReadColliderGroup0X(component, serialized, id);
-                        break;
-
-                    case SourceComponentKind.VrmSpringBone:
-                        result.Chains.AddRange(ReadSpringBone0X(component, serialized, id));
-                        break;
-
                     case SourceComponentKind.Vrm10Instance:
                         result.Instance = component;
                         result.Chains.AddRange(ReadInstanceSprings(serialized, id));
-                        break;
-
-                    case SourceComponentKind.VrmMeta:
-                        result.Meta = component;
-                        break;
-
-                    case SourceComponentKind.VrmFirstPerson:
-                        result.FirstPerson = component;
-                        break;
-
-                    case SourceComponentKind.VrmBlendShapeProxy:
-                        result.BlendShapeProxy = component;
                         break;
 
                     default:
@@ -206,86 +189,6 @@ namespace yuna0x0.Basis.Convert.Sources
 
             group.ColliderFileIds.AddRange(References(serialized, "Colliders"));
             return group;
-        }
-
-        /// <summary>VRM 0.x keeps the shapes in the group itself, as an offset and a radius.</summary>
-        private static VrmColliderGroupData ReadColliderGroup0X(
-            Component component, SerializedObject serialized, long id)
-        {
-            VrmColliderGroupData group = new VrmColliderGroupData
-            {
-                DocumentFileId = id,
-                OwnerGameObjectFileId = IdOf(component.gameObject),
-            };
-
-            SerializedProperty list = serialized.FindProperty("Colliders");
-            if (list == null || !list.isArray)
-            {
-                return group;
-            }
-
-            for (int i = 0; i < list.arraySize; i++)
-            {
-                SerializedProperty entry = list.GetArrayElementAtIndex(i);
-                SerializedProperty offset = entry.FindPropertyRelative("Offset");
-                SerializedProperty radius = entry.FindPropertyRelative("Radius");
-
-                group.InlineColliders.Add(new VrmColliderData
-                {
-                    DocumentFileId = id,
-                    OwnerGameObjectFileId = group.OwnerGameObjectFileId,
-                    Offset = offset == null ? Vector3.zero : offset.vector3Value,
-                    Radius = radius == null ? 0f : radius.floatValue,
-                });
-            }
-
-            return group;
-        }
-
-        /// <summary>
-        /// A VRM 0.x spring bone: one set of parameters and a list of root bones, each of which
-        /// becomes a chain of its own.
-        /// </summary>
-        private static List<VrmSpringChainData> ReadSpringBone0X(
-            Component component, SerializedObject serialized, long id)
-        {
-            List<VrmSpringChainData> chains = new List<VrmSpringChainData>();
-
-            VrmSpringJointData joint = new VrmSpringJointData
-            {
-                OwnerGameObjectFileId = IdOf(component.gameObject),
-                Stiffness = Float(serialized, "m_stiffnessForce", 1f),
-                GravityPower = Float(serialized, "m_gravityPower", 0f),
-                GravityDir = Vector(serialized, "m_gravityDir", Vector3.down),
-                DragForce = Float(serialized, "m_dragForce", 0.4f),
-                Radius = Float(serialized, "m_hitRadius", 0.02f),
-            };
-
-            string name = Text(serialized, "m_comment");
-            List<long> colliderGroups = References(serialized, "ColliderGroups");
-            long center = Reference(serialized, "m_center");
-
-            foreach (long root in References(serialized, "RootBones"))
-            {
-                if (root == 0L)
-                {
-                    continue;
-                }
-
-                VrmSpringChainData chain = new VrmSpringChainData
-                {
-                    Name = name,
-                    DocumentFileId = id,
-                    RootTransformFileId = root,
-                    CenterFileId = center,
-                };
-
-                chain.ColliderGroupFileIds.AddRange(colliderGroups);
-                chain.Joints.Add(joint);
-                chains.Add(chain);
-            }
-
-            return chains;
         }
 
         /// <summary>
@@ -387,29 +290,6 @@ namespace yuna0x0.Basis.Convert.Sources
             return settings;
         }
 
-        /// <summary>A VRM 0.x avatar's first person settings, which is where its eye offset lives.</summary>
-        public static VrmAvatarSettingsData ReadSettings0X(Component firstPerson)
-        {
-            VrmAvatarSettingsData settings = new VrmAvatarSettingsData();
-            if (firstPerson == null)
-            {
-                return settings;
-            }
-
-            SerializedObject serialized = new SerializedObject(firstPerson);
-            settings.HeadBoneFileId = Reference(serialized, "FirstPersonBone");
-
-            SerializedProperty offset = serialized.FindProperty("FirstPersonOffset");
-            if (offset != null)
-            {
-                settings.EyeOffsetFromHead = offset.vector3Value;
-                settings.HasEyeOffset = offset.vector3Value != Vector3.zero;
-            }
-
-            CountFirstPersonFlags(serialized.FindProperty("Renderers"), settings);
-            return settings;
-        }
-
         /// <summary>
         /// Counts the renderers hidden from one view or the other. Both formats write the same
         /// four values in the same order: auto, both, third person only, first person only.
@@ -504,51 +384,6 @@ namespace yuna0x0.Basis.Convert.Sources
             return data;
         }
 
-        /// <summary>The licence a VRM 0.x avatar carries, from the asset its meta component names.</summary>
-        public static VrmMetaData ReadMeta0X(Component meta)
-        {
-            SerializedObject asset = ObjectAsset(meta, "Meta");
-            if (asset == null)
-            {
-                return null;
-            }
-
-            VrmMetaData data = new VrmMetaData
-            {
-                Title = Text(asset, "Title"),
-                LicenseUrl = Text(asset, "OtherLicenseUrl"),
-            };
-
-            string author = Text(asset, "Author");
-            if (!string.IsNullOrEmpty(author))
-            {
-                data.Authors.Add(author);
-            }
-
-            if (asset.FindProperty("AllowedUser") is SerializedProperty allowed)
-            {
-                data.AvatarPermission = (VrmAvatarPermission)allowed.intValue;
-            }
-
-            if (asset.FindProperty("LicenseType") is SerializedProperty license)
-            {
-                data.LicenseName = Vrm0LicenseNames[
-                    Mathf.Clamp(license.intValue, 0, Vrm0LicenseNames.Length - 1)];
-            }
-
-            // VRM 0.x writes each of these as Disallow or Allow, and has no field for the
-            // political or antisocial ones that 1.0 added. The spelling is UniVRM's own.
-            data.ViolentUsage = Allowed(asset, "ViolentUssage");
-            data.SexualUsage = Allowed(asset, "SexualUssage");
-
-            if (Allowed(asset, "CommercialUssage") is bool commercial)
-            {
-                data.CommercialUsage = commercial ? "allowed" : "not allowed";
-            }
-
-            return data;
-        }
-
         /// <summary>
         /// The expressions a VRM 1.0 avatar declares. The presets are named fields and the rest
         /// are a list, and both reference expression assets beside the object asset.
@@ -603,30 +438,6 @@ namespace yuna0x0.Basis.Convert.Sources
             return expressions;
         }
 
-        /// <summary>The expressions a VRM 0.x avatar declares, from its blend shape avatar asset.</summary>
-        public static List<VrmExpressionData> ReadExpressions0X(Component proxy)
-        {
-            List<VrmExpressionData> expressions = new List<VrmExpressionData>();
-            SerializedObject avatar = ObjectAsset(proxy, "BlendShapeAvatar");
-            SerializedProperty clips = avatar?.FindProperty("Clips");
-
-            if (clips == null || !clips.isArray)
-            {
-                return expressions;
-            }
-
-            for (int i = 0; i < clips.arraySize; i++)
-            {
-                Object clip = clips.GetArrayElementAtIndex(i).objectReferenceValue;
-                if (clip != null)
-                {
-                    expressions.Add(ReadClip0X(clip));
-                }
-            }
-
-            return expressions;
-        }
-
         private static VrmExpressionData ReadClip10(Object clip)
         {
             SerializedObject serialized = new SerializedObject(clip);
@@ -638,33 +449,6 @@ namespace yuna0x0.Basis.Convert.Sources
             expression.MaterialBindingCount =
                 Count(serialized.FindProperty("MaterialColorBindings"))
                 + Count(serialized.FindProperty("MaterialUVBindings"));
-
-            return expression;
-        }
-
-        private static VrmExpressionData ReadClip0X(Object clip)
-        {
-            SerializedObject serialized = new SerializedObject(clip);
-            VrmExpressionData expression = new VrmExpressionData
-            {
-                Name = Text(serialized, "BlendShapeName"),
-            };
-
-            if (serialized.FindProperty("Preset") is SerializedProperty preset
-                && preset.intValue >= 0 && preset.intValue < Vrm0Roles.Length)
-            {
-                expression.Role = Vrm0Roles[preset.intValue];
-            }
-
-            // A 0.x binding's weight is already on Unity's scale: UniVRM passes it straight to
-            // SetBlendShapeWeight.
-            ReadBindings(serialized.FindProperty("Values"), 1f, expression);
-            expression.MaterialBindingCount = Count(serialized.FindProperty("MaterialValues"));
-
-            if (string.IsNullOrEmpty(expression.Name))
-            {
-                expression.Name = string.IsNullOrEmpty(clip.name) ? "Expression" : clip.name;
-            }
 
             return expression;
         }
@@ -716,13 +500,6 @@ namespace yuna0x0.Basis.Convert.Sources
             return property == null ? (bool?)null : property.boolValue;
         }
 
-        /// <summary>A VRM 0.x usage field, which is Disallow or Allow.</summary>
-        private static bool? Allowed(SerializedObject asset, string name)
-        {
-            SerializedProperty property = asset.FindProperty(name);
-            return property == null ? (bool?)null : property.intValue != 0;
-        }
-
         private static int Count(SerializedProperty list)
         {
             return list == null || !list.isArray ? 0 : list.arraySize;
@@ -757,51 +534,12 @@ namespace yuna0x0.Basis.Convert.Sources
             ("Neutral", VrmExpressionRole.Neutral),
         };
 
-        /// <summary>
-        /// The presets of VRM 0.x, in the order its `BlendShapePreset` enum declares them.
-        /// </summary>
-        private static readonly VrmExpressionRole[] Vrm0Roles =
-        {
-            VrmExpressionRole.Custom,   // Unknown, named by the author instead
-            VrmExpressionRole.Neutral,
-            VrmExpressionRole.Viseme,   // A
-            VrmExpressionRole.Viseme,   // I
-            VrmExpressionRole.Viseme,   // U
-            VrmExpressionRole.Viseme,   // E
-            VrmExpressionRole.Viseme,   // O
-            VrmExpressionRole.Blink,
-            VrmExpressionRole.Emotion,  // Joy
-            VrmExpressionRole.Emotion,  // Angry
-            VrmExpressionRole.Emotion,  // Sorrow
-            VrmExpressionRole.Emotion,  // Fun
-            VrmExpressionRole.LookAt,   // LookUp
-            VrmExpressionRole.LookAt,   // LookDown
-            VrmExpressionRole.LookAt,   // LookLeft
-            VrmExpressionRole.LookAt,   // LookRight
-            VrmExpressionRole.Blink,    // Blink_L
-            VrmExpressionRole.Blink,    // Blink_R
-        };
-
         /// <summary>How far VRM 1.0 lets commercial use go, in its own words.</summary>
         private static readonly string[] Vrm10CommercialNames =
         {
             "personal, not for profit",
             "personal, including for profit",
             "corporate",
-        };
-
-        /// <summary>VRM 0.x's licence types, in the order its own enum declares them.</summary>
-        private static readonly string[] Vrm0LicenseNames =
-        {
-            "Redistribution_Prohibited",
-            "CC0",
-            "CC_BY",
-            "CC_BY_NC",
-            "CC_BY_SA",
-            "CC_BY_NC_SA",
-            "CC_BY_ND",
-            "CC_BY_NC_ND",
-            "Other",
         };
 
         private static float Float(SerializedObject serialized, string name, float fallback)
