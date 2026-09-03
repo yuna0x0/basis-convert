@@ -21,8 +21,20 @@ namespace yuna0x0.Basis.Convert.Tests
         private const string Vrm10Path = Folder + "/SampleVrm10Avatar.prefab";
         private const string Vrm0Path = Folder + "/SampleVrm0Avatar.prefab";
 
-        /// <summary>The slot Basis keeps `aa` in, which is the one both fixtures name.</summary>
-        private const int AaSlot = 10;
+        /// <summary>
+        /// The slots Basis keeps the vowels in, and the shape each fixture binds to it. `oh` is
+        /// missing on purpose: the fixture's own `Oh` moves two shapes at once, which a viseme
+        /// slot cannot hold.
+        /// </summary>
+        private static readonly (int Slot, string Shape)[] Vowels =
+        {
+            (10, "MouthA"),
+            (11, "MouthE"),
+            (12, "MouthI"),
+            (14, "MouthU"),
+        };
+
+        private const int OhSlot = 13;
 
         private static VrmExpressionData Expression(
             string name, VrmExpressionRole role, params VrmMorphBinding[] bindings)
@@ -122,9 +134,10 @@ namespace yuna0x0.Basis.Convert.Tests
             List<string> names = plan.Descriptor.Plan.VisemeBlendShapeNames;
             Assert.That(names.Count, Is.EqualTo(15), "fifteen slots");
 
-            Mesh mesh = plan.Descriptor.SourceVisemeMesh.sharedMesh;
-            Assert.That(names[AaSlot], Is.EqualTo(mesh.GetBlendShapeName(1)),
-                "the vowel the fixture names");
+            foreach ((int slot, string shape) in Vowels)
+            {
+                Assert.That(names[slot], Is.EqualTo(shape), $"slot {slot}");
+            }
 
             Assert.That(plan.AllDiagnostics().HasCode("vrm.visemes"), Is.True);
         }
@@ -142,6 +155,55 @@ namespace yuna0x0.Basis.Convert.Tests
             {
                 Assert.That(names[i], Is.Empty, $"slot {i}");
             }
+        }
+
+        /// <summary>
+        /// The blink slot takes an index rather than a name, and the mesh it reads from is its
+        /// own field on the component.
+        /// </summary>
+        [TestCase(Vrm10Path)]
+        [TestCase(Vrm0Path)]
+        public void BlinkComesFromTheBlinkExpression(string path)
+        {
+            AvatarConversionPlan plan = PlanWithDescriptor(path);
+
+            Assert.That(plan.Descriptor.SourceBlinkMesh, Is.Not.Null, "blink mesh");
+
+            Mesh mesh = plan.Descriptor.SourceBlinkMesh.sharedMesh;
+            Assert.That(plan.Descriptor.Plan.BlinkBlendShapeIndex, Is.GreaterThanOrEqualTo(0));
+            Assert.That(mesh.GetBlendShapeName(plan.Descriptor.Plan.BlinkBlendShapeIndex),
+                Is.EqualTo("EyeClose"));
+
+            Assert.That(plan.AllDiagnostics().HasCode("vrm.blink"), Is.True);
+        }
+
+        /// <summary>
+        /// An expression that moves two shapes cannot be one viseme, so its slot stays unset and
+        /// the report says why rather than picking one of the two.
+        /// </summary>
+        [TestCase(Vrm10Path)]
+        [TestCase(Vrm0Path)]
+        public void AVowelThatMovesTwoShapesIsReportedRatherThanGuessed(string path)
+        {
+            AvatarConversionPlan plan = PlanWithDescriptor(path);
+
+            Assert.That(plan.Descriptor.Plan.VisemeBlendShapeNames[OhSlot], Is.Empty, "oh");
+            Assert.That(plan.AllDiagnostics().HasCode("vrm.visemeCompound"), Is.True);
+        }
+
+        /// <summary>
+        /// Both formats state where the eyes sit, 0.x on its first person component and 1.0 in
+        /// its object asset, and both end up on the same field.
+        /// </summary>
+        [TestCase(Vrm10Path)]
+        [TestCase(Vrm0Path)]
+        public void TheEyeOffsetReachesTheAvatar(string path)
+        {
+            AvatarConversionPlan plan = PlanWithDescriptor(path);
+
+            Assert.That(plan.AllDiagnostics().HasCode("vrm.eyePosition"), Is.True);
+            Assert.That(plan.Descriptor.Plan.EyePosition.x, Is.EqualTo(1.51f).Within(0.001f));
+            Assert.That(plan.Descriptor.Plan.EyePosition.y, Is.EqualTo(0.08f).Within(0.001f));
         }
 
         [Test]

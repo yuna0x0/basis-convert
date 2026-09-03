@@ -231,9 +231,14 @@ namespace yuna0x0.Basis.Convert.Tests
             Assert.That(plan.VrmSettings.EyeOffsetFromHead,
                 Is.EqualTo(new Vector3(0f, 0.06f, 0.08f)));
 
-            // The fixture is a hand-written hierarchy with no humanoid rig, so there is no head
-            // bone to measure from and no Basis Avatar component to put the result on.
-            Assert.That(plan.AllDiagnostics().HasCode("vrm.eyePosition.noRig"), Is.True);
+            // The fixture's head sits 1.45 above the root, so the eyes land 0.06 above that and
+            // 0.08 forward, and that is what goes on the Basis Avatar component.
+            Assert.That(plan.AllDiagnostics().HasCode("vrm.eyePosition"), Is.True);
+            Assert.That(plan.AllDiagnostics().HasCode("vrm.eyePosition.noRig"), Is.False);
+
+            Assert.That(plan.Descriptor, Is.Not.Null, "descriptor");
+            Assert.That(plan.Descriptor.Plan.EyePosition.x, Is.EqualTo(1.51f).Within(0.001f));
+            Assert.That(plan.Descriptor.Plan.EyePosition.y, Is.EqualTo(0.08f).Within(0.001f));
         }
 
         [Test]

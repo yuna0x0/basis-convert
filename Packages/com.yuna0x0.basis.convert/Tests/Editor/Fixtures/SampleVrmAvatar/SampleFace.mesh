@@ -29,17 +29,125 @@ Mesh:
       normal: {x: 0, y: 0, z: 0}
       tangent: {x: 0, y: 0, z: 0}
       index: 1
+    - vertex: {x: 0, y: 0.01, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 2
     - vertex: {x: 0, y: 0.02, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 0
+    - vertex: {x: 0, y: 0.02, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 1
+    - vertex: {x: 0, y: 0.02, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 2
+    - vertex: {x: 0, y: 0.03, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 0
+    - vertex: {x: 0, y: 0.03, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 1
+    - vertex: {x: 0, y: 0.03, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 2
+    - vertex: {x: 0, y: 0.04, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 0
+    - vertex: {x: 0, y: 0.04, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 1
+    - vertex: {x: 0, y: 0.04, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 2
+    - vertex: {x: 0, y: 0.049999997, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 0
+    - vertex: {x: 0, y: 0.049999997, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 1
+    - vertex: {x: 0, y: 0.049999997, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 2
+    - vertex: {x: 0, y: 0.06, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 0
+    - vertex: {x: 0, y: 0.06, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 1
+    - vertex: {x: 0, y: 0.06, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 2
+    - vertex: {x: 0, y: 0.07, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 0
+    - vertex: {x: 0, y: 0.07, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 1
+    - vertex: {x: 0, y: 0.07, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 2
+    - vertex: {x: 0, y: 0.08, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 0
+    - vertex: {x: 0, y: 0.08, z: 0}
+      normal: {x: 0, y: 0, z: 0}
+      tangent: {x: 0, y: 0, z: 0}
+      index: 1
+    - vertex: {x: 0, y: 0.08, z: 0}
       normal: {x: 0, y: 0, z: 0}
       tangent: {x: 0, y: 0, z: 0}
       index: 2
     shapes:
     - firstVertex: 0
-      vertexCount: 2
+      vertexCount: 3
       hasNormals: 0
       hasTangents: 0
-    - firstVertex: 2
-      vertexCount: 1
+    - firstVertex: 3
+      vertexCount: 3
+      hasNormals: 0
+      hasTangents: 0
+    - firstVertex: 6
+      vertexCount: 3
+      hasNormals: 0
+      hasTangents: 0
+    - firstVertex: 9
+      vertexCount: 3
+      hasNormals: 0
+      hasTangents: 0
+    - firstVertex: 12
+      vertexCount: 3
+      hasNormals: 0
+      hasTangents: 0
+    - firstVertex: 15
+      vertexCount: 3
+      hasNormals: 0
+      hasTangents: 0
+    - firstVertex: 18
+      vertexCount: 3
+      hasNormals: 0
+      hasTangents: 0
+    - firstVertex: 21
+      vertexCount: 3
       hasNormals: 0
       hasTangents: 0
     channels:
@@ -51,7 +159,37 @@ Mesh:
       nameHash: 3581081798
       frameIndex: 1
       frameCount: 1
+    - name: MouthA
+      nameHash: 3128973318
+      frameIndex: 2
+      frameCount: 1
+    - name: MouthI
+      nameHash: 3025915956
+      frameIndex: 3
+      frameCount: 1
+    - name: MouthU
+      nameHash: 2690288763
+      frameIndex: 4
+      frameCount: 1
+    - name: MouthE
+      nameHash: 3186465823
+      frameIndex: 5
+      frameCount: 1
+    - name: MouthO
+      nameHash: 1563981057
+      frameIndex: 6
+      frameCount: 1
+    - name: EyeClose
+      nameHash: 829702444
+      frameIndex: 7
+      frameCount: 1
     fullWeights:
+    - 100
+    - 100
+    - 100
+    - 100
+    - 100
+    - 100
     - 100
     - 100
   m_BindPose: []

@@ -25,6 +25,10 @@ namespace yuna0x0.Basis.Convert.Tests
         [MenuItem(ProductInfo.ToolsMenu + "Development/Regenerate Test Fixtures")]
         public static void Generate()
         {
+            // The VRM fixtures need a humanoid Avatar, which is a native asset built from their
+            // own bones rather than written by hand.
+            FixtureHumanoidGenerator.Generate();
+
             AnimationClip tailOn = Clip("Tail", active: false);
             AnimationClip hairLong = Clip("Hair", active: true);
             AnimationClip hairBraid = Clip("Hair", active: false);

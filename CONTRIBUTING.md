@@ -43,11 +43,14 @@ plus an expression menu, parameters, an animator and its clips. Between them the
 animator cover a plain toggle, a selector sharing one parameter, a radial puppet, a toggle
 guarded by one of VRChat's own parameters, a toggle whose clip animates over time, and a layer
 with nothing steering it. `SampleClothing` is the Modular Avatar half, and `SampleVrmAvatar` holds one avatar per VRM
-format. Prefer extending these
+format, each with a humanoid rig, a face with the blendshapes its expressions bind to, and its
+own expressions, licence, eye offset and spring bones. Their `Avatar` and mesh assets are
+generated, since a rig Unity validates and blendshape frames cannot be hand-written. Prefer extending these
 over reaching for a real avatar, so the suite means something on a machine that has no purchased
-assets. The animator half is generated through
+assets. The animator half, and the VRM fixtures' rig and face, are generated through
 `Tools/Watari/Development/Regenerate Test Fixtures`, because hand-writing a state machine
-produces files that look right and do not load.
+produces files that look right and do not load. The generated assets are committed; tests do not
+run the generator.
 
 A conversion writes one asset, the baked motion clip, beside the animation it came from. A test
 that applies a plan must redirect that: set `OutputFolder` on each planned motion to a folder

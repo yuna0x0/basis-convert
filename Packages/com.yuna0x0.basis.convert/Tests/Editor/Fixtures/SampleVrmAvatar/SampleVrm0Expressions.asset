@@ -15,6 +15,11 @@ MonoBehaviour:
   Clips:
   - {fileID: 11400001, guid: 7c0a1b2c3d4e5f60718293a4b5c6d804, type: 2}
   - {fileID: 11400002, guid: 7c0a1b2c3d4e5f60718293a4b5c6d804, type: 2}
+  - {fileID: 11400003, guid: 7c0a1b2c3d4e5f60718293a4b5c6d804, type: 2}
+  - {fileID: 11400004, guid: 7c0a1b2c3d4e5f60718293a4b5c6d804, type: 2}
+  - {fileID: 11400005, guid: 7c0a1b2c3d4e5f60718293a4b5c6d804, type: 2}
+  - {fileID: 11400006, guid: 7c0a1b2c3d4e5f60718293a4b5c6d804, type: 2}
+  - {fileID: 11400007, guid: 7c0a1b2c3d4e5f60718293a4b5c6d804, type: 2}
 --- !u!114 &11400001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -53,7 +58,115 @@ MonoBehaviour:
   Preset: 2
   Values:
   - RelativePath: Face
-    Index: 1
+    Index: 2
+    Weight: 100
+  MaterialValues: []
+  IsBinary: 0
+--- !u!114 &11400003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37562b39ff933b245ac2f35d87edbcd6, type: 3}
+  m_Name: I
+  m_EditorClassIdentifier:
+  m_prefab: {fileID: 0}
+  BlendShapeName: I
+  Preset: 3
+  Values:
+  - RelativePath: Face
+    Index: 3
+    Weight: 100
+  MaterialValues: []
+  IsBinary: 0
+--- !u!114 &11400004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37562b39ff933b245ac2f35d87edbcd6, type: 3}
+  m_Name: U
+  m_EditorClassIdentifier:
+  m_prefab: {fileID: 0}
+  BlendShapeName: U
+  Preset: 4
+  Values:
+  - RelativePath: Face
+    Index: 4
+    Weight: 100
+  MaterialValues: []
+  IsBinary: 0
+--- !u!114 &11400005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37562b39ff933b245ac2f35d87edbcd6, type: 3}
+  m_Name: E
+  m_EditorClassIdentifier:
+  m_prefab: {fileID: 0}
+  BlendShapeName: E
+  Preset: 5
+  Values:
+  - RelativePath: Face
+    Index: 5
+    Weight: 100
+  MaterialValues: []
+  IsBinary: 0
+--- !u!114 &11400006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37562b39ff933b245ac2f35d87edbcd6, type: 3}
+  m_Name: O
+  m_EditorClassIdentifier:
+  m_prefab: {fileID: 0}
+  BlendShapeName: O
+  Preset: 6
+  Values:
+  - RelativePath: Face
+    Index: 6
+    Weight: 100
+  - RelativePath: Face
+    Index: 0
+    Weight: 100
+  MaterialValues: []
+  IsBinary: 0
+--- !u!114 &11400007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37562b39ff933b245ac2f35d87edbcd6, type: 3}
+  m_Name: Blink
+  m_EditorClassIdentifier:
+  m_prefab: {fileID: 0}
+  BlendShapeName: Blink
+  Preset: 7
+  Values:
+  - RelativePath: Face
+    Index: 7
     Weight: 100
   MaterialValues: []
   IsBinary: 0

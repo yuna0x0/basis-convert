@@ -19,11 +19,11 @@ MonoBehaviour:
     Relaxed: {fileID: 0}
     Surprised: {fileID: 0}
     Aa: {fileID: 11400002}
-    Ih: {fileID: 0}
-    Ou: {fileID: 0}
-    Ee: {fileID: 0}
-    Oh: {fileID: 0}
-    Blink: {fileID: 0}
+    Ih: {fileID: 11400004}
+    Ou: {fileID: 11400005}
+    Ee: {fileID: 11400006}
+    Oh: {fileID: 11400007}
+    Blink: {fileID: 11400008}
     BlinkLeft: {fileID: 0}
     BlinkRight: {fileID: 0}
     LookUp: {fileID: 0}
@@ -33,6 +33,12 @@ MonoBehaviour:
     Neutral: {fileID: 0}
     CustomClips:
     - {fileID: 11400003}
+  LookAt:
+    OffsetFromHead: {x: 0, y: 0.06, z: 0.08}
+  FirstPerson:
+    Renderers:
+    - Renderer: {fileID: 0}
+      FirstPersonFlag: 2
 --- !u!114 &11400001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -69,7 +75,7 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   MorphTargetBindings:
   - RelativePath: Face
-    Index: 1
+    Index: 2
     Weight: 1
   MaterialColorBindings: []
   MaterialUVBindings: []
@@ -99,6 +105,119 @@ MonoBehaviour:
     TargetValue: {r: 1, g: 0, b: 0, a: 1}
   MaterialUVBindings: []
   IsBinary: 1
+  OverrideBlink: 0
+  OverrideLookAt: 0
+  OverrideMouth: 0
+--- !u!114 &11400004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c8b2024ae0d0944eb878d90212bf21b, type: 3}
+  m_Name: Ih
+  m_EditorClassIdentifier:
+  MorphTargetBindings:
+  - RelativePath: Face
+    Index: 3
+    Weight: 1
+  MaterialColorBindings: []
+  MaterialUVBindings: []
+  IsBinary: 0
+  OverrideBlink: 0
+  OverrideLookAt: 0
+  OverrideMouth: 0
+--- !u!114 &11400005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c8b2024ae0d0944eb878d90212bf21b, type: 3}
+  m_Name: Ou
+  m_EditorClassIdentifier:
+  MorphTargetBindings:
+  - RelativePath: Face
+    Index: 4
+    Weight: 1
+  MaterialColorBindings: []
+  MaterialUVBindings: []
+  IsBinary: 0
+  OverrideBlink: 0
+  OverrideLookAt: 0
+  OverrideMouth: 0
+--- !u!114 &11400006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c8b2024ae0d0944eb878d90212bf21b, type: 3}
+  m_Name: Ee
+  m_EditorClassIdentifier:
+  MorphTargetBindings:
+  - RelativePath: Face
+    Index: 5
+    Weight: 1
+  MaterialColorBindings: []
+  MaterialUVBindings: []
+  IsBinary: 0
+  OverrideBlink: 0
+  OverrideLookAt: 0
+  OverrideMouth: 0
+--- !u!114 &11400007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c8b2024ae0d0944eb878d90212bf21b, type: 3}
+  m_Name: Oh
+  m_EditorClassIdentifier:
+  MorphTargetBindings:
+  - RelativePath: Face
+    Index: 6
+    Weight: 1
+  - RelativePath: Face
+    Index: 0
+    Weight: 1
+  MaterialColorBindings: []
+  MaterialUVBindings: []
+  IsBinary: 0
+  OverrideBlink: 0
+  OverrideLookAt: 0
+  OverrideMouth: 0
+--- !u!114 &11400008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c8b2024ae0d0944eb878d90212bf21b, type: 3}
+  m_Name: Blink
+  m_EditorClassIdentifier:
+  MorphTargetBindings:
+  - RelativePath: Face
+    Index: 7
+    Weight: 1
+  MaterialColorBindings: []
+  MaterialUVBindings: []
+  IsBinary: 0
   OverrideBlink: 0
   OverrideLookAt: 0
   OverrideMouth: 0
