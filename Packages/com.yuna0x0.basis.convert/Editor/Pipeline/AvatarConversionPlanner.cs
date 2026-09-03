@@ -164,7 +164,18 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 return;
             }
 
-            ReadDocuments(plan, source, profile, unknownIdentities, documents, resolver);
+            if (documents.Count == 0)
+            {
+                // Nothing to scan means the file is not Unity YAML: an imported `.vrm` is binary
+                // glTF behind a ScriptedImporter. Its components are real types rather than
+                // missing scripts, since the importer that made them had to be installed, so
+                // they are read through the object API instead.
+                ReadComponents(plan, source, resolver);
+            }
+            else
+            {
+                ReadDocuments(plan, source, profile, unknownIdentities, documents, resolver);
+            }
 
             foreach (string inherited in source.InheritedAssetPaths())
             {
@@ -187,6 +198,56 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
         }
 
+        /// <summary>
+        /// What a hierarchy's live components hold, for a source whose file cannot be read as
+        /// text. Only VRM arrives this way today: an imported `.vrm` is binary, and UniVRM has to
+        /// be installed for it to import at all.
+        /// </summary>
+        private static void ReadComponents(
+            AvatarConversionPlan plan, ConversionSource source, PrefabObjectResolver resolver)
+        {
+            VrmComponentReader.Result read = VrmComponentReader.Read(resolver.Root);
+            if (!read.Any)
+            {
+                return;
+            }
+
+            plan.ComponentsRead += read.ComponentsRead;
+
+            AssembleVrmChains(read.Chains, read.Joints, read.Colliders, read.Groups,
+                resolver, plan, source);
+
+            foreach (VrmConstraintData constraint in read.Constraints)
+            {
+                plan.VrmConstraintsFound++;
+
+                PlannedConstraint planned = PlanVrmConstraint(constraint, resolver, plan);
+                if (planned != null)
+                {
+                    planned.Source = source;
+                    plan.Constraints.Add(planned);
+                }
+            }
+
+            List<VrmExpressionData> expressions = read.Instance != null
+                ? VrmComponentReader.ReadExpressions10(read.Instance)
+                : VrmComponentReader.ReadExpressions0X(read.BlendShapeProxy);
+
+            AssembleVrmExpressions(expressions, plan, source);
+
+            if (read.Instance != null)
+            {
+                plan.VrmMeta ??= VrmComponentReader.ReadMeta10(read.Instance);
+                ApplyVrmSettings(
+                    VrmComponentReader.ReadSettings10(read.Instance), resolver, plan);
+                return;
+            }
+
+            plan.VrmMeta ??= VrmComponentReader.ReadMeta0X(read.Meta);
+            ApplyVrmSettings(
+                VrmComponentReader.ReadSettings0X(read.FirstPerson), resolver, plan);
+        }
+
         /// <summary>One file's worth of documents, resolved against the objects they belong to.</summary>
         private static void ReadDocuments(AvatarConversionPlan plan, ConversionSource source,
             JiggleMappingProfile profile, HashSet<string> unknownIdentities,
@@ -206,7 +267,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             // VRM chains are read in a pass of their own: a spring names joint components that
             // sit anywhere in the file, so they cannot be resolved as the documents go past.
             PlanVrmChains(documents, resolver, plan, source);
-            PlanVrmExpressions(documents, plan, source);
+            PlanVrmExpressions(documents, resolver, plan, source);
             ReadVrmAvatarSettings(documents, resolver, plan);
 
             foreach (UnityYamlDocument document in documents)
@@ -575,6 +636,20 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 }
             }
 
+            AssembleVrmChains(chains, joints, colliders, groups, resolver, plan, source);
+        }
+
+        /// <summary>
+        /// Turns read spring data into jiggle rigs. Shared by both readers: the text one and the
+        /// component one produce the same data, so only the reading differs.
+        /// </summary>
+        private static void AssembleVrmChains(
+            List<VrmSpringChainData> chains,
+            Dictionary<long, VrmSpringJointData> joints,
+            Dictionary<long, VrmColliderData> colliders,
+            Dictionary<long, VrmColliderGroupData> groups,
+            PrefabObjectResolver resolver, AvatarConversionPlan plan, ConversionSource source)
+        {
             if (chains.Count == 0)
             {
                 return;
@@ -646,7 +721,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
                         settings ??= VrmObjectReader.ReadVrm0Settings(document);
                         break;
                     case SourceComponentKind.Vrm10Instance:
-                        settings ??= VrmObjectReader.ReadVrm10Settings(document);
+                        // Held inside the .vrm means there is no text to follow, so the object
+                        // asset is read through the live component instead.
+                        settings ??= VrmObjectReader.IsUnreadableSource(document)
+                                     && resolver.TryResolve(document, out Object live)
+                                     && live is Component instance
+                            ? VrmComponentReader.ReadSettings10(instance)
+                            : VrmObjectReader.ReadVrm10Settings(document);
+
                         plan.VrmMeta ??= VrmObjectReader.ReadVrm10Meta(document);
                         break;
                     case SourceComponentKind.VrmMeta:
@@ -655,6 +737,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 }
             }
 
+            ApplyVrmSettings(settings, resolver, plan);
+        }
+
+        /// <summary>What a VRM avatar's own settings mean for the conversion, from either reader.</summary>
+        private static void ApplyVrmSettings(
+            VrmAvatarSettingsData settings, PrefabObjectResolver resolver,
+            AvatarConversionPlan plan)
+        {
             ReportVrmLicence(plan);
 
             if (settings == null)
@@ -779,7 +869,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// </para>
         /// </summary>
         private static void PlanVrmExpressions(
-            List<UnityYamlDocument> documents, AvatarConversionPlan plan, ConversionSource source)
+            List<UnityYamlDocument> documents, PrefabObjectResolver resolver,
+            AvatarConversionPlan plan, ConversionSource source)
         {
             if (plan.SourceRoot == null)
             {
@@ -806,23 +897,53 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     case SourceComponentKind.Vrm10Instance:
                         expressions.AddRange(VrmObjectReader.ReadVrm10(document));
 
-                        // A .vrm imported in place keeps its expressions, licence and look at
-                        // inside the binary file, where there is no YAML to read.
+                        // A .vrm keeps its expressions, licence and look at inside the binary
+                        // file, where there is no YAML to read. The component itself is live, so
+                        // the object asset it points at is read through it instead.
                         if (VrmObjectReader.IsUnreadableSource(document))
                         {
-                            plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vrm.objectUnreadable",
-                                "This avatar's expressions, licence and eye offset are held "
-                                + "inside the .vrm file itself rather than as assets in the "
-                                + "project, so none of them could be read. In the .vrm's import "
-                                + "settings, press \"Extract Meta And Expressions\", then "
-                                + "convert again. The spring bones are not affected.");
+                            ReadVrm10ObjectFromComponent(document, resolver, plan, expressions);
                         }
 
                         break;
                 }
             }
 
-            if (expressions.Count == 0)
+            AssembleVrmExpressions(expressions, plan, source);
+        }
+
+        /// <summary>
+        /// Reads what a VRM 1.0 avatar keeps in its object asset through the live component,
+        /// for a prefab whose instance still points into the `.vrm` file. Everything there is a
+        /// sub-asset of a binary file, so there is no text to follow.
+        /// </summary>
+        private static void ReadVrm10ObjectFromComponent(
+            UnityYamlDocument document, PrefabObjectResolver resolver, AvatarConversionPlan plan,
+            List<VrmExpressionData> expressions)
+        {
+            if (!resolver.TryResolve(document, out Object resolved)
+                || !(resolved is Component instance))
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vrm.objectUnreadable",
+                    "This avatar's expressions, licence and eye offset are held inside the .vrm "
+                    + "file itself rather than as assets in the project, so none of them could "
+                    + "be read. In the .vrm's import settings, press \"Extract Meta And "
+                    + "Expressions\", then convert again. The spring bones are not affected.");
+                return;
+            }
+
+            expressions.AddRange(VrmComponentReader.ReadExpressions10(instance));
+            plan.VrmMeta ??= VrmComponentReader.ReadMeta10(instance);
+        }
+
+        /// <summary>
+        /// Turns read expressions into Vixxy controls. Shared by both readers, which produce the
+        /// same data whether the avatar arrived as text or as an imported file.
+        /// </summary>
+        private static void AssembleVrmExpressions(
+            List<VrmExpressionData> expressions, AvatarConversionPlan plan, ConversionSource source)
+        {
+            if (expressions.Count == 0 || plan.SourceRoot == null)
             {
                 return;
             }
@@ -1711,15 +1832,22 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 _ => VrmConstraintKind.Rotation,
             };
 
-            VrmConstraintData source = VrmDocumentReader.ReadConstraint(document, vrmKind);
+            return PlanVrmConstraint(
+                VrmDocumentReader.ReadConstraint(document, vrmKind), resolver, plan);
+        }
+
+        /// <summary>Plans one VRM node constraint from data either reader produced.</summary>
+        private static PlannedConstraint PlanVrmConstraint(
+            VrmConstraintData source, PrefabObjectResolver resolver, AvatarConversionPlan plan)
+        {
             BasisConstraintPlan constraintPlan = VrmConstraintToBasisMapper.Map(source);
 
             if (!resolver.TryResolveTransform(constraintPlan.HostFileId, out Transform host))
             {
                 plan.Unresolved++;
                 plan.Diagnostics.Add(DiagnosticSeverity.Warning, "constraint.unresolved",
-                    $"A VRM {vrmKind} constraint at &{document.FileId} could not be tied to a "
-                    + "transform and was skipped.");
+                    $"A VRM {source.Kind} constraint at &{source.DocumentFileId} could not be "
+                    + "tied to a transform and was skipped.");
                 return null;
             }
 

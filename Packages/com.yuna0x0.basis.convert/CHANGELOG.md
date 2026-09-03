@@ -6,6 +6,19 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- A `.vrm` file converts as it imports: spring bones, node constraints, expressions, licence and
+  eye offset are read from its components, so it no longer has to be unpacked and saved as a
+  prefab first.
+
+### Fixed
+
+- An imported `.vrm` converted as though it were empty. It is binary, and only text was read.
+- A prefab saved from a `.vrm` without extracting its assets reported `vrm.objectUnreadable`
+  instead of reading the expressions and licence from the component.
+- The report titled itself "VRChat avatar to Basis" whatever it had read.
+
 ## [0.3.3] - 2026-09-03
 
 ### Fixed

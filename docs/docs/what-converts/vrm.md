@@ -8,28 +8,22 @@ VRM avatars, including everything VRoid Studio exports, carry their physics as s
 their faces as expressions. Both formats are read: spring bones become Basis jiggle physics, and
 expressions become HVR Vixxy controls.
 
-UniVRM does not need to be installed. A VRM avatar imported into a Basis project arrives with its
-components as missing scripts, and the data is read from the prefab file either way.
+UniVRM is needed to import a `.vrm` file, not to convert one. A VRM avatar handed over as a
+prefab arrives with its components as missing scripts, and the data is read from the file either
+way.
 
 ## Bringing in a `.vrm` file
 
 Install [UniVRM](https://github.com/vrm-c/UniVRM) and drag the file into the project. Use 0.131.2
-or newer: 0.131.0 does not compile on the Unity version Basis targets. Then two steps that are
-easy to miss:
+or newer: 0.131.0 does not compile on the Unity version Basis targets.
 
-1. **Drag the imported avatar into a scene, unpack it completely** (right click, Prefab, Unpack
-   Completely) **and save it as a prefab.** An imported `.vrm` is a binary file, and a prefab
-   saved without unpacking only points back at it, so there is nothing to read.
-2. **In the `.vrm`'s import settings, press "Extract Meta And Expressions".** Expressions, the
-   licence and the eye offset live inside the binary until you do. Spring bones do not need this;
-   they are components on the prefab.
+Drag the imported avatar into a scene and convert it. It does not need unpacking, and its assets
+do not need extracting. A `.vrm` is binary, so there is no text to read; its spring bones,
+constraints, expressions, licence and eye offset are read from the components instead, which
+UniVRM has to be installed for anyway.
 
-Convert the prefab as you would any other avatar. UniVRM's own components are not on the Basis
-allow-list, so Basis strips them when the avatar loads and the converted jiggle physics takes
-over.
-
-If the expressions and licence are missing after converting, the report says so as
-`vrm.objectUnreadable`, which means step 2 was skipped.
+UniVRM's own components are not on the Basis allow-list, so Basis strips them when the avatar
+loads and the converted jiggle physics takes over.
 
 ## The two formats
 

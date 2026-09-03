@@ -36,7 +36,7 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `vrm.constraint.rotation` | A VRM rotation constraint copies a delta from rest; a Basis one follows the rotation itself. |
 | `vrm.constraint.aim` | A VRM aim constraint states no up direction, so the scene's up is used. |
 | `vrm.constraint.roll` | Nothing in Basis copies rotation about one axis, so this became a rotation constraint limited to it. |
-| `vrm.objectUnreadable` | The avatar's expressions and licence are still inside the `.vrm` file. Extract them in its import settings. |
+| `vrm.objectUnreadable` | The avatar's expressions and licence are inside the `.vrm` file and its component could not be read either. Press "Extract Meta And Expressions" in the file's import settings. |
 | `vrm.licence` | What the avatar's VRM licence says: its title, author and who may wear it. |
 | `vrm.licence.restricted` | The licence forbids changing the avatar, or limits who may wear it. |
 | `vrm.eyePosition` | The avatar's eye offset became the Basis eye position. |

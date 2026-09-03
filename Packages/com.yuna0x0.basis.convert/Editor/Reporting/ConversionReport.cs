@@ -63,7 +63,7 @@ namespace yuna0x0.Basis.Convert.Reporting
         {
             StringBuilder text = new StringBuilder();
 
-            text.AppendLine($"# {ProductInfo.Name}: VRChat avatar to Basis");
+            text.AppendLine($"# {ProductInfo.Name}: avatar to Basis");
             text.AppendLine();
             text.AppendLine($"Source: {plan.SourceAssetPath}");
             text.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm}");

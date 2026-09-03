@@ -57,6 +57,10 @@ missing scripts and only the file still holds their values. Two things follow fr
 - **A prefab variant is read from every prefab above it as well**, since its own file holds
   only its overrides. The report names the base as `source.prefabVariant`.
 
+An imported `.vrm` is the exception. It is binary rather than text, and UniVRM has to be
+installed for it to import at all, so its components are read directly. See
+[VRM](what-converts/vrm.md).
+
 ## Things a conversion does not touch
 
 Materials and shaders, meshes, the avatar's animator, and anything Basis fills in itself when the
