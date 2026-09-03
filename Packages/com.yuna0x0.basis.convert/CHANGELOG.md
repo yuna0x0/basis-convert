@@ -6,11 +6,13 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-09-03
+
 ### Fixed
 
-- The line describing Advanced left out the checkbox per motion, which it has always added.
 - Text was cut off rather than wrapped under the conversion result, in the rig and diagnostic
   lists, beside the tuning weights and under the buttons.
+- The line describing Advanced left out the checkbox per motion, which it has always added.
 
 ## [0.3.2] - 2026-09-02
 
@@ -143,7 +145,8 @@ First release.
 - Two physics settings are fits rather than conversions, exposed as adjustable weights.
 - Component data is read from prefab files, so the avatar must still be linked to its prefab.
 
-[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.3.3...HEAD
+[0.3.3]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.3.3
 [0.3.2]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.3.2
 [0.3.1]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.3.1
 [0.3.0]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.3.0
