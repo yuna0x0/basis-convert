@@ -2,3 +2,6 @@ node_modules
 build
 .docusaurus
 .cache-loader
+
+# Screenshot sources, kept beside the webp they are converted to.
+static/img/*.png

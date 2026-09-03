@@ -34,9 +34,9 @@
 }
 
 /* Portrait screenshots run about 1000px tall at column width. The width keeps
-   this narrower than the column on a phone, where 480px would overflow. */
+   this narrower than the column on a phone, where 600px would overflow. */
 .screenshot-tall img {
   width: 100%;
-  max-width: 480px;
+  max-width: 600px;
   height: auto;
 }

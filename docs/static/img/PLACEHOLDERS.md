@@ -14,13 +14,23 @@ the name given, then replace the comment in that page with the markdown the comm
 Screenshots of the window read best cropped to the window itself, taken on the dark editor theme,
 and at a width where the diagnostics text is legible without zooming.
 
-Save them as webp, 1600px wide, quality 82, which is what the ALCOM ones use: that is twice the
-width the docs column renders, so they stay sharp on a high density display, and it took those
-from about 450KB to 35KB each. `magick <in> -resize '1600x>' -strip -quality 82 <out>.webp`. The `>` keeps a narrower
-shot at its own size rather than upscaling it.
+Save them as webp at the source's own size. A screenshot taken on a high density display is
+already two or three times the width the docs column renders, and downscaling it is what makes
+it look soft on a 4K screen.
+
+Try lossless first, and fall back to quality 90 when it comes out over about 200KB, which
+happens once a shot holds the 3D scene rather than flat editor UI:
+
+```sh
+magick <in>.png -strip -define webp:lossless=true <out>.webp
+magick <in>.png -strip -quality 90 -define webp:sharp-yuv=true <out>.webp
+```
+
+The `.png` sources sit in this folder and are gitignored, so a shot can be re-encoded without
+being taken again.
 
 A portrait shot is capped in the page, not in the file. Wrap it in
-`<div className="screenshot-tall">`, which `custom.css` holds to 480px or the column width,
+`<div className="screenshot-tall">`, which `custom.css` holds to 600px or the column width,
 whichever is smaller. `window-scanned.webp` would be about 1000px tall without it.
 
 Keep the markdown `![](/img/...)` syntax inside the wrapper. A raw `<img src="/img/...">` skips
