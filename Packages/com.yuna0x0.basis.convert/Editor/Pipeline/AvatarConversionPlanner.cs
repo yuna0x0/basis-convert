@@ -196,6 +196,43 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 ReadDocuments(plan, source, profile, unknownIdentities,
                     inheritedDocuments, inheritedResolver);
             }
+
+            string model = source.ModelAssetPath();
+            if (model != null)
+            {
+                ReadModelComponents(plan, source, model);
+            }
+        }
+
+        /// <summary>
+        /// A prefab saved from an imported model without unpacking holds only its overrides, and
+        /// the model holds the components. An FBX carries none, but a `.vrm` does, as live types,
+        /// so they are read from the model and resolved onto this prefab's own objects, the way a
+        /// variant's base is read as text.
+        /// </summary>
+        private static void ReadModelComponents(
+            AvatarConversionPlan plan, ConversionSource source, string modelPath)
+        {
+            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
+            PrefabObjectResolver resolver =
+                PrefabObjectResolver.CreateForInherited(source.AssetPath, modelPath, null);
+
+            if (model == null || resolver == null || resolver.Root == null)
+            {
+                return;
+            }
+
+            int before = plan.ComponentsRead;
+            ReadComponents(plan, source, resolver, model);
+
+            if (plan.ComponentsRead > before)
+            {
+                plan.InheritedSourcesRead++;
+                plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "source.modelRead",
+                    $"{source.Name} was saved from {System.IO.Path.GetFileName(modelPath)} "
+                    + "without unpacking, so its components were read from that file and "
+                    + "converted onto this prefab's own objects.");
+            }
         }
 
         /// <summary>
@@ -204,9 +241,10 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// be installed for it to import at all.
         /// </summary>
         private static void ReadComponents(
-            AvatarConversionPlan plan, ConversionSource source, PrefabObjectResolver resolver)
+            AvatarConversionPlan plan, ConversionSource source, PrefabObjectResolver resolver,
+            GameObject readFrom = null)
         {
-            VrmComponentReader.Result read = VrmComponentReader.Read(resolver.Root);
+            VrmComponentReader.Result read = VrmComponentReader.Read(readFrom ?? resolver.Root);
             if (!read.Any)
             {
                 return;

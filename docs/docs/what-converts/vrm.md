@@ -18,7 +18,8 @@ Install [UniVRM](https://github.com/vrm-c/UniVRM) and drag the file into the pro
 or newer: 0.131.0 does not compile on the Unity version Basis targets.
 
 Drag the imported avatar into a scene and convert it. It does not need unpacking, and its assets
-do not need extracting. A `.vrm` is binary, so there is no text to read; its spring bones,
+do not need extracting. A prefab saved from it without unpacking converts too, and the report
+names the file it was read from as `source.modelRead`. A `.vrm` is binary, so there is no text to read; its spring bones,
 constraints, expressions, licence and eye offset are read from the components instead, which
 UniVRM has to be installed for anyway.
 
@@ -33,8 +34,9 @@ parameters for all of them. Each root bone it names becomes a jiggle rig.
 **VRM 1.0** puts a joint on each bone and lists which joints make up which chain on the avatar's
 own component. Each chain becomes a jiggle rig rooted at its first joint.
 
-A current UniVRM converts a 0.x file to 1.0 components as it imports, so a `.vrm` brought in
-today reads through the 1.0 path whichever version it was written as. The 0.x path covers prefabs
+UniVRM 1.0 converts a 0.x file to 1.0 components as it imports, so a `.vrm` brought in that way
+reads through the 1.0 path whichever version it was written as. UniVRM 0.x instead writes a
+prefab beside the `.vrm` as it imports; convert that prefab. The 0.x path also covers prefabs
 made with an older UniVRM.
 
 ## What carries across

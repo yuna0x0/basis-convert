@@ -10,9 +10,9 @@ namespace yuna0x0.Basis.Convert.Tests
     /// <summary>
     /// VRM spring bones, in both formats, against hand-written fixtures.
     /// <para>
-    /// UniVRM is not installed here, which is the point: a VRM avatar imported into a Basis
-    /// project arrives with its spring bones as missing scripts, exactly as VRChat components
-    /// do, and the data is read from the file either way.
+    /// The fixtures are prefabs, so they are read as text whether or not UniVRM is installed:
+    /// with it the components are real types, without it they are missing scripts, and the file
+    /// says the same either way. An imported `.vrm` is the other case, and has its own tests.
     /// </para>
     /// </summary>
     public class VrmSpringBoneTests

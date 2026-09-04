@@ -15,6 +15,9 @@ Notable changes to this package. The format follows
   VRM names no consonants: `vrm.visemes` and `vrm.blink`.
 - VRM 0.x look at components are reported as `vrm.lookAt` rather than as unknown scripts, along
   with its humanoid description.
+- A prefab saved from a `.vrm` without unpacking reads its components from the file:
+  `source.modelRead`.
+- An avatar whose visemes nothing could fill says so as `descriptor.visemesUnset`.
 
 ### Fixed
 

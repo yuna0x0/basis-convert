@@ -44,6 +44,9 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `vrm.firstPerson` | Renderers marked to hide from the wearer. Basis hides the head bone instead. |
 | `vrm.visemes` | The avatar's vowel expressions filled five of the fifteen Basis visemes. VRM names no consonants, so the other ten are unset. |
 | `vrm.blink` | Blink was taken from the avatar's own blink expression. |
+| `vrm.visemeCompound` | A vowel or blink expression moves several blendshapes. A Basis viseme names one, so it was left unset. |
+| `vrm.visemeMeshSplit` | Vowels sit on more than one renderer. Basis reads all fifteen from one, so the others were left unset. |
+| `descriptor.visemesUnset` | Nothing named the visemes or blink, so they are unset on the `BasisAvatar` and have to be assigned by hand. |
 | `vrm.lookAt` | VRM 0.x look at components were found. Basis drives gaze from the eye bones itself. |
 | `vrm.stiffness` | A VRM chain's stiffness force was fitted onto jiggle stiffness, which is a narrower scale. |
 | `vrm.branchesExcluded` | Bones hanging off a VRM chain that the spring never named were excluded, so they stay as still as VRM left them. |
@@ -51,6 +54,7 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `contacts.dropped` | VRChat contacts were found. Basis has no contact system. |
 | `modularAvatar.menus` | Modular Avatar menu and animator components were found. See [Modular Avatar](what-converts/modular-avatar.md). |
 | `source.notUnpacked` | Nothing was found, and the prefab was saved from an imported model without unpacking. Its components are still in that file. |
+| `source.modelRead` | The prefab was saved from an imported `.vrm` without unpacking, so its components were read from that file. |
 | `source.prefabVariant` | The avatar is a prefab variant, so the prefab it inherits from was read as well. Names that base. |
 | `source.editorOnlyTool` | Components of an editor-time authoring tool, which carry no runtime behaviour. Nothing to convert, nothing lost. |
 | `source.unknownScript` | A component whose script this version does not recognise. Please report it. |
