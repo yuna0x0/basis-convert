@@ -87,9 +87,6 @@ Or add the scoped registry by hand, in **Edit > Project Settings > Package Manag
 - URL: `https://package.openupm.com`
 - Scope: `com.yuna0x0.basis.convert`
 
-Scoping to the package rather than to `com.yuna0x0` keeps Unity resolving only this package from
-OpenUPM.
-
 Then add `com.yuna0x0.basis.convert` in **Window > Package Manager > + > Install package by
 name**.
 
