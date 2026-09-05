@@ -6,6 +6,8 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-05
+
 ### Added
 
 - A VRC Head Chop converts to a Basis Head Chop, naming the same bones with the same scale
@@ -15,7 +17,7 @@ Notable changes to this package. The format follows
 - A PhysBone collider marked global, an SDK 3.10.4 setting, is reported:
   `collider.global.dropped`.
 - The report, the window and a docs page state the source versions the readers were checked
-  against: VRChat SDK 3.10.5, UniVRM 0.131.2, Dynamic Bone 1.3.2, Modular Avatar 1.18.7.
+  against: VRChat SDK 3.10.5, UniVRM 0.131.2, Dynamic Bone 1.3.4, Modular Avatar 1.18.7.
 - Modular Avatar's vertex filters and Move Independently are named rather than reported as
   unknown scripts.
 - A plane collider facing anything but its transform's Y axis is reported, since a Basis plane
@@ -190,7 +192,8 @@ First release.
 - Two physics settings are fits rather than conversions, exposed as adjustable weights.
 - Component data is read from prefab files, so the avatar must still be linked to its prefab.
 
-[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.5.0
 [0.4.0]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.4.0
 [0.3.3]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.3.3
 [0.3.2]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.3.2

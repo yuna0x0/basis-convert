@@ -13,7 +13,6 @@ const defaultLocale = 'en';
 const config = {
   title: 'Watari',
   tagline: 'Converter for Basis: physics, constraints, menus and motion',
-  favicon: 'img/favicon.ico',
 
   // Set to the GitHub Pages address until a custom domain is pointed at it. With a custom
   // domain, use that as `url` and '/' as `baseUrl`, and add a CNAME file to static/.

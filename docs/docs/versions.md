@@ -13,7 +13,7 @@ the same versions.
 |---|---|
 | VRChat SDK | 3.10.5, released 2026-09-04 |
 | UniVRM | 0.131.2 |
-| Dynamic Bone | 1.3.2 |
+| Dynamic Bone | 1.3.4 |
 | Modular Avatar | 1.18.7, with NDMF 1.14.8 |
 | Basis | the `developer` branch as of 2026-09-05 |
 
@@ -28,6 +28,11 @@ menus and parameters, and the six constraints did not change. What did:
 - **Per-platform overrides** (3.8.1) and impostor settings are reported as `vrchat.buildSettings`.
 - **VRC Head Chop** (3.6.0) converts to a Basis Head Chop. See
   [Avatar descriptor](what-converts/avatar-descriptor.md).
+
+## Dynamic Bone
+
+1.3.4 differs from 1.3.2 only in when it disables its own multithreading. The serialized
+fields, and the script guids the readers match on, are unchanged.
 
 ## Modular Avatar
 
