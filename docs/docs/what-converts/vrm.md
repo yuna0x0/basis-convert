@@ -59,9 +59,10 @@ swinging, so it is excluded to leave it as still as VRM left it.
 
 ## Expressions
 
-A VRM expression is a named set of blendshape weights. The ones an author added, and the
-emotion presets, become Vixxy controls with a menu item each: off leaves every shape at the
-weight the avatar was authored with, on takes the expression's.
+A VRM expression is a named set of blendshape weights, and an avatar wears one at a time. The
+ones an author added, and the emotion presets, become one Vixxy selector named Expression:
+Neutral first, then one choice per expression. Every shape any expression touches is set at
+every choice, at the expression's weight or at zero, so picking a choice replaces the face.
 
 The lip sync shapes, blinking and looking around do not become controls. Basis drives those
 itself, and a menu item would fight it.

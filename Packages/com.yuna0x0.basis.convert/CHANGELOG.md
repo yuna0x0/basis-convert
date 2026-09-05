@@ -6,6 +6,14 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-09-05
+
+### Fixed
+
+- A VRM avatar's expressions became one Vixxy toggle each, so two could be on at once and the
+  menu held one entry per emotion. They are now one selector named Expression: Neutral, then one
+  choice per expression, every shape set at every choice. See `agent/decisions/0016`.
+
 ## [0.5.1] - 2026-09-05
 
 ### Changed
@@ -204,7 +212,8 @@ First release.
 - Two physics settings are fits rather than conversions, exposed as adjustable weights.
 - Component data is read from prefab files, so the avatar must still be linked to its prefab.
 
-[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.5.2
 [0.5.1]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.5.1
 [0.5.0]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.5.0
 [0.4.0]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.4.0

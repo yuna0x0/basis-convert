@@ -1251,7 +1251,8 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 ? source.Root.transform
                 : plan.SourceRoot.transform;
 
-            int rebuilt = 0;
+            List<VrmExpressionData> choices = new List<VrmExpressionData>();
+            VrmExpressionData neutral = null;
             int driven = 0;
 
             foreach (VrmExpressionData expression in expressions)
@@ -1260,45 +1261,42 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 NameBlendShapes(expression, root);
                 plan.VrmExpressions.Add(expression);
 
-                if (!VrmExpressionToVixxyMapper.IsMenuWorthy(expression))
+                if (VrmExpressionToVixxyMapper.IsMenuWorthy(expression))
                 {
-                    if (expression.Role != VrmExpressionRole.Custom
-                        && expression.Role != VrmExpressionRole.Emotion)
-                    {
-                        driven++;
-                    }
-
-                    continue;
+                    choices.Add(expression);
                 }
+                else if (expression.Role == VrmExpressionRole.Neutral)
+                {
+                    if (expression.Bindings.Count > 0)
+                    {
+                        neutral = expression;
+                    }
+                }
+                else if (expression.Role != VrmExpressionRole.Custom
+                         && expression.Role != VrmExpressionRole.Emotion)
+                {
+                    driven++;
+                }
+            }
 
-                VixxyControlPlan control = VrmExpressionToVixxyMapper.Map(expression);
+            if (choices.Count > 0)
+            {
+                VixxyControlPlan control = VrmExpressionToVixxyMapper.MapSelector(choices, neutral);
                 foreach (ConversionDiagnostic diagnostic in control.Diagnostics)
                 {
                     plan.ToggleDiagnostics.Add(diagnostic);
                 }
 
-                if (control.Subjects.Count == 0)
+                PlannedVixxyControl planned = new PlannedVixxyControl { Plan = control };
+                if (control.Subjects.Count > 0 && ResolveSubjects(plan, control, planned, root))
                 {
-                    continue;
+                    planned.Source = source;
+                    plan.VixxyControls.Add(planned);
+                    plan.ToggleDiagnostics.Add(DiagnosticSeverity.Mapped, "vrm.expressionsRebuilt",
+                        $"{choices.Count} VRM expressions became one Expression selector: Neutral "
+                        + "and one choice each. VRM has no menu, so the application playing the "
+                        + "avatar drove these; on Basis the wearer picks one.");
                 }
-
-                PlannedVixxyControl planned = new PlannedVixxyControl {Plan = control};
-                if (!ResolveSubjects(plan, control, planned, root))
-                {
-                    continue;
-                }
-
-                planned.Source = source;
-                plan.VixxyControls.Add(planned);
-                rebuilt++;
-            }
-
-            if (rebuilt > 0)
-            {
-                plan.ToggleDiagnostics.Add(DiagnosticSeverity.Mapped, "vrm.expressionsRebuilt",
-                    $"{rebuilt} VRM expressions were rebuilt as Vixxy controls, each with a menu "
-                    + "item. VRM has no menu of its own, so these were driven by whatever was "
-                    + "playing the avatar rather than chosen by the wearer.");
             }
 
             if (driven > 0)

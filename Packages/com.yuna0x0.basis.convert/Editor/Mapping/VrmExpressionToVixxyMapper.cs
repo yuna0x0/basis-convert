@@ -4,87 +4,132 @@ using yuna0x0.Basis.Convert.Model;
 namespace yuna0x0.Basis.Convert.Mapping
 {
     /// <summary>
-    /// Turns a VRM expression into a Vixxy control.
+    /// Turns a VRM avatar's expressions into one Vixxy selector.
     /// <para>
-    /// An expression is a set of blendshape weights with a name, and a Vixxy control holds a
-    /// value per choice, so one becomes a two-choice control: off, where every shape keeps the
-    /// weight the avatar was authored with, and on, where it takes the expression's.
+    /// An expression is a named set of blendshape weights, and an avatar wears one at a time:
+    /// Neutral, or Happy, or Angry. One control with a choice per expression says that; a toggle
+    /// per expression lets two be on together and fills the menu with one entry each. Every
+    /// shape any expression touches is written at every choice, at the expression's weight or at
+    /// zero, so picking a choice replaces the face rather than layering onto it.
     /// </para>
     /// <para>
-    /// Only the expressions an author added and the emotions are rebuilt. Visemes, blinking and
-    /// looking around are driven by Basis itself, and putting them in a menu would offer the
-    /// wearer a control over something already being driven.
+    /// Only the expressions an author added and the emotions are choices. Visemes, blinking and
+    /// looking around are driven by Basis itself. Neutral, when it carries weights of its own, is
+    /// the first choice.
     /// </para>
     /// </summary>
     public static class VrmExpressionToVixxyMapper
     {
-        /// <summary>Whether this is an expression a menu control should be made for.</summary>
+        public const string MenuName = "Expression";
+        public const string NeutralChoice = "Neutral";
+
+        /// <summary>Whether this expression is a choice on the selector.</summary>
         public static bool IsMenuWorthy(VrmExpressionData expression) =>
             expression != null
             && expression.Bindings.Count > 0
             && (expression.Role == VrmExpressionRole.Custom
                 || expression.Role == VrmExpressionRole.Emotion);
 
-        public static VixxyControlPlan Map(VrmExpressionData expression)
+        /// <summary>
+        /// One selector over these expressions. <paramref name="neutral"/> is the avatar's
+        /// Neutral expression when it has bindings, and may be null.
+        /// </summary>
+        public static VixxyControlPlan MapSelector(
+            IReadOnlyList<VrmExpressionData> expressions, VrmExpressionData neutral = null)
         {
             VixxyControlPlan plan = new VixxyControlPlan
             {
-                MenuName = expression.Name,
-                Parameter = expression.Name,
+                MenuName = MenuName,
+                Parameter = MenuName,
+                DefaultValue = 0f,
             };
 
-            plan.ChoiceNames.Add("OFF");
-            plan.ChoiceNames.Add("ON");
+            int count = expressions.Count + 1;
+            plan.ChoiceNames.Add(NeutralChoice);
             plan.ChoiceValues.Add(0);
-            plan.ChoiceValues.Add(1);
+            for (int i = 0; i < expressions.Count; i++)
+            {
+                plan.ChoiceNames.Add(expressions[i].Name);
+                plan.ChoiceValues.Add(i + 1);
+            }
 
-            // One subject per renderer the expression touches: an expression commonly sets
+            // One subject per renderer any expression touches: an expression commonly sets
             // shapes on the face and the eyebrows at once, and Vixxy addresses each renderer.
             Dictionary<string, VixxySubjectPlan> subjects =
                 new Dictionary<string, VixxySubjectPlan>();
+            Dictionary<(string, string), VixxyBlendShapePlan> shapes =
+                new Dictionary<(string, string), VixxyBlendShapePlan>();
 
-            int unnamed = 0;
-
-            foreach (VrmMorphBinding binding in expression.Bindings)
+            VixxyBlendShapePlan ShapeFor(VrmMorphBinding binding)
             {
-                if (string.IsNullOrEmpty(binding.ShapeName))
+                if (!shapes.TryGetValue((binding.Path, binding.ShapeName),
+                        out VixxyBlendShapePlan shape))
                 {
-                    unnamed++;
-                    continue;
+                    if (!subjects.TryGetValue(binding.Path, out VixxySubjectPlan subject))
+                    {
+                        subject = new VixxySubjectPlan { Path = binding.Path };
+                        subjects[binding.Path] = subject;
+                        plan.Subjects.Add(subject);
+                    }
+
+                    bool[] set = new bool[count];
+                    for (int c = 0; c < count; c++)
+                    {
+                        set[c] = true;
+                    }
+
+                    shape = new VixxyBlendShapePlan
+                    {
+                        ShapeName = binding.ShapeName,
+                        Choices = new float[count],
+                        Set = set,
+                    };
+                    shapes[(binding.Path, binding.ShapeName)] = shape;
+                    subject.BlendShapes.Add(shape);
                 }
 
-                if (!subjects.TryGetValue(binding.Path, out VixxySubjectPlan subject))
+                return shape;
+            }
+
+            void Apply(VrmExpressionData expression, int choice)
+            {
+                int unnamed = 0;
+                foreach (VrmMorphBinding binding in expression.Bindings)
                 {
-                    subject = new VixxySubjectPlan {Path = binding.Path};
-                    subjects[binding.Path] = subject;
-                    plan.Subjects.Add(subject);
+                    if (string.IsNullOrEmpty(binding.ShapeName))
+                    {
+                        unnamed++;
+                        continue;
+                    }
+
+                    ShapeFor(binding).Choices[choice] = binding.Weight;
                 }
 
-                subject.BlendShapes.Add(new VixxyBlendShapePlan
+                if (unnamed > 0)
                 {
-                    ShapeName = binding.ShapeName,
+                    plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vrm.expression.shapeMissing",
+                        $"'{expression.Name}' sets {unnamed} blendshapes that are not on the mesh "
+                        + "they name. VRM refers to a shape by its position in the mesh, so this "
+                        + "usually means the mesh has changed since the expression was authored.");
+                }
 
-                    // Off is filled in from the avatar as authored, the same rule a menu toggle
-                    // that animates one side follows.
-                    Choices = new[] {0f, binding.Weight},
-                    Set = new[] {false, true},
-                });
+                if (expression.MaterialBindingCount > 0)
+                {
+                    plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vrm.expression.materials",
+                        $"'{expression.Name}' also changes {expression.MaterialBindingCount} "
+                        + "material values. VRM names the material to change, while Vixxy acts "
+                        + "on a renderer's properties, so those were not carried over.");
+                }
             }
 
-            if (unnamed > 0)
+            if (neutral != null)
             {
-                plan.Diagnostics.Add(DiagnosticSeverity.Warning, "vrm.expression.shapeMissing",
-                    $"'{expression.Name}' sets {unnamed} blendshapes that are not on the mesh "
-                    + "they name. VRM refers to a shape by its position in the mesh, so this "
-                    + "usually means the mesh has changed since the expression was authored.");
+                Apply(neutral, 0);
             }
 
-            if (expression.MaterialBindingCount > 0)
+            for (int i = 0; i < expressions.Count; i++)
             {
-                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vrm.expression.materials",
-                    $"'{expression.Name}' also changes {expression.MaterialBindingCount} "
-                    + "material values. VRM names the material to change, while Vixxy acts on a "
-                    + "renderer's properties, so those were not carried over.");
+                Apply(expressions[i], i + 1);
             }
 
             return plan;

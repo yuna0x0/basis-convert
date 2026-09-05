@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using yuna0x0.Basis.Convert.Mapping;
 using yuna0x0.Basis.Convert.Model;
 using yuna0x0.Basis.Convert.Pipeline;
 
@@ -151,38 +152,48 @@ namespace yuna0x0.Basis.Convert.Tests
         }
 
         [Test]
-        public void AVrm10ExpressionBecomesAVixxyControl()
+        public void AVrm10AvatarsExpressionsBecomeOneSelector()
         {
-            // An expression is a named set of blendshape weights, which is what a control holds
-            // once it has two choices. VRM has no menu, so on Basis the wearer picks it.
+            // An avatar wears one expression at a time, so the expressions are choices on one
+            // control rather than a toggle each. Neutral is the first choice.
             AvatarConversionPlan plan = Plan(Vrm10Path);
 
-            PlannedVixxyControl happy =
-                plan.VixxyControls.Find(control => control.Plan.MenuName == "Happy");
+            List<PlannedVixxyControl> fromVrm = plan.VixxyControls.FindAll(
+                control => control.Plan.MenuName == VrmExpressionToVixxyMapper.MenuName);
+            Assert.That(fromVrm.Count, Is.EqualTo(1));
 
-            Assert.That(happy, Is.Not.Null);
-            Assert.That(happy.Plan.Subjects.Count, Is.EqualTo(1));
-            Assert.That(happy.SourceRenderers[0].name, Is.EqualTo("Face"));
+            PlannedVixxyControl selector = fromVrm[0];
+            Assert.That(selector.Plan.ChoiceNames,
+                Is.EqualTo(new[] { "Neutral", "Happy", "Wink" }));
+            Assert.That(selector.Plan.ChoiceValues, Is.EqualTo(new[] { 0, 1, 2 }));
+            Assert.That(selector.Plan.DefaultValue, Is.EqualTo(0f));
+            Assert.That(selector.Plan.IsSlider, Is.False);
+            Assert.That(selector.Plan.Subjects.Count, Is.EqualTo(1));
+            Assert.That(selector.SourceRenderers[0].name, Is.EqualTo("Face"));
 
-            VixxyBlendShapePlan shape = happy.Plan.Subjects[0].BlendShapes[0];
-            Assert.That(shape.ShapeName, Is.EqualTo("Smile"),
+            VixxyBlendShapePlan smile = selector.Plan.Subjects[0].BlendShapes
+                .Find(shape => shape.ShapeName == "Smile");
+            Assert.That(smile, Is.Not.Null,
                 "VRM names a shape by its index in the mesh, so the mesh is what names it.");
-            Assert.That(shape.Choices[1], Is.EqualTo(100f).Within(0.01f),
-                "A VRM 1.0 weight of 1 is Unity's 100.");
-            Assert.That(shape.Set[0], Is.False, "Off keeps whatever the avatar was authored with.");
+            Assert.That(smile.Choices, Is.EqualTo(new[] { 0f, 100f, 0f }).Within(0.01f),
+                "A VRM 1.0 weight of 1 is Unity's 100; every other choice sets the shape to 0.");
+            Assert.That(smile.Set, Is.All.True, "Every choice writes every shape.");
         }
 
         [Test]
-        public void ACustomExpressionIsRebuiltAndItsMaterialChangesReported()
+        public void ACustomExpressionIsAChoiceAndItsMaterialChangesReported()
         {
             AvatarConversionPlan plan = Plan(Vrm10Path);
 
-            PlannedVixxyControl wink =
-                plan.VixxyControls.Find(control => control.Plan.MenuName == "Wink");
+            PlannedVixxyControl selector = plan.VixxyControls.Find(
+                control => control.Plan.MenuName == VrmExpressionToVixxyMapper.MenuName);
+            int wink = selector.Plan.ChoiceNames.IndexOf("Wink");
 
-            Assert.That(wink, Is.Not.Null, "Expressions the author added are what a menu is for.");
-            Assert.That(wink.Plan.Subjects[0].BlendShapes[0].Choices[1],
-                Is.EqualTo(75f).Within(0.01f));
+            Assert.That(wink, Is.GreaterThan(0), "Expressions the author added are choices too.");
+            VixxyBlendShapePlan shape = selector.Plan.Subjects[0].BlendShapes
+                .Find(candidate => candidate.Choices[wink] > 0f);
+            Assert.That(shape, Is.Not.Null);
+            Assert.That(shape.Choices[wink], Is.EqualTo(75f).Within(0.01f));
             Assert.That(plan.AllDiagnostics().HasCode("vrm.expression.materials"), Is.True,
                 "It also changes a material colour, which Vixxy cannot address the same way.");
         }
@@ -190,31 +201,36 @@ namespace yuna0x0.Basis.Convert.Tests
         [Test]
         public void ExpressionsBasisDrivesItselfAreLeftToIt()
         {
-            // The lip sync shapes, blinking and looking around are driven by Basis. A menu item
-            // the wearer has to hold down would fight it.
+            // The lip sync shapes, blinking and looking around are driven by Basis. A choice
+            // the wearer has to pick would fight it.
             AvatarConversionPlan plan = Plan(Vrm10Path);
 
-            Assert.That(plan.VixxyControls.Find(c => c.Plan.MenuName == "Aa"), Is.Null);
+            PlannedVixxyControl selector = plan.VixxyControls.Find(
+                control => control.Plan.MenuName == VrmExpressionToVixxyMapper.MenuName);
+            Assert.That(selector.Plan.ChoiceNames, Does.Not.Contain("Aa"));
+            Assert.That(selector.Plan.ChoiceNames, Does.Not.Contain("Blink"));
             Assert.That(plan.AllDiagnostics().HasCode("vrm.expressionsDriven"), Is.True);
             Assert.That(plan.AllDiagnostics().HasCode("vrm.expressionsRebuilt"), Is.True);
         }
 
         [Test]
-        public void AVrm0ClipBecomesAControlWithItsOwnWeightScale()
+        public void AVrm0ClipIsAChoiceWithItsOwnWeightScale()
         {
             // VRM 0.x weights are already on Unity's 0 to 100 scale: UniVRM passes them straight
             // to SetBlendShapeWeight. Only 1.0 needs scaling.
             AvatarConversionPlan plan = Plan(Vrm0Path);
 
-            PlannedVixxyControl joy =
-                plan.VixxyControls.Find(control => control.Plan.MenuName == "Joy");
+            PlannedVixxyControl selector = plan.VixxyControls.Find(
+                control => control.Plan.MenuName == VrmExpressionToVixxyMapper.MenuName);
+            Assert.That(selector, Is.Not.Null);
 
-            Assert.That(joy, Is.Not.Null);
-            Assert.That(joy.Plan.Subjects[0].BlendShapes[0].ShapeName, Is.EqualTo("Smile"));
-            Assert.That(joy.Plan.Subjects[0].BlendShapes[0].Choices[1],
-                Is.EqualTo(100f).Within(0.01f));
+            int joy = selector.Plan.ChoiceNames.IndexOf("Joy");
+            Assert.That(joy, Is.GreaterThan(0));
+            VixxyBlendShapePlan smile = selector.Plan.Subjects[0].BlendShapes
+                .Find(shape => shape.ShapeName == "Smile");
+            Assert.That(smile.Choices[joy], Is.EqualTo(100f).Within(0.01f));
 
-            Assert.That(plan.VixxyControls.Find(c => c.Plan.MenuName == "A"), Is.Null,
+            Assert.That(selector.Plan.ChoiceNames, Does.Not.Contain("A"),
                 "A is a viseme, whatever the author called the clip.");
         }
 

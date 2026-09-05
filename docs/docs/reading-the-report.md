@@ -55,6 +55,9 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `vrm.lookAt` | VRM 0.x look at components were found. Basis drives gaze from the eye bones itself. |
 | `vrm.stiffness` | A VRM chain's stiffness force was fitted onto jiggle stiffness, which is a narrower scale. |
 | `vrm.branchesExcluded` | Bones hanging off a VRM chain that the spring never named were excluded, so they stay as still as VRM left them. |
+| `vrm.expressionsRebuilt` | The avatar's expressions became one Vixxy selector named Expression: Neutral, then one choice each. |
+| `vrm.expressionsDriven` | Visemes, blink and look-at expressions were left to Basis, which drives those itself. |
+| `vrm.expression.materials` | An expression also changed material values. Vixxy acts through a renderer, so those were not carried over. |
 | `vrm.collider.inside` | A VRM collider held bones inside its shape. Basis only pushes out, so it now pushes the opposite way. |
 | `vrm.collider.planeNormal` | A VRM plane collider's normal pointed away from its transform's Y axis. Basis planes face that axis, so it now faces the transform's Y. |
 | `contacts.dropped` | VRChat contacts were found. Basis has no contact system. |
