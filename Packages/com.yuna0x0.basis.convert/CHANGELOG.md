@@ -15,7 +15,9 @@ Notable changes to this package. The format follows
 - A PhysBone collider marked global, an SDK 3.10.4 setting, is reported:
   `collider.global.dropped`.
 - The report, the window and a docs page state the source versions the readers were checked
-  against: VRChat SDK 3.10.5, UniVRM 0.131.2, Dynamic Bone 1.3.2, Modular Avatar 1.18.3.
+  against: VRChat SDK 3.10.5, UniVRM 0.131.2, Dynamic Bone 1.3.2, Modular Avatar 1.18.7.
+- Modular Avatar's vertex filters and Move Independently are named rather than reported as
+  unknown scripts.
 - A plane collider facing anything but its transform's Y axis is reported, since a Basis plane
   always faces that axis: `collider.planeRotation.dropped`, `collider.planeAxis.dropped`,
   `vrm.collider.planeNormal`.

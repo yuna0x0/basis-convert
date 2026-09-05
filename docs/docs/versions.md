@@ -14,7 +14,7 @@ the same versions.
 | VRChat SDK | 3.10.5, released 2026-09-04 |
 | UniVRM | 0.131.2 |
 | Dynamic Bone | 1.3.2 |
-| Modular Avatar | 1.18.3, with NDMF 1.14.8 |
+| Modular Avatar | 1.18.7, with NDMF 1.14.8 |
 | Basis | the `developer` branch as of 2026-09-05 |
 
 ## What the VRChat SDK added since 3.8
@@ -28,3 +28,9 @@ menus and parameters, and the six constraints did not change. What did:
 - **Per-platform overrides** (3.8.1) and impostor settings are reported as `vrchat.buildSettings`.
 - **VRC Head Chop** (3.6.0) converts to a Basis Head Chop. See
   [Avatar descriptor](what-converts/avatar-descriptor.md).
+
+## Modular Avatar
+
+Every component 1.18.7 ships is named. The vertex filters that go with Mesh Cutter, and Move
+Independently, are mesh and hierarchy work Modular Avatar does on Basis itself, and are listed
+with the rest of that kind.

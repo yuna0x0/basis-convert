@@ -84,6 +84,15 @@ namespace yuna0x0.Basis.Convert.Sources
         MaFloorAdjuster,
         MaWorldScaleObject,
         MaPlatformFilter,
+        // Mesh Cutter's vertex filters, and an editor-only helper for moving objects without
+        // their children. Read from Modular Avatar 1.18.7's own .meta files. All of this is
+        // mesh and hierarchy work Modular Avatar does on Basis as well.
+        MaVertexFilterByAxis,
+        MaVertexFilterByBone,
+        MaVertexFilterByMask,
+        MaVertexFilterByShape,
+        MaVertexFilterByUVTile,
+        MaMoveIndependently,
         MaConvertConstraints,
 
         // Builds menus or merges animator layers, which target structures only VRChat has.
@@ -224,6 +233,12 @@ namespace yuna0x0.Basis.Convert.Sources
                 { ("e113c01563a14226b5e863befe6fe769", LooseScriptFileId), SourceComponentKind.MaWorldScaleObject },
                 { ("8c8a67d5c01849629fa90c3b2eded93f", LooseScriptFileId), SourceComponentKind.MaPlatformFilter },
                 { ("e362b3df8a3d478c82bf5ffe18f622e6", LooseScriptFileId), SourceComponentKind.MaConvertConstraints },
+                { ("660848d04d7443b5b6fcfb627e6be5ea", LooseScriptFileId), SourceComponentKind.MaVertexFilterByAxis },
+                { ("f8e2c9a1b3d44c6d9a7e5f2c1b8d3e4f", LooseScriptFileId), SourceComponentKind.MaVertexFilterByBone },
+                { ("96a7b00b1dae4a02b61b29bf02241063", LooseScriptFileId), SourceComponentKind.MaVertexFilterByMask },
+                { ("da7788c69fae9ff4abae088a0dc92c5b", LooseScriptFileId), SourceComponentKind.MaVertexFilterByShape },
+                { ("8c38d6a064dbe9b91f24ee30e85c3c4f", LooseScriptFileId), SourceComponentKind.MaVertexFilterByUVTile },
+                { ("a8d5b07828ba4eefb9acc305478369d0", LooseScriptFileId), SourceComponentKind.MaMoveIndependently },
 
                 { ("3b29d45007c5493d926d2cd45a489529", LooseScriptFileId), SourceComponentKind.MaMenuItem },
                 { ("7ef83cb0c23d4d7c9d41021e544a1978", LooseScriptFileId), SourceComponentKind.MaMenuInstaller },
