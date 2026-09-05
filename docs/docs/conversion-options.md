@@ -16,7 +16,7 @@ it:
 |---|---|
 | Physics | Jiggle physics rigs, from PhysBones, VRM spring bones and Dynamic Bone |
 | Constraints | Basis constraints, from VRChat and VRM constraints |
-| Avatar descriptor | The `BasisAvatar` component: view position, visemes, blink |
+| Avatar descriptor | The `BasisAvatar` component: view position, visemes, blink. Head chops go with it |
 | Menu toggles | HVR Vixxy controls and their menu items, from menu toggles and VRM expressions |
 | Authored motion | `BasisAuthoredMotion`, with a clip baked from each always-on animator layer |
 

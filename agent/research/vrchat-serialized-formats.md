@@ -75,6 +75,42 @@ WorldMotion=1 }`.
 `insideBounds` (keep bones *inside* the collider) and `bonesAsSpheres` have no jiggle
 equivalent.
 
+SDK 3.10.4 added `globalCollision` (an `AdvancedBool`: `False=0, True=1, Other=2`),
+`globalCollisionAllowSelf`, `globalCollisionAllowOthers` and `globalCollisionFlags`, replacing the
+runtime-only `isGlobalCollider`. Anything but 0 is reported as `collider.global.dropped`.
+
+## VRCHeadChop
+
+`VRC.SDK3.Avatars.Components.VRCHeadChop`, in `VRCSDK3A.dll`, fileID `-1888410255`. Fields:
+`targetBones` (a sequence of `{transform, scaleFactor, applyCondition}`, `applyCondition`
+`AlwaysApply=0, VrOnly=1, NonVrOnly=2`, at most 32 entries) and `globalScaleFactor`. Maps onto
+`BasisHeadChop.Targets[] {Target, Scale}`; Basis multiplies a target's local scale by `Scale`
+while the wearer is in first person (`BasisLocalAvatarDriver.CollectHeadChopEntries`), which is
+what VRChat's factor means too.
+
+## Components with nothing to become
+
+- `VRCRaycast` (3.10.3), `VRCSDK3A.dll` fileID `1472509199`: reported as `raycast.dropped`.
+- `VRCImpostorSettings` (`798808286`) and `VRCImpostorEnvironment` (`306702890`) in
+  `VRCSDK3A.dll`; `VRCPerPlatformOverrides` and `VRCAccessoryPerPlatformOverrides`, which are
+  loose scripts in the avatars package (`Runtime/VRCSDK/SDK3A/`, guids
+  `45da21a324e147228aaee066e399bff0` and `8a12ddb63afae28468db699a7e0cb228`). All reported as
+  `vrchat.buildSettings`.
+
+## Checking a new SDK release
+
+Done for 3.10.5 on 2026-09-05, against 3.8.0. The package zips are on GitHub
+(`vrchat/packages` releases) and the official VPM listing at `packages.vrchat.com/official`
+names the newest; both need a User-Agent header. Unzip `Runtime/VRCSDK/Plugins/*.dll` from
+`com.vrchat.base` and `com.vrchat.avatars` into a scratch folder, never into the Basis project,
+decompile each with `ilspycmd -p -o`, and diff the public and `[SerializeField]` fields of the
+classes the readers touch: `VRCPhysBoneBase`, `VRCPhysBoneColliderBase`, `ContactBase`,
+`VRCConstraintBase` and its six subclasses, `VRCAvatarDescriptor`, `VRCExpressionsMenu`,
+`VRCExpressionParameters`, `VRCHeadChop`. Then list the MonoBehaviours in
+`VRC.SDK3.Avatars.Components` for new ones. A DLL type's fileID is derived as described under
+KnownScriptIdentities; a loose script's guid is in its `.meta`. Raise `ProductInfo.CheckedAgainst`
+and the versions page when done.
+
 ## Other formats worth knowing
 
 - `VRCAvatarDescriptor.VisemeBlendShapes` is a `string[15]` in the same order Basis uses for

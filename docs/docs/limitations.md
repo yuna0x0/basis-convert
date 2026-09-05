@@ -9,6 +9,7 @@ Everything here is also reported by the tool. This is the same information in on
 ## Not converted at all
 
 - **VRChat contacts.** Basis has no contact system, so anything driven by touch is dropped.
+- **VRChat raycasts.** Nothing in Basis fires a ray into animator parameters.
 - **Where a VRM looks.** Its eye offset carries across as the Basis eye position, but the
   aiming does not: Basis drives gaze itself. The renderers a VRM hides from its wearer are
   reported rather than converted. See [VRM](what-converts/vrm.md).
@@ -26,6 +27,8 @@ Everything here is also reported by the tool. This is the same information in on
 
 - **Two physics settings are fits**, not conversions. See [Physics](what-converts/physics.md).
 - **Wide angle limits are dropped** rather than clamped to something tighter.
+- **A head chop applies in VR and on desktop alike**, whichever VRChat limited it to.
+- **Global PhysBone colliders stay local.** Basis makes hands, arms and feet global on its own.
 - **Material properties are applied through a property block**, which covers every material on a
   renderer. A renderer with more than one material is reported.
 - **Modular Avatar toggles** are rebuilt only when a single parameter of the avatar's own steers

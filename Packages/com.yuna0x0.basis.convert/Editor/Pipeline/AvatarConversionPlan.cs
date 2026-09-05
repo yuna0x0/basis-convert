@@ -145,6 +145,34 @@ namespace yuna0x0.Basis.Convert.Pipeline
         }
     }
 
+    public sealed class PlannedHeadChopTarget
+    {
+        public Transform Transform;
+        public float Scale;
+    }
+
+    /// <summary>One Basis head chop the conversion intends to produce, and where it will go.</summary>
+    public sealed class PlannedHeadChop
+    {
+        public BasisHeadChopPlan Plan;
+
+        /// <summary>Whether the conversion will write this one. Cleared from the window.</summary>
+        public bool Include = true;
+
+        /// <summary>The prefab this was read from, which its transforms belong to.</summary>
+        public ConversionSource Source;
+
+        public Transform SourceHost;
+        public List<PlannedHeadChopTarget> SourceTargets = new List<PlannedHeadChopTarget>();
+
+        public string Describe()
+        {
+            return SourceHost != null
+                ? $"{SourceHost.name} (head chop, {SourceTargets.Count} bones)"
+                : "(unresolved head chop)";
+        }
+    }
+
     /// <summary>
     /// The result of reading and mapping an avatar, before anything is written. This is what a
     /// dry run shows.
@@ -181,6 +209,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public List<PlannedJiggleCollider> Colliders = new List<PlannedJiggleCollider>();
 
         public List<PlannedConstraint> Constraints = new List<PlannedConstraint>();
+
+        /// <summary>Written with the descriptor: both describe the avatar rather than its parts.</summary>
+        public List<PlannedHeadChop> HeadChops = new List<PlannedHeadChop>();
 
         /// <summary>The avatar descriptor, when the source had one.</summary>
         public PlannedAvatarDescriptor Descriptor;
@@ -298,6 +329,9 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public int ConstraintsFound;
         public int DynamicBonesFound;
         public int ContactsFound;
+        public int HeadChopsFound;
+        public int RaycastsFound;
+        public int VrcBuildSettingsFound;
 
         /// <summary>What kind of source this appears to be, for the reader to sanity check.</summary>
         public SourceProfile Profile = new SourceProfile();
@@ -308,12 +342,31 @@ namespace yuna0x0.Basis.Convert.Pipeline
         /// <summary>Everything the plan holds, whatever the options are set to.</summary>
         public int TotalPlanned =>
             Rigs.Count + Constraints.Count + VixxyControls.Count + AuthoredMotions.Count
-            + (Descriptor != null ? 1 : 0);
+            + HeadChops.Count + (Descriptor != null ? 1 : 0);
 
         /// <summary>What a conversion would write, with the current options applied.</summary>
         public int TotalSelected =>
             SelectedRigCount + SelectedConstraintCount + SelectedVixxyControlCount
-            + SelectedAuthoredMotionCount + (DescriptorSelected ? 1 : 0);
+            + SelectedAuthoredMotionCount + SelectedHeadChopCount + (DescriptorSelected ? 1 : 0);
+
+        /// <summary>Head chops go with the descriptor: both describe the avatar, not its parts.</summary>
+        public IEnumerable<PlannedHeadChop> SelectedHeadChops()
+        {
+            if (!Options.Descriptor)
+            {
+                yield break;
+            }
+
+            foreach (PlannedHeadChop chop in HeadChops)
+            {
+                if (chop.Include && IsIncluded(chop.Source))
+                {
+                    yield return chop;
+                }
+            }
+        }
+
+        public int SelectedHeadChopCount => Tally(SelectedHeadChops());
 
         public IEnumerable<PlannedJiggleRig> SelectedRigs()
         {
@@ -479,6 +532,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
             if (Descriptor != null && (!selectedOnly || DescriptorSelected))
             {
                 foreach (ConversionDiagnostic diagnostic in Descriptor.Plan.Diagnostics)
+                {
+                    yield return diagnostic;
+                }
+            }
+
+            foreach (PlannedHeadChop chop in selectedOnly ? SelectedHeadChops() : HeadChops)
+            {
+                foreach (ConversionDiagnostic diagnostic in chop.Plan.Diagnostics)
                 {
                     yield return diagnostic;
                 }

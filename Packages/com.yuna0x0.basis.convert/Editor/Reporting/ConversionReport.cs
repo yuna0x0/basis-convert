@@ -65,6 +65,8 @@ namespace yuna0x0.Basis.Convert.Reporting
 
             text.AppendLine($"# {ProductInfo.Name}: avatar to Basis");
             text.AppendLine();
+            text.AppendLine($"{ProductInfo.Name} {ProductInfo.Version}. Sources read against {ProductInfo.CheckedAgainst}.");
+            text.AppendLine();
             text.AppendLine($"Source: {plan.SourceAssetPath}");
             text.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm}");
             text.AppendLine();
@@ -89,6 +91,7 @@ namespace yuna0x0.Basis.Convert.Reporting
             text.AppendLine($"- VRM expressions found: {plan.VrmExpressionsFound}");
             text.AppendLine($"- Colliders found: {plan.CollidersFound}");
             text.AppendLine($"- Constraints found: {plan.ConstraintsFound}");
+            text.AppendLine($"- Head chops found: {plan.HeadChopsFound}");
             text.AppendLine($"- Jiggle rigs planned: {plan.Rigs.Count}");
             text.AppendLine($"- Basis constraints planned: {plan.Constraints.Count}");
             text.AppendLine($"- Vixxy controls planned: {plan.VixxyControls.Count}");

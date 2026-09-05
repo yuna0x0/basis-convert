@@ -82,6 +82,14 @@ namespace yuna0x0.Basis.Convert.Mapping
                     "Bones As Spheres was set and has no jiggle equivalent.");
             }
 
+            if (source.GlobalCollision)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "collider.global.dropped",
+                    "The collider was marked global, so other avatars' PhysBones could collide "
+                    + "with it. Basis offers only the hands, arms and feet of an avatar to other "
+                    + "avatars, on its own, so this one collides with its own avatar only.");
+            }
+
             return plan;
         }
 

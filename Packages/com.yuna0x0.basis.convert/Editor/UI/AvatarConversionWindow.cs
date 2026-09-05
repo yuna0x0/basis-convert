@@ -174,6 +174,11 @@ namespace yuna0x0.Basis.Convert.UI
             EditorGUILayout.EndScrollView();
 
             DrawActions();
+
+            EditorGUILayout.Space(2f);
+            WrappedLabel(
+                $"{ProductInfo.Name} {ProductInfo.Version}. Sources read against "
+                + $"{ProductInfo.CheckedAgainst}.", EditorStyles.miniLabel);
         }
 
         private void DrawSummary()
@@ -228,6 +233,9 @@ namespace yuna0x0.Basis.Convert.UI
                 + $"{_plan.SelectedConstraintCount} Basis constraints, "
                 + $"{_plan.SelectedVixxyControlCount} Vixxy controls and "
                 + $"{_plan.SelectedAuthoredMotionCount} authored motions"
+                + (_plan.SelectedHeadChopCount > 0
+                    ? $" and {_plan.SelectedHeadChopCount} head chops"
+                    : "")
                 + (_plan.DescriptorSelected
                     ? ", and set up the Basis Avatar component."
                     : ".");

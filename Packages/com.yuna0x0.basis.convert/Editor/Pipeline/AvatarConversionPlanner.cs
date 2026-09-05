@@ -395,6 +395,30 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
+                if (kind == SourceComponentKind.VrcHeadChop)
+                {
+                    PlannedHeadChop headChop = PlanHeadChop(document, resolver, plan);
+                    if (headChop != null)
+                    {
+                        headChop.Source = source;
+                        plan.HeadChops.Add(headChop);
+                    }
+
+                    continue;
+                }
+
+                if (kind == SourceComponentKind.VrcRaycast)
+                {
+                    plan.RaycastsFound++;
+                    continue;
+                }
+
+                if (KnownScriptIdentities.IsVrcBuildSetting(kind))
+                {
+                    plan.VrcBuildSettingsFound++;
+                    continue;
+                }
+
                 if (kind == SourceComponentKind.VrcAvatarDescriptor)
                 {
                     // The avatar's own descriptor is the one that counts, and it is read first
@@ -434,6 +458,50 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 plan.Rigs.Add(rig);
             }
 
+        }
+
+        /// <summary>
+        /// A VRCHeadChop becomes a Basis head chop on the same object, naming the same bones.
+        /// </summary>
+        private static PlannedHeadChop PlanHeadChop(
+            UnityYamlDocument document, PrefabObjectResolver resolver, AvatarConversionPlan plan)
+        {
+            plan.HeadChopsFound++;
+
+            VrcHeadChopData data = VrcHeadChopReader.Read(document);
+            BasisHeadChopPlan mapped = VrcHeadChopToBasisMapper.Map(data);
+
+            if (!resolver.TryResolveTransform(data.OwnerGameObjectFileId, out Transform host))
+            {
+                plan.Unresolved++;
+                return null;
+            }
+
+            PlannedHeadChop planned = new PlannedHeadChop
+            {
+                Plan = mapped,
+                SourceHost = host,
+            };
+
+            foreach (HeadChopTargetPlan target in mapped.Targets)
+            {
+                if (resolver.TryResolveTransform(target.TransformFileId, out Transform bone))
+                {
+                    planned.SourceTargets.Add(new PlannedHeadChopTarget
+                    {
+                        Transform = bone,
+                        Scale = target.Scale,
+                    });
+                }
+                else
+                {
+                    mapped.Diagnostics.Add(DiagnosticSeverity.Warning,
+                        "headChop.target.unresolved",
+                        "A head chop bone could not be resolved and was dropped.");
+                }
+            }
+
+            return planned;
         }
 
         /// <summary>What is worked out once, after every prefab has been read.</summary>
@@ -492,6 +560,22 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "contacts.dropped",
                     $"{plan.ContactsFound} VRChat contact senders and receivers were found. Basis "
                     + "has no contact system, so anything driven by touch does not come across.");
+            }
+
+            if (plan.RaycastsFound > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "raycast.dropped",
+                    $"{plan.RaycastsFound} VRChat raycast components were found. They fire a ray "
+                    + "and set animator parameters from what it hits. Basis has nothing that "
+                    + "does this, so anything driven by them does not come across.");
+            }
+
+            if (plan.VrcBuildSettingsFound > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "vrchat.buildSettings",
+                    $"{plan.VrcBuildSettingsFound} VRChat build settings were found: per-platform "
+                    + "overrides or impostor settings. They tell VRChat's uploader what to do "
+                    + "and carry no behaviour, so there was nothing to convert and nothing lost.");
             }
 
             BuildProfile(plan);

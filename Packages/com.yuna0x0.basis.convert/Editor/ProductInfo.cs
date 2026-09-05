@@ -15,5 +15,18 @@ namespace yuna0x0.Basis.Convert
 
         public const string ToolsMenu = "Tools/" + Name + "/";
         public const string GameObjectMenu = "GameObject/" + Name + "/";
+
+        /// <summary>
+        /// The releases of each source the readers were checked against. A component or field a
+        /// later release adds is not read until this is raised, so the report and the docs say
+        /// which ones were.
+        /// </summary>
+        public const string CheckedAgainst =
+            "VRChat SDK 3.10.5, UniVRM 0.131.2, Dynamic Bone 1.3.2, Modular Avatar 1.18.3";
+
+        /// <summary>The package version, from its manifest.</summary>
+        public static string Version =>
+            UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(ProductInfo).Assembly)
+                ?.version ?? "unknown";
     }
 }

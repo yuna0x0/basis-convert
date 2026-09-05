@@ -92,6 +92,9 @@ namespace yuna0x0.Basis.Convert.Sources
             data.InsideBounds = ReadBool(document, "insideBounds", false);
             data.BonesAsSpheres = ReadBool(document, "bonesAsSpheres", false);
 
+            // An AdvancedBool: 0 off, 1 on, 2 on with a filter. Anything but off is global.
+            data.GlobalCollision = ReadEnum(document, "globalCollision", 0) != 0;
+
             data.Radius = document.TryGetFloat("radius", out float radius) ? radius : 0.5f;
             data.Height = document.TryGetFloat("height", out float height) ? height : 2f;
 

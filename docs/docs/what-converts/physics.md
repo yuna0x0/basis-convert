@@ -49,6 +49,8 @@ be changed in the window.
 - Gravity falloff, max squish, endpoint positions, and per-axis limit rotations.
 - `Is Animated`, and anything driven by a PhysBone parameter.
 - A collider inverted to keep bones inside it.
+- A collider marked global, for other avatars' bones. Basis offers an avatar's hands, arms and
+  feet to other avatars on its own; a collider elsewhere collides with its own avatar only.
 - Which way a plane collider faces, when that is not its transform's Y axis. Basis planes face
   that axis: `collider.planeRotation.dropped`, `collider.planeAxis.dropped`.
 

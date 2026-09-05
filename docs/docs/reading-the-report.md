@@ -26,6 +26,7 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `physbone.limitType.tooWide` | The angle limit was wider than jiggle physics can express, so no limit was written rather than a tighter one. |
 | `physbone.isAnimated` | The PhysBone was marked as animated. Nothing reads that on Basis. |
 | `collider.limit` | More colliders were referenced than a jiggle rig can hold. The extras were dropped. |
+| `collider.global.dropped` | A PhysBone collider was marked global, for other avatars' bones to collide with. Basis only offers an avatar's hands, arms and feet to others, so this one stays local. |
 | `collider.planeRotation.dropped` | A VRChat plane collider was rotated away from its transform's Y axis. Basis planes face that axis, so it now faces the transform's Y. |
 | `collider.planeAxis.dropped` | A Dynamic Bone plane collider faced its X or Z axis. Basis planes face Y, so it now faces the transform's Y. |
 | `constraint.solveInLocalSpace.dropped` | A VRChat constraint solved in local space. Basis constraints solve in world space, so the setting was dropped. |
@@ -55,6 +56,10 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `vrm.collider.inside` | A VRM collider held bones inside its shape. Basis only pushes out, so it now pushes the opposite way. |
 | `vrm.collider.planeNormal` | A VRM plane collider's normal pointed away from its transform's Y axis. Basis planes face that axis, so it now faces the transform's Y. |
 | `contacts.dropped` | VRChat contacts were found. Basis has no contact system. |
+| `raycast.dropped` | VRChat raycast components were found. Basis has nothing that fires a ray into animator parameters. |
+| `vrchat.buildSettings` | Per-platform overrides or impostor settings were found. They instruct VRChat's uploader and carry no behaviour, so nothing was lost. |
+| `headChop.condition.dropped` | A head chop bone was scaled away only in VR or only on desktop. Basis scales it away in both. |
+| `headChop.target.unresolved` | A head chop named a bone that could not be resolved, so that bone was dropped. |
 | `modularAvatar.menus` | Modular Avatar menu and animator components were found. See [Modular Avatar](what-converts/modular-avatar.md). |
 | `source.notUnpacked` | Nothing was found, and the prefab was saved from an imported model without unpacking. Its components are still in that file. |
 | `source.modelRead` | The prefab was saved from an imported `.vrm` without unpacking, so its components were read from that file. |

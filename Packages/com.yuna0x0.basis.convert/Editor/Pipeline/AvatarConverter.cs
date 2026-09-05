@@ -17,6 +17,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
         public int ConstraintsWritten;
         public int ConstraintsSkipped;
         public bool DescriptorWritten;
+        public int HeadChopsWritten;
         public int VixxyControlsWritten;
         public int AuthoredMotionsWritten;
 
@@ -27,7 +28,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
         public int TotalWritten =>
             RigsWritten + ConstraintsWritten + VixxyControlsWritten + AuthoredMotionsWritten
-            + (DescriptorWritten ? 1 : 0);
+            + HeadChopsWritten + (DescriptorWritten ? 1 : 0);
         public int TotalSkipped => RigsSkipped + ConstraintsSkipped;
     }
 
@@ -151,6 +152,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             }
 
             WriteDescriptor(plan, roots, target, undoName, result);
+            WriteHeadChops(plan, roots, target, undoName, result);
 
             // Motions are written first because a control that switches one has to hold the
             // component, and the component does not exist until it is written.
@@ -161,6 +163,50 @@ namespace yuna0x0.Basis.Convert.Pipeline
 
             Undo.CollapseUndoOperations(group);
             return result;
+        }
+
+        private static void WriteHeadChops(
+            AvatarConversionPlan plan, Dictionary<ConversionSource, Transform> roots,
+            Transform target, string undoName, ConversionResult result)
+        {
+            foreach (PlannedHeadChop planned in plan.SelectedHeadChops())
+            {
+                if (!TryTranslate(plan, roots, target, planned.Source, planned.SourceHost,
+                        out Transform host))
+                {
+                    result.Diagnostics.Add(DiagnosticSeverity.Warning, "apply.unresolved",
+                        $"The head chop for {planned.Describe()} has no counterpart in the "
+                        + "target hierarchy and was skipped.");
+                    continue;
+                }
+
+                ResolvedHeadChop resolved = new ResolvedHeadChop
+                {
+                    Plan = planned.Plan,
+                    Host = host.gameObject,
+                };
+
+                foreach (PlannedHeadChopTarget bone in planned.SourceTargets)
+                {
+                    if (TryTranslate(plan, roots, target, planned.Source, bone.Transform,
+                            out Transform translated))
+                    {
+                        resolved.Targets.Add(new ResolvedHeadChopTarget
+                        {
+                            Transform = translated,
+                            Scale = bone.Scale,
+                        });
+                    }
+                }
+
+                if (resolved.Targets.Count == 0)
+                {
+                    continue;
+                }
+
+                BasisHeadChopWriter.Write(resolved, undoName);
+                result.HeadChopsWritten++;
+            }
         }
 
         private static void WriteDescriptor(

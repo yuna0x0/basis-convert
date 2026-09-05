@@ -140,5 +140,11 @@ namespace yuna0x0.Basis.Convert.Model
 
         /// <summary>Treats each bone as a sphere rather than a chain. No jiggle equivalent.</summary>
         public bool BonesAsSpheres;
+
+        /// <summary>
+        /// Offered to every PhysBone in reach, other avatars' included, rather than only to the
+        /// ones that list it. SDK 3.10.4. Basis makes only the body's own colliders global.
+        /// </summary>
+        public bool GlobalCollision;
     }
 }

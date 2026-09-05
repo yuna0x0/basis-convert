@@ -19,6 +19,19 @@ namespace yuna0x0.Basis.Convert.Sources
         VrcPipelineManager,
         VrcContactReceiver,
         VrcContactSender,
+
+        /// <summary>Scales named bones away in first person. Basis has the same component.</summary>
+        VrcHeadChop,
+
+        /// <summary>Fires a ray and sets animator parameters from the hit. Nothing in Basis does.</summary>
+        VrcRaycast,
+
+        // Instructions to VRChat's uploader: which avatar to build per platform, and impostor
+        // generation. They carry no runtime behaviour and mean nothing under Basis.
+        VrcPerPlatformOverrides,
+        VrcAccessoryPerPlatformOverrides,
+        VrcImpostorSettings,
+        VrcImpostorEnvironment,
         DynamicBone,
         DynamicBoneCollider,
         DynamicBonePlaneCollider,
@@ -155,6 +168,16 @@ namespace yuna0x0.Basis.Convert.Sources
                 { (GuidVrcContactAssembly, -1450912254L), SourceComponentKind.VrcContactReceiver },
                 { (GuidVrcContactAssembly, -802764141L), SourceComponentKind.VrcContactSender },
 
+                // Derived the same way as the constraints above, from the class names in SDK
+                // 3.10.5. The per-platform components are loose scripts in the avatars package
+                // rather than DLL types, so they carry their own .meta guids.
+                { (GuidVrcSdk3AAssembly, -1888410255L), SourceComponentKind.VrcHeadChop },
+                { (GuidVrcSdk3AAssembly, 1472509199L), SourceComponentKind.VrcRaycast },
+                { (GuidVrcSdk3AAssembly, 798808286L), SourceComponentKind.VrcImpostorSettings },
+                { (GuidVrcSdk3AAssembly, 306702890L), SourceComponentKind.VrcImpostorEnvironment },
+                { ("45da21a324e147228aaee066e399bff0", LooseScriptFileId), SourceComponentKind.VrcPerPlatformOverrides },
+                { ("8a12ddb63afae28468db699a7e0cb228", LooseScriptFileId), SourceComponentKind.VrcAccessoryPerPlatformOverrides },
+
                 { ("f9ac8d30c6a0d9642a11e5be4c440740", LooseScriptFileId), SourceComponentKind.DynamicBone },
                 { ("baedd976e12657241bf7ff2d1c685342", LooseScriptFileId), SourceComponentKind.DynamicBoneCollider },
                 { ("4e535bdf3689369408cc4d078260ef6a", LooseScriptFileId), SourceComponentKind.DynamicBonePlaneCollider },
@@ -227,6 +250,13 @@ namespace yuna0x0.Basis.Convert.Sources
                 // window, so it has no runtime behaviour to carry over.
                 { ("2efed2fd1a16dec49b4612e16363e973", LooseScriptFileId), SourceComponentKind.AvatarModifySupport },
             };
+
+        /// <summary>VRChat's own build settings, which have nothing to convert and lose nothing.</summary>
+        public static bool IsVrcBuildSetting(SourceComponentKind kind)
+        {
+            return kind >= SourceComponentKind.VrcPerPlatformOverrides
+                && kind <= SourceComponentKind.VrcImpostorEnvironment;
+        }
 
         /// <summary>VRM 1.0's node constraints, which are read for counting but not converted.</summary>
         public static bool IsVrmConstraint(SourceComponentKind kind)
