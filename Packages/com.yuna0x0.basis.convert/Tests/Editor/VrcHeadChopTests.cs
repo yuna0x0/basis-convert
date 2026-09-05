@@ -19,6 +19,9 @@ namespace yuna0x0.Basis.Convert.Tests
         private const string FixturePath =
             "Packages/com.yuna0x0.basis.convert/Tests/Editor/Fixtures/SampleAvatar/SampleAvatar.prefab";
 
+        private const string MotionFolder =
+            "Packages/com.yuna0x0.basis.convert/Tests/Editor/Fixtures/SampleAvatar/Watari Motion";
+
         private GameObject _instance;
 
         [TearDown]
@@ -27,6 +30,13 @@ namespace yuna0x0.Basis.Convert.Tests
             if (_instance != null)
             {
                 Object.DestroyImmediate(_instance);
+            }
+
+            // A conversion with motion on bakes clips beside the fixture. Nothing here needs
+            // them, and they must not be left in the package.
+            if (AssetDatabase.IsValidFolder(MotionFolder))
+            {
+                AssetDatabase.DeleteAsset(MotionFolder);
             }
         }
 
@@ -74,6 +84,7 @@ namespace yuna0x0.Basis.Convert.Tests
         public void ConvertingWritesABasisHeadChop()
         {
             AvatarConversionPlan plan = AvatarConversionPlanner.Plan(FixturePath);
+            plan.Options.Motion = false;
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(FixturePath);
             _instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
 

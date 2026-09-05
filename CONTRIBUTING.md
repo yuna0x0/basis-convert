@@ -38,8 +38,9 @@ without an editor open. Keep it that way: readers take text, mappers take plain 
 the writers touch Unity objects.
 
 Fixtures live in `Tests/Editor/Fixtures`. `SampleAvatar` is an avatar the package ships: a
-prefab carrying a descriptor, a PhysBone and a constraint as the missing scripts they arrive as,
-plus an expression menu, parameters, an animator and its clips. Between them the menu and the
+prefab carrying a descriptor, a head chop, a PhysBone, a constraint, a raycast and a
+per-platform override as the missing scripts they arrive as, plus an expression menu,
+parameters, an animator and its clips. Between them the menu and the
 animator cover a plain toggle, a selector sharing one parameter, a radial puppet, a toggle
 guarded by one of VRChat's own parameters, a toggle whose clip animates over time, and a layer
 with nothing steering it. `SampleClothing` is the Modular Avatar half, and `SampleVrmAvatar` holds one avatar per VRM

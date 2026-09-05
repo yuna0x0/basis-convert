@@ -5,7 +5,9 @@ sidebar_position: 5
 # Reading the report
 
 Every conversion produces a report: in the window while you work, and as Markdown through **Copy
-report** or **Save report**. It is the record of what came across and what did not.
+report** or **Save report**. It is the record of what came across and what did not. Its first
+line names the package version and the source releases the readers were checked against; see
+[Versions checked](versions.md).
 
 ## Severities
 

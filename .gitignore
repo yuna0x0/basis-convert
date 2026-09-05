@@ -53,3 +53,7 @@ Thumbs.db
 docs/node_modules/
 docs/build/
 docs/.docusaurus/
+
+# Baked motion clips a test conversion writes beside the fixtures. Tests delete them; never ship them.
+Packages/com.yuna0x0.basis.convert/Tests/Editor/Fixtures/**/Watari\ Motion/
+Packages/com.yuna0x0.basis.convert/Tests/Editor/Fixtures/**/Watari\ Motion.meta
