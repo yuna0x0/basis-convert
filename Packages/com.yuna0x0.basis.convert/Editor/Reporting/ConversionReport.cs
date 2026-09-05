@@ -125,8 +125,7 @@ namespace yuna0x0.Basis.Convert.Reporting
             }
 
             text.AppendLine();
-            text.AppendLine("Conversion is not lossless. Anything approximated or dropped is "
-                + "listed below.");
+            text.AppendLine("Diagnostics, grouped by code.");
             text.AppendLine();
 
             List<DiagnosticGroup> groups = Group(plan);
@@ -173,8 +172,8 @@ namespace yuna0x0.Basis.Convert.Reporting
             {
                 text.AppendLine("## Rig");
                 text.AppendLine();
-                text.AppendLine("What the humanoid rig looks like to Basis's full-body IK. These "
-                    + "are not conversions; they are things to fix on the model itself.");
+                text.AppendLine("Rig check against Basis IK. These are model import settings; "
+                    + "conversion does not change them.");
                 text.AppendLine();
                 foreach (ConversionDiagnostic diagnostic in plan.RigDiagnostics)
                 {
@@ -264,10 +263,10 @@ namespace yuna0x0.Basis.Convert.Reporting
         {
             return severity switch
             {
-                DiagnosticSeverity.Warning => "Needs attention",
-                DiagnosticSeverity.Dropped => "Not carried over",
-                DiagnosticSeverity.Approximated => "Approximated, check by eye",
-                _ => "Mapped directly",
+                DiagnosticSeverity.Warning => "Warnings",
+                DiagnosticSeverity.Dropped => "Dropped",
+                DiagnosticSeverity.Approximated => "Approximated",
+                _ => "Mapped",
             };
         }
     }

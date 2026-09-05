@@ -6,6 +6,18 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-09-05
+
+### Changed
+
+- Window headings and messages are terser: Targets, Diagnostics, and Warnings, Dropped,
+  Approximated, Mapped as the severity headings in the window and the report.
+
+### Fixed
+
+- The versions line at the bottom of the window was cut off instead of wrapped. The wrapping
+  helper now forces word wrap on any style it is given.
+
 ## [0.5.0] - 2026-09-05
 
 ### Added
@@ -192,7 +204,8 @@ First release.
 - Two physics settings are fits rather than conversions, exposed as adjustable weights.
 - Component data is read from prefab files, so the avatar must still be linked to its prefab.
 
-[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.5.1
 [0.5.0]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.5.0
 [0.4.0]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.4.0
 [0.3.3]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.3.3

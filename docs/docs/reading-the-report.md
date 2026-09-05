@@ -13,10 +13,10 @@ line names the package version and the source releases the readers were checked 
 
 | Heading | Meaning |
 |---|---|
-| Needs attention | It converts, but not the way it worked before. Check it. |
-| Not carried over | The setting has no Basis equivalent and was dropped. |
-| Approximated, check by eye | Fitted onto a Basis setting that does not mean quite the same thing. |
-| Mapped directly | Carried across as it was. Listed so the report is complete. |
+| Warnings | Converts, but not the way it worked before. Check it. |
+| Dropped | No Basis equivalent. |
+| Approximated | Fitted onto a Basis setting that does not mean quite the same thing. |
+| Mapped | Carried across as it was. Listed so the report is complete. |
 
 Entries are grouped by a stable code, because they repeat: an avatar with sixty PhysBones
 produces sixty identical notes, which is unreadable one by one and useful as a count.

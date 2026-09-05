@@ -70,7 +70,7 @@ namespace yuna0x0.Basis.Convert.Tests
             Assert.That(report, Does.Contain("Colliders found: 2"));
             Assert.That(report, Does.Contain("physbone.maxSquish.dropped"));
             Assert.That(report, Does.Contain("physbone.isAnimated"));
-            Assert.That(report, Does.Contain("not lossless"));
+            Assert.That(report, Does.Contain("Diagnostics, grouped by code"));
         }
 
         [Test]

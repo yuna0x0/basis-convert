@@ -30,19 +30,19 @@ components it found, and what a conversion would produce. Nothing has been writt
 
 ## 3. Read what it found
 
-The summary says what was found and what would be created. Under it are the things that will not
-come across cleanly, grouped by kind:
+The summary lists what was found and what will be written. **Diagnostics** groups the rest by
+severity:
 
-- **Needs attention**: something that will convert, but not the way it worked before.
-- **Not carried over**: a setting with no Basis equivalent.
-- **Approximated, check by eye**: a setting fitted onto a Basis one that does not mean quite
-  the same thing.
+- **Warnings**: converts, but not the way it worked before.
+- **Dropped**: no Basis equivalent.
+- **Approximated**: fitted onto a Basis setting that does not mean quite the same thing.
+- **Mapped**: carried across as it was.
 
 [Reading the report](reading-the-report.md) covers what these mean in practice.
 
 ## 4. Choose what to convert
 
-By default everything is converted. Under **What to convert** you can switch off whole kinds:
+By default everything is converted. Under **Targets** you can switch off whole kinds:
 physics, constraints, the avatar descriptor, menu toggles, authored motion. Turning on
 **Advanced** adds colliders, and a checkbox for each individual prefab, rig, constraint, toggle
 and motion.

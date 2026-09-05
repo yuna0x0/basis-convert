@@ -9,7 +9,7 @@ by kind or one item at a time.
 
 ## Basic
 
-Under **What to convert**, each row is a kind of thing a conversion produces, with a count beside
+Under **Targets**, each row is a kind of thing a conversion produces, with a count beside
 it:
 
 | Option | What it writes |
@@ -27,7 +27,7 @@ Authored motion is the one row that writes an asset into the project, the baked 
 there if you undo the conversion. See [Authored motion](what-converts/authored-motion.md).
 
 {/*
-  IMAGE PLACEHOLDER: the What to convert section with its checkboxes and counts.
+  IMAGE PLACEHOLDER: the Targets section with its checkboxes and counts.
   Save as docs/static/img/options-basic.webp, then replace this comment with:
   ![The basic options](/img/options-basic.webp)
 */}

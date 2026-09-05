@@ -43,6 +43,10 @@ next. Then `agent/decisions/`. The short version of how this works:
 - **Fix the class, not the instance.** `EditorGUILayout.LabelField` sizes its rect to one line
   whatever style it is handed. Told about four clipped fields, one session fixed those four;
   the other ten came back as a bug report. When a fault is a misused API, grep for every call.
+  It happened a third time through the fix itself: `WrappedLabel` was handed a style with
+  `wordWrap` off and let it through. Every label in the window goes through `WrappedLabel`,
+  and that helper forces word wrap on any style it is given. Never hand `GUILayout.Label` a
+  built-in style for text longer than a word or two.
 
 The scope is wider than what is built. Avatars first, then props and worlds; VRChat first, then
 whatever else is worth reading, VRM so far. Reading, mapping and writing are separate
@@ -136,6 +140,13 @@ commit messages, docs, diagnostics and code comments after that.
 Docs pages may be longer than a changelog entry, but the same rule holds inside a paragraph:
 state it once and move on. This applies to what an agent writes back in chat too, not only to
 what it commits.
+
+Editor UI text is the strictest case. Headings are nouns: Targets, Diagnostics, Warnings,
+Dropped, Approximated, Mapped, Rig, Tuning. Status lines are counts. A paragraph appears only
+when it tells the user something they cannot see: a setting that acts from a hidden section, an
+asset an undo will not remove. Nothing that explains what a button obviously does, nothing that
+reassures, no "you can", no "simply", no "check by eye". "Convert writes components you can
+tune by hand. One undo reverts all of it" was shipped and had to be removed.
 
 ## Trademark
 

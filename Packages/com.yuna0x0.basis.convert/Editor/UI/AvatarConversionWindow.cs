@@ -121,7 +121,7 @@ namespace yuna0x0.Basis.Convert.UI
         private void OnGUI()
         {
             EditorGUILayout.LabelField("Avatar to Basis", EditorStyles.boldLabel);
-            WrappedLabel("Reads the avatar's prefab directly, so no source SDK needs installing.");
+            WrappedLabel("Reads the source prefab. The source SDK does not need to be installed.");
 
             EditorGUILayout.Space();
 
@@ -204,7 +204,7 @@ namespace yuna0x0.Basis.Convert.UI
                     _plan.VrmMeta.Describe()
                     + "\n" + string.Join("\n", _plan.VrmMeta.Permissions())
                     + (restricted
-                        ? "\n\nConverting changes the avatar. Check you are allowed to."
+                        ? "\n\nConversion modifies the avatar. Check the licence permits it."
                         : string.Empty),
                     restricted ? MessageType.Warning : MessageType.Info);
 
@@ -214,9 +214,8 @@ namespace yuna0x0.Basis.Convert.UI
             if (_plan.Profile.LooksInconsistent)
             {
                 EditorGUILayout.HelpBox(
-                    "This has a humanoid rig but nothing convertible on it. Check you picked "
-                    + "the right object: an avatar whose physics sits on a child prefab looks "
-                    + "like this.", MessageType.Warning);
+                    "Humanoid rig, nothing convertible. An avatar whose physics sits on a child "
+                    + "prefab looks like this; check the selected object.", MessageType.Warning);
             }
 
             EditorGUILayout.Space(2f);
@@ -225,20 +224,18 @@ namespace yuna0x0.Basis.Convert.UI
             int dropped = CountOf(DiagnosticSeverity.Dropped);
             int approximated = CountOf(DiagnosticSeverity.Approximated);
 
-            string summary = $"Found {_plan.PhysBonesFound} PhysBones, "
+            string summary = $"Found: {_plan.PhysBonesFound} PhysBones, "
                 + $"{_plan.DynamicBonesFound} Dynamic Bones, "
-                + $"{_plan.VrmChainsFound} VRM spring chains, {_plan.CollidersFound} colliders "
-                + $"and {_plan.ConstraintsFound} constraints.\n"
-                + $"Would create {_plan.SelectedRigCount} jiggle rigs, "
+                + $"{_plan.VrmChainsFound} VRM spring chains, {_plan.CollidersFound} colliders, "
+                + $"{_plan.ConstraintsFound} constraints.\n"
+                + $"Writes: {_plan.SelectedRigCount} jiggle rigs, "
                 + $"{_plan.SelectedConstraintCount} Basis constraints, "
-                + $"{_plan.SelectedVixxyControlCount} Vixxy controls and "
+                + $"{_plan.SelectedVixxyControlCount} Vixxy controls, "
                 + $"{_plan.SelectedAuthoredMotionCount} authored motions"
                 + (_plan.SelectedHeadChopCount > 0
-                    ? $" and {_plan.SelectedHeadChopCount} head chops"
+                    ? $", {_plan.SelectedHeadChopCount} head chops"
                     : "")
-                + (_plan.DescriptorSelected
-                    ? ", and set up the Basis Avatar component."
-                    : ".");
+                + (_plan.DescriptorSelected ? ", Basis Avatar." : ".");
 
             EditorGUILayout.HelpBox(summary,
                 _plan.TotalSelected > 0 ? MessageType.Info : MessageType.Warning);
@@ -246,22 +243,21 @@ namespace yuna0x0.Basis.Convert.UI
             if (_plan.Unresolved > 0)
             {
                 EditorGUILayout.HelpBox(
-                    $"{_plan.Unresolved} PhysBones could not be tied to a bone and will be "
-                    + "skipped.", MessageType.Warning);
+                    $"{_plan.Unresolved} PhysBones have no resolvable root bone and are skipped.",
+                    MessageType.Warning);
             }
 
             if (warnings > 0)
             {
                 EditorGUILayout.HelpBox(
-                    $"{warnings} things need attention before you rely on the result.",
-                    MessageType.Warning);
+                    $"{warnings} warnings. See Diagnostics.", MessageType.Warning);
             }
 
             if (dropped + approximated > 0)
             {
                 EditorGUILayout.HelpBox(
-                    $"{dropped} settings have no Basis equivalent and {approximated} were "
-                    + "approximated. Conversion is not lossless.", MessageType.Info);
+                    $"{dropped} settings dropped, {approximated} approximated. See Diagnostics.",
+                    MessageType.Info);
             }
 
         }
@@ -322,7 +318,7 @@ namespace yuna0x0.Basis.Convert.UI
         {
             using (new EditorGUILayout.HorizontalScope())
             {
-                _showOptions = EditorGUILayout.Foldout(_showOptions, "What to convert", true);
+                _showOptions = EditorGUILayout.Foldout(_showOptions, "Targets", true);
 
                 using (EditorGUI.ChangeCheckScope changed = new EditorGUI.ChangeCheckScope())
                 {
@@ -353,7 +349,7 @@ namespace yuna0x0.Basis.Convert.UI
                     using (new EditorGUI.IndentLevelScope())
                     {
                         _options.Colliders = Category("Colliders", _options.Colliders,
-                            $"{_plan.Colliders.Count} shapes for those rigs to rest on",
+                            $"{_plan.Colliders.Count} colliders",
                             _options.Physics && _plan.Colliders.Count > 0);
                     }
                 }
@@ -365,7 +361,7 @@ namespace yuna0x0.Basis.Convert.UI
 
                 _options.Descriptor = Category("Avatar descriptor", _options.Descriptor,
                     _plan.Descriptor != null
-                        ? "view position, visemes and blink"
+                        ? "view position, visemes, blink"
                         : "none found",
                     _plan.Descriptor != null);
 
@@ -376,7 +372,7 @@ namespace yuna0x0.Basis.Convert.UI
 
                 _options.Motion = Category("Authored motion", _options.Motion,
                     Tally(_plan.SelectedAuthoredMotionCount, _plan.AuthoredMotions.Count,
-                        "motions, baked to clips in the project"),
+                        "motions"),
                     _plan.AuthoredMotions.Count > 0);
 
                 if (changed.changed)
@@ -392,17 +388,11 @@ namespace yuna0x0.Basis.Convert.UI
 
             using (new EditorGUI.IndentLevelScope())
             {
-                WrappedLabel(
-                    "Advanced adds a checkbox per prefab, rig, constraint, toggle and motion, "
-                    + "and the two tuning weights.");
-
                 // Colliders only appear under Advanced, so say so here rather than let the
                 // setting act on a conversion from somewhere the reader cannot see it.
                 if (!_options.Colliders)
                 {
-                    WrappedLabel(
-                        "Colliders are switched off under Advanced, so the rigs will be written "
-                        + "without them.");
+                    WrappedLabel("Colliders are off (Advanced). Rigs are written without them.");
                 }
             }
         }
@@ -467,7 +457,7 @@ namespace yuna0x0.Basis.Convert.UI
 
                 if (quiet > 0)
                 {
-                    WrappedLabel($"{quiet} more hold nothing this converts.");
+                    WrappedLabel($"{quiet} more with nothing to convert.");
                 }
             }
         }
@@ -575,8 +565,37 @@ namespace yuna0x0.Basis.Convert.UI
                     GUILayout.Space(EditorGUI.indentLevel * 15f);
                 }
 
-                GUILayout.Label(text, style ?? EditorStyles.wordWrappedLabel);
+                GUILayout.Label(text, Wrapping(style));
             }
+        }
+
+        private static readonly Dictionary<GUIStyle, GUIStyle> WrappingStyles =
+            new Dictionary<GUIStyle, GUIStyle>();
+
+        /// <summary>
+        /// The style with word wrap on. Most built-in styles have it off, and a label handed one
+        /// of those is cut at the window edge whatever the helper around it is called, so the
+        /// helper never trusts the style it is given.
+        /// </summary>
+        private static GUIStyle Wrapping(GUIStyle style)
+        {
+            if (style == null)
+            {
+                return EditorStyles.wordWrappedLabel;
+            }
+
+            if (style.wordWrap)
+            {
+                return style;
+            }
+
+            if (!WrappingStyles.TryGetValue(style, out GUIStyle wrapped))
+            {
+                wrapped = new GUIStyle(style) { wordWrap = true };
+                WrappingStyles[style] = wrapped;
+            }
+
+            return wrapped;
         }
 
         private static GUIStyle _boldWrapped;
@@ -632,8 +651,8 @@ namespace yuna0x0.Basis.Convert.UI
             using (new EditorGUI.IndentLevelScope())
             {
                 WrappedLabel(
-                    "What Basis's full-body IK will make of this rig. These are settings on the "
-                    + "model, not things a conversion changes.");
+                    "Rig check against Basis IK. These are model import settings; conversion "
+                    + "does not change them.");
 
                 foreach (ConversionDiagnostic diagnostic in _plan.RigDiagnostics)
                 {
@@ -674,17 +693,16 @@ namespace yuna0x0.Basis.Convert.UI
             ModelImporter importer = RigReadiness.TryGetModelImporter(_plan.SourceRoot);
             using (new EditorGUI.DisabledScope(importer == null))
             {
-                if (!GUILayout.Button("Clear the Jaw mapping on the model"))
+                if (!GUILayout.Button("Clear Jaw mapping"))
                 {
                     return;
                 }
 
                 bool confirmed = EditorUtility.DisplayDialog(
-                    "Clear the Jaw mapping?",
-                    $"This edits the humanoid rig on {importer.assetPath} and reimports it.\n\n"
-                    + "Every avatar using that model is affected, and this is not covered by "
-                    + "undo.",
-                    "Clear it",
+                    "Clear Jaw mapping?",
+                    $"Edits the humanoid rig on {importer.assetPath} and reimports it. Every "
+                    + "avatar using the model is affected. Not undoable.",
+                    "Clear",
                     "Cancel");
 
                 if (confirmed && RigReadiness.ClearJawMapping(importer))
@@ -711,9 +729,7 @@ namespace yuna0x0.Basis.Convert.UI
             using (new EditorGUI.IndentLevelScope())
             {
                 WrappedLabel(
-                    "These two settings do not mean the same thing on both sides, so they are "
-                    + "fitted rather than converted. Adjust them if the result feels wrong, "
-                    + "then rescan. Everything else maps directly.");
+                    "Stiffness and drag are fitted, not mapped one to one. Adjust, then rescan.");
 
                 EditorGUILayout.LabelField("Stiffness, from PhysBone pull and stiffness",
                     EditorStyles.boldLabel);
@@ -730,15 +746,13 @@ namespace yuna0x0.Basis.Convert.UI
                     "Drag at spring 1", _profile.DragAtFullSpring, 0f, 1f);
 
                 WrappedLabel(
-                    "Higher stiffness holds bones closer to their animated pose. Higher drag "
-                    + "settles them sooner.");
+                    "Higher stiffness: closer to the animated pose. Higher drag: settles sooner.");
             }
         }
 
         private void DrawDiagnostics()
         {
-            _showDiagnostics = EditorGUILayout.Foldout(_showDiagnostics,
-                "What will not come across cleanly", true);
+            _showDiagnostics = EditorGUILayout.Foldout(_showDiagnostics, "Diagnostics", true);
             if (!_showDiagnostics)
             {
                 return;
@@ -746,11 +760,10 @@ namespace yuna0x0.Basis.Convert.UI
 
             using (new EditorGUI.IndentLevelScope())
             {
-                DrawDiagnosticSection(DiagnosticSeverity.Warning, "Needs attention");
-                DrawDiagnosticSection(DiagnosticSeverity.Dropped, "Not carried over");
-                DrawDiagnosticSection(DiagnosticSeverity.Approximated,
-                    "Approximated, check by eye");
-                DrawDiagnosticSection(DiagnosticSeverity.Mapped, "Mapped directly");
+                DrawDiagnosticSection(DiagnosticSeverity.Warning, "Warnings");
+                DrawDiagnosticSection(DiagnosticSeverity.Dropped, "Dropped");
+                DrawDiagnosticSection(DiagnosticSeverity.Approximated, "Approximated");
+                DrawDiagnosticSection(DiagnosticSeverity.Mapped, "Mapped");
             }
         }
 
@@ -958,8 +971,8 @@ namespace yuna0x0.Basis.Convert.UI
                 }
 
                 EditorGUILayout.HelpBox(
-                    "Each motion is baked to a clip asset beside the animation it came from. "
-                    + "An undo removes the components but leaves the clip.",
+                    "Motion clips are baked as assets beside the source animation. Undo removes "
+                    + "the components, not the clips.",
                     MessageType.None);
             }
         }
@@ -1107,9 +1120,6 @@ namespace yuna0x0.Basis.Convert.UI
                     SaveReport();
                 }
             }
-
-            WrappedLabel(
-                "Convert writes components you can tune by hand. One undo reverts all of it.");
         }
 
         /// <summary>
@@ -1137,20 +1147,21 @@ namespace yuna0x0.Basis.Convert.UI
                 $"{_result.RigsWritten} jiggle rigs, {_result.ConstraintsWritten} constraints, "
                 + $"{_result.VixxyControlsWritten} Vixxy controls, "
                 + $"{_result.AuthoredMotionsWritten} authored motions"
-                + (_result.DescriptorWritten ? ", Basis Avatar component." : "."));
+                + (_result.HeadChopsWritten > 0 ? $", {_result.HeadChopsWritten} head chops" : "")
+                + (_result.DescriptorWritten ? ", Basis Avatar." : "."));
 
             if (_result.MotionAssets.Count > 0)
             {
                 WrappedLabel(
                     $"Baked {_result.MotionAssets.Count} motion clips into "
                     + $"{System.IO.Path.GetDirectoryName(_result.MotionAssets[0])?.Replace('\\', '/')}. "
-                    + "These stay in the project if you undo.");
+                    + "Undo does not remove them.");
             }
 
             EditorGUILayout.Space(2f);
             WrappedLabel(
-                "To see the jiggle move, press Test In Editor on the Basis Avatar component. "
-                + "Play mode alone does not calibrate the avatar.");
+                "Jiggle physics runs after Test In Editor on the Basis Avatar component, not in "
+                + "plain Play mode.");
         }
 
         /// <summary>
@@ -1194,7 +1205,7 @@ namespace yuna0x0.Basis.Convert.UI
 
             if (_target == null)
             {
-                _blocker = "Pick the avatar to convert.";
+                _blocker = "Select an avatar.";
                 return;
             }
 
@@ -1207,9 +1218,8 @@ namespace yuna0x0.Basis.Convert.UI
             if (_plan.SourceRoot == null)
             {
                 _plan = null;
-                _blocker = "This object is not linked to a prefab, so there is no file to read "
-                    + "from. That usually means it was unpacked. Drag the original prefab in "
-                    + "here, or re-import the avatar and convert it before unpacking.";
+                _blocker = "Not linked to a prefab, so there is no file to read. Use the "
+                    + "original prefab, or re-import the avatar and convert it before unpacking.";
                 return;
             }
 
@@ -1222,15 +1232,12 @@ namespace yuna0x0.Basis.Convert.UI
                     : null;
 
                 _blocker = string.IsNullOrEmpty(model)
-                    ? "Nothing convertible was found in this prefab. It reads VRChat "
-                      + "PhysBones, colliders, constraints and the avatar descriptor with the "
-                      + "menu and animation behind it, VRM spring bones and expressions, and "
-                      + "Dynamic Bone. If the components were stripped before export, there is "
-                      + "nothing left to read."
-                    : $"Nothing was found, because this prefab was saved from {model} without "
-                      + "unpacking. Its components are still inside that file, which is not "
-                      + "read. Unpack the prefab completely (right click, Prefab, Unpack "
-                      + "Completely), save it again, and convert that.";
+                    ? "Nothing convertible in this prefab. Read: VRChat PhysBones, colliders, "
+                      + "constraints, head chop, and the avatar descriptor with its menu and "
+                      + "animators; VRM spring bones, expressions and constraints; Dynamic Bone."
+                    : $"Nothing found: this prefab was saved from {model} without unpacking, "
+                      + "and that file is not read. Unpack Completely, save, and convert the "
+                      + "result.";
             }
         }
 
@@ -1314,11 +1321,9 @@ namespace yuna0x0.Basis.Convert.UI
             bool replace = EditorUtility.DisplayDialog(
                 "Convert again?",
                 $"{destination.name} already has {string.Join(", ", kinds)} from a previous "
-                + "conversion.\n\nThey will be replaced. Anything elsewhere on the avatar is left "
-                + "alone.\n\nRemoving them is undoable"
-                + (motions > 0
-                    ? ", though the motion clips baked into the project stay where they are."
-                    : "."),
+                + "conversion. They will be replaced; nothing else on the avatar is touched. "
+                + "Undo restores them"
+                + (motions > 0 ? "; baked motion clips stay in the project." : "."),
                 "Replace",
                 "Cancel");
 
