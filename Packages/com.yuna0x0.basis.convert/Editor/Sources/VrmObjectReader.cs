@@ -408,6 +408,13 @@ namespace yuna0x0.Basis.Convert.Sources
                 foreach (string line in lookAt)
                 {
                     string trimmed = line.TrimStart();
+                    if (trimmed.StartsWith("LookAtType:"))
+                    {
+                        settings.LookAtByExpression =
+                            trimmed.Substring("LookAtType:".Length).Trim() == "1";
+                        continue;
+                    }
+
                     if (!trimmed.StartsWith("OffsetFromHead:"))
                     {
                         continue;
@@ -481,6 +488,7 @@ namespace yuna0x0.Basis.Convert.Sources
             // SetBlendShapeWeight.
             ReadBindings(clip, "Values", 1f, expression);
             expression.MaterialBindingCount = CountEntries(clip, "MaterialValues");
+            expression.IsBinary = clip.TryGetInt("IsBinary", out int binary) && binary != 0;
 
             if (string.IsNullOrEmpty(expression.Name))
             {
@@ -501,7 +509,19 @@ namespace yuna0x0.Basis.Convert.Sources
             expression.MaterialBindingCount = CountEntries(clip, "MaterialColorBindings")
                 + CountEntries(clip, "MaterialUVBindings");
 
+            expression.IsBinary = clip.TryGetInt("IsBinary", out int binary) && binary != 0;
+            expression.OverrideBlink = OverrideOf(clip, "OverrideBlink");
+            expression.OverrideLookAt = OverrideOf(clip, "OverrideLookAt");
+            expression.OverrideMouth = OverrideOf(clip, "OverrideMouth");
+
             return expression;
+        }
+
+        private static VrmExpressionOverride OverrideOf(UnityYamlDocument clip, string key)
+        {
+            return clip.TryGetInt(key, out int value)
+                ? (VrmExpressionOverride)value
+                : VrmExpressionOverride.None;
         }
 
         /// <summary>

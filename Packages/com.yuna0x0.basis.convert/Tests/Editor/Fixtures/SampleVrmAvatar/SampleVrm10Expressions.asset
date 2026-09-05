@@ -58,7 +58,7 @@ MonoBehaviour:
   MaterialColorBindings: []
   MaterialUVBindings: []
   IsBinary: 0
-  OverrideBlink: 0
+  OverrideBlink: 1
   OverrideLookAt: 0
   OverrideMouth: 0
 --- !u!114 &11400002
@@ -215,6 +215,9 @@ MonoBehaviour:
   - RelativePath: Face
     Index: 7
     Weight: 1
+  - RelativePath: Face
+    Index: 1
+    Weight: 0.5
   MaterialColorBindings: []
   MaterialUVBindings: []
   IsBinary: 0

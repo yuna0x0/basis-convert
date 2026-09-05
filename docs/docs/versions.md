@@ -29,6 +29,13 @@ menus and parameters, and the six constraints did not change. What did:
 - **VRC Head Chop** (3.6.0) converts to a Basis Head Chop. See
   [Avatar descriptor](what-converts/avatar-descriptor.md).
 
+## VRM
+
+Checked against the specification text for VRMC_vrm 1.0 (expressions, lookAt, firstPerson, meta)
+and VRMC_springBone 1.0, and against the consortium's sample models: Seed-san, the constraint and
+twist sample, the two isBinary conformance models, the MToon UV animation test, and Alicia 0.51.
+All six read and plan without an unrecognised component.
+
 ## Dynamic Bone
 
 1.3.4 differs from 1.3.2 only in when it disables its own multithreading. The serialized

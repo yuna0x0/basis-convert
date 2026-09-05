@@ -215,3 +215,35 @@ A `.vrm` is a glTF binary. `extensions.VRMC_springBone` in the JSON chunk holds 
 keyed by glTF node index, with `specVersion: "1.0"`. Not read by this package: an avatar has to
 be imported into Unity to be a Basis avatar at all, and the import is what turns node indices
 into transforms. Recorded because it is the authority on what the parameters mean.
+
+## Checked against the specification and the official samples, 2026-09-06
+
+Read `VRMC_vrm-1.0/expressions.md`, `lookAt.md`, `firstPerson.md`, `meta.md` and
+`VRMC_springBone-1.0/README.md` from `vrm-c/vrm-specification`, then ran six sample models from
+that repository and UniVRM through the planner: Seed-san, `VRM1_Constraint_Twist_Sample`,
+the `isBinary_Overrides` and `isBinary_Overridden` conformance models, the MToon UV animation
+test and `AliciaSolid_vrm-0.51`. All import under UniVRM 1.0
+(0.51 migrated), all plan, none carries an unrecognised component.
+
+What the spec says that the code did not yet reflect:
+
+- **Expressions are not exclusive.** Each has a value in [0, 1], several may be worn at once, and
+  morph targets are accumulated from zero. The selector is a menu representation; the spec is
+  quoted in decision 0016. `isBinary` and the three `override*` fields are read now and reported.
+- **Blink may move several shapes.** Basis's `BlinkViseme` is an array the blink drivers iterate
+  in full (`BasisLocalFacialBlinkDriver`, `BasisRemoteFaceDriver`), so a compound blink is
+  written whole. Before, Seed-san's two-shape blink was left unset. Visemes stay one shape each:
+  `FaceVisemeMovement` holds one index per viseme.
+- **LookAt type.** `lookAt.type` is `bone` or `expression`. Seed-san and both isBinary models use
+  `expression` and have no eye bones; reported as `vrm.lookAt.expression`.
+- **Material and texture-transform binds** name a material and a property kind (color,
+  emissionColor, shadeColor, matcapColor, rimColor, outlineColor; uv scale and offset). Still
+  dropped with a diagnostic; an expression made only of them is now reported too. Seed-san's five
+  emotions each carry one. Mapping them would mean finding the renderers that use the material
+  and writing Vixxy material properties with MToon's shader property names.
+
+What matched: spring joint fields and their meaning, tail joints carrying no parameters,
+`center`, sphere and capsule colliders with offset and tail, the extended inside and plane
+shapes, node constraints, `offsetFromHeadBone`, first person mesh annotations, and the meta
+fields. Alicia 0.51 imports through UniVRM's migration and reads as 1.0 components.
+

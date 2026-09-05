@@ -44,11 +44,34 @@ namespace yuna0x0.Basis.Convert.Model
         public string ShapeName = string.Empty;
     }
 
+    /// <summary>
+    /// What an expression does to blink, gaze or lip sync while it is worn. VRM 1.0 only; the
+    /// spec calls these overrideBlink, overrideLookAt and overrideMouth.
+    /// </summary>
+    public enum VrmExpressionOverride
+    {
+        None = 0,
+        Block = 1,
+        Blend = 2,
+    }
+
     /// <summary>One VRM expression, from either format.</summary>
     public sealed class VrmExpressionData
     {
         public string Name = string.Empty;
         public VrmExpressionRole Role = VrmExpressionRole.Custom;
+
+        /// <summary>Worn fully or not at all. Otherwise VRM lets it be worn at any strength.</summary>
+        public bool IsBinary;
+
+        public VrmExpressionOverride OverrideBlink = VrmExpressionOverride.None;
+        public VrmExpressionOverride OverrideLookAt = VrmExpressionOverride.None;
+        public VrmExpressionOverride OverrideMouth = VrmExpressionOverride.None;
+
+        public bool HasOverride =>
+            OverrideBlink != VrmExpressionOverride.None
+            || OverrideLookAt != VrmExpressionOverride.None
+            || OverrideMouth != VrmExpressionOverride.None;
 
         public List<VrmMorphBinding> Bindings = new List<VrmMorphBinding>();
 

@@ -6,11 +6,13 @@ namespace yuna0x0.Basis.Convert.Mapping
     /// <summary>
     /// Turns a VRM avatar's expressions into one Vixxy selector.
     /// <para>
-    /// An expression is a named set of blendshape weights, and an avatar wears one at a time:
-    /// Neutral, or Happy, or Angry. One control with a choice per expression says that; a toggle
-    /// per expression lets two be on together and fills the menu with one entry each. Every
-    /// shape any expression touches is written at every choice, at the expression's weight or at
-    /// zero, so picking a choice replaces the face rather than layering onto it.
+    /// An expression is a named set of blendshape weights. VRM lets an application wear several
+    /// at once, each at its own strength, and sums the result; a menu has no strength and no
+    /// application driving it, so the wearer picks one. One control with a choice per expression
+    /// says that; a toggle per expression let two be on together and filled the menu with one
+    /// entry each. Every shape any expression touches is written at every choice, at the
+    /// expression's weight or at zero, which is the spec's own rule: all morph targets start at
+    /// zero and the worn expressions are added.
     /// </para>
     /// <para>
     /// Only the expressions an author added and the emotions are choices. Visemes, blinking and
@@ -127,12 +129,56 @@ namespace yuna0x0.Basis.Convert.Mapping
                 Apply(neutral, 0);
             }
 
+            int continuous = 0;
             for (int i = 0; i < expressions.Count; i++)
             {
-                Apply(expressions[i], i + 1);
+                VrmExpressionData expression = expressions[i];
+                Apply(expression, i + 1);
+
+                if (!expression.IsBinary)
+                {
+                    continuous++;
+                }
+
+                if (expression.HasOverride)
+                {
+                    plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vrm.expression.override",
+                        $"'{expression.Name}' {Describe(expression)} while it is worn, which is "
+                        + "how VRM keeps a face from fighting its own blink and lip sync. Basis "
+                        + "keeps blinking, gaze and lip sync running whatever choice is picked.");
+                }
+            }
+
+            if (continuous > 0)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Approximated, "vrm.expression.continuous",
+                    $"{continuous} expressions can be worn at any strength in VRM. A choice is "
+                    + "worn fully or not at all.");
             }
 
             return plan;
+        }
+
+        /// <summary>"blocks blink and lip sync", from the three override fields.</summary>
+        private static string Describe(VrmExpressionData expression)
+        {
+            List<string> blocked = new List<string>();
+            List<string> attenuated = new List<string>();
+
+            void Sort(VrmExpressionOverride value, string what)
+            {
+                if (value == VrmExpressionOverride.Block) blocked.Add(what);
+                else if (value == VrmExpressionOverride.Blend) attenuated.Add(what);
+            }
+
+            Sort(expression.OverrideBlink, "blink");
+            Sort(expression.OverrideLookAt, "gaze");
+            Sort(expression.OverrideMouth, "lip sync");
+
+            List<string> parts = new List<string>();
+            if (blocked.Count > 0) parts.Add("blocks " + string.Join(" and ", blocked));
+            if (attenuated.Count > 0) parts.Add("attenuates " + string.Join(" and ", attenuated));
+            return string.Join(" and ", parts);
         }
     }
 }

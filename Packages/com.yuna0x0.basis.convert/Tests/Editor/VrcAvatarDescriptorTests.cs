@@ -125,7 +125,7 @@ namespace yuna0x0.Basis.Convert.Tests
             BasisAvatarPlan plan = VrcAvatarDescriptorToBasisMapper.Map(ReadDescriptor());
 
             Assert.That(plan.BlinkMeshFileId, Is.EqualTo(66L));
-            Assert.That(plan.BlinkBlendShapeIndex, Is.EqualTo(29));
+            Assert.That(plan.BlinkBlendShapeIndices, Is.EqualTo(new[] { 29 }));
             Assert.That(plan.Diagnostics.HasCode("descriptor.eyelids.lookUpDown"), Is.True);
         }
 
@@ -150,7 +150,7 @@ namespace yuna0x0.Basis.Convert.Tests
                 ReadDescriptor(eyelidType: 1));
 
             Assert.That(plan.Diagnostics.HasCode("descriptor.eyelids.bones"), Is.True);
-            Assert.That(plan.BlinkBlendShapeIndex, Is.EqualTo(-1));
+            Assert.That(plan.BlinkBlendShapeIndices, Is.Empty);
         }
 
         [Test]
@@ -270,7 +270,7 @@ namespace yuna0x0.Basis.Convert.Tests
                 TestContext.WriteLine($"eyelid indices: "
                     + string.Join(", ", data.EyelidsBlendshapes));
                 TestContext.WriteLine($"eye position: {plan.EyePosition}");
-                TestContext.WriteLine($"blink index: {plan.BlinkBlendShapeIndex}");
+                TestContext.WriteLine($"blink indices: {string.Join(", ", plan.BlinkBlendShapeIndices)}");
 
                 Assert.That(data.OwnerGameObjectFileId, Is.Not.Zero);
                 Assert.That(plan.EyePosition.x, Is.GreaterThan(0f),

@@ -34,7 +34,8 @@ namespace yuna0x0.Basis.Convert.Model
         public long BlinkMeshFileId;
 
         /// <summary>Blendshape index for blink, or -1 when the avatar has none.</summary>
-        public int BlinkBlendShapeIndex = -1;
+        /// <summary>Blendshape indices on the blink mesh. Basis blinks with all of them.</summary>
+        public List<int> BlinkBlendShapeIndices = new List<int>();
 
         public List<ConversionDiagnostic> Diagnostics = new List<ConversionDiagnostic>();
     }

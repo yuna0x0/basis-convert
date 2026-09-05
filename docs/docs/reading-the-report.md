@@ -58,6 +58,9 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `vrm.expressionsRebuilt` | The avatar's expressions became one Vixxy selector named Expression: Neutral, then one choice each. |
 | `vrm.expressionsDriven` | Visemes, blink and look-at expressions were left to Basis, which drives those itself. |
 | `vrm.expression.materials` | An expression also changed material values. Vixxy acts through a renderer, so those were not carried over. |
+| `vrm.expression.continuous` | Expressions VRM lets the wearer apply at any strength. A choice is all or nothing. |
+| `vrm.expression.override` | An expression blocks or attenuates blink, gaze or lip sync while worn. Basis keeps those running. |
+| `vrm.lookAt.expression` | The avatar aims its eyes with expressions, not eye bones. Basis rotates eye bones, so these eyes do not follow gaze. |
 | `vrm.collider.inside` | A VRM collider held bones inside its shape. Basis only pushes out, so it now pushes the opposite way. |
 | `vrm.collider.planeNormal` | A VRM plane collider's normal pointed away from its transform's Y axis. Basis planes face that axis, so it now faces the transform's Y. |
 | `contacts.dropped` | VRChat contacts were found. Basis has no contact system. |

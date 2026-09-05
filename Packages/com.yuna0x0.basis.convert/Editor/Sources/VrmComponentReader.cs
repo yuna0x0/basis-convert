@@ -286,6 +286,9 @@ namespace yuna0x0.Basis.Convert.Sources
                 settings.HasEyeOffset = offset.vector3Value != Vector3.zero;
             }
 
+            SerializedProperty lookAtType = vrm.FindProperty("LookAt.LookAtType");
+            settings.LookAtByExpression = lookAtType != null && lookAtType.enumValueIndex == 1;
+
             CountFirstPersonFlags(vrm.FindProperty("FirstPerson.Renderers"), settings);
             return settings;
         }
@@ -450,7 +453,20 @@ namespace yuna0x0.Basis.Convert.Sources
                 Count(serialized.FindProperty("MaterialColorBindings"))
                 + Count(serialized.FindProperty("MaterialUVBindings"));
 
+            expression.IsBinary = serialized.FindProperty("IsBinary")?.boolValue ?? false;
+            expression.OverrideBlink = OverrideOf(serialized, "OverrideBlink");
+            expression.OverrideLookAt = OverrideOf(serialized, "OverrideLookAt");
+            expression.OverrideMouth = OverrideOf(serialized, "OverrideMouth");
+
             return expression;
+        }
+
+        private static VrmExpressionOverride OverrideOf(SerializedObject serialized, string field)
+        {
+            SerializedProperty property = serialized.FindProperty(field);
+            return property == null
+                ? VrmExpressionOverride.None
+                : (VrmExpressionOverride)property.enumValueIndex;
         }
 
         private static void ReadBindings(

@@ -59,16 +59,25 @@ swinging, so it is excluded to leave it as still as VRM left it.
 
 ## Expressions
 
-A VRM expression is a named set of blendshape weights, and an avatar wears one at a time. The
-ones an author added, and the emotion presets, become one Vixxy selector named Expression:
-Neutral first, then one choice per expression. Every shape any expression touches is set at
-every choice, at the expression's weight or at zero, so picking a choice replaces the face.
+A VRM expression is a named set of blendshape weights. VRM lets an application wear several at
+once, each at its own strength; a menu has no strength and no application driving it, so the
+wearer picks one. The expressions an author added, and the emotion presets, become one Vixxy
+selector named Expression: Neutral first, then one choice per expression. Every shape any
+expression touches is set at every choice, at the expression's weight or at zero, which is the
+spec's own rule for applying expressions.
+
+Three things the spec allows are reported rather than converted. An expression that is not
+`isBinary` can be worn at any strength; a choice is all or nothing: `vrm.expression.continuous`.
+An expression's overrides, which block or attenuate blink, gaze or lip sync while it is worn, have
+no counterpart, since Basis keeps those running: `vrm.expression.override`. An expression made
+only of material changes writes nothing: `vrm.expression.materials`.
 
 The lip sync shapes, blinking and looking around do not become controls. Basis drives those
 itself, and a menu item would fight it.
 
 The five vowels and blink are written to the `BasisAvatar` instead, so a converted VRM talks and
-blinks without anything being assigned by hand. Basis takes fifteen visemes and VRM names five,
+blinks without anything being assigned by hand. Blink keeps every shape the expression moves, on
+one mesh, since Basis blinks with all of them. Basis takes fifteen visemes and VRM names five,
 so `aa`, `E`, `ih`, `oh` and `ou` are filled and the ten consonants are left unset: the mouth
 moves on vowels and holds still on the rest. A viseme slot holds one blendshape, so an expression
 that moves several at once is reported rather than reduced to one of them.
@@ -133,5 +142,7 @@ camera, add a Basis Head Chop naming it.
   way, and are worth removing if the result looks wrong.
 - **Where the avatar looks.** VRM aims the eyes with curves or an expression per direction;
   Basis drives gaze from the eye bones. Only the eye offset carries across, not the aiming. VRM
-  0.x writes this as components, which are reported as `vrm.lookAt`.
+  0.x writes this as components, which are reported as `vrm.lookAt`. An avatar whose look-at
+  type is `expression` has no eye bones to rotate, so its eyes stay still on Basis:
+  `vrm.lookAt.expression`.
 - **The avatar's metadata**: its title, author and permissions.

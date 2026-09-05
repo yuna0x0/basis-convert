@@ -58,10 +58,10 @@ namespace yuna0x0.Basis.Convert.Writers
                     ResolveVisemes(avatar.VisemeMesh, plan.VisemeBlendShapeNames);
             }
 
-            if (avatar.BlinkMesh != null && plan.BlinkBlendShapeIndex >= 0)
+            if (avatar.BlinkMesh != null && plan.BlinkBlendShapeIndices.Count > 0)
             {
                 component.FaceBlinkMesh = avatar.BlinkMesh;
-                component.BlinkViseme = new[] { plan.BlinkBlendShapeIndex };
+                component.BlinkViseme = plan.BlinkBlendShapeIndices.ToArray();
             }
 
             EditorUtility.SetDirty(component);

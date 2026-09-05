@@ -143,7 +143,7 @@ namespace yuna0x0.Basis.Convert.Mapping
                     // The array is blink, looking up, looking down. Basis has blink only.
                     if (source.EyelidsBlendshapes.Count > 0)
                     {
-                        plan.BlinkBlendShapeIndex = source.EyelidsBlendshapes[0];
+                        plan.BlinkBlendShapeIndices.Add(source.EyelidsBlendshapes[0]);
                     }
 
                     if (source.EyelidsBlendshapes.Count > 1)

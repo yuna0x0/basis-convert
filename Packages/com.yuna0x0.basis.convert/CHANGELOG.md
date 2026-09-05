@@ -6,6 +6,23 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-09-06
+
+### Added
+
+- Checked against the VRM consortium's sample models: Seed-san, the constraint and twist sample,
+  the two isBinary conformance models, the MToon UV test and Alicia 0.51. All six read and plan.
+- What the selector cannot carry is reported: expressions worn at any strength as
+  `vrm.expression.continuous`, blink, gaze and lip sync overrides as `vrm.expression.override`,
+  an expression made only of material changes as `vrm.expression.materials`.
+- An avatar that aims its eyes with expressions rather than eye bones is reported:
+  `vrm.lookAt.expression`.
+
+### Fixed
+
+- A blink expression that moves more than one blendshape was left unset. Basis blinks with every
+  index in its blink array, so all of its shapes on one mesh are written now.
+
 ## [0.5.2] - 2026-09-05
 
 ### Fixed
@@ -212,7 +229,8 @@ First release.
 - Two physics settings are fits rather than conversions, exposed as adjustable weights.
 - Component data is read from prefab files, so the avatar must still be linked to its prefab.
 
-[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/yuna0x0/watari-basis/compare/v0.5.3...HEAD
+[0.5.3]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.5.3
 [0.5.2]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.5.2
 [0.5.1]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.5.1
 [0.5.0]: https://github.com/yuna0x0/watari-basis/releases/tag/v0.5.0

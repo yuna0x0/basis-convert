@@ -890,6 +890,14 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 plan.VrmEyeOrigin = origin;
             }
 
+            if (settings.LookAtByExpression)
+            {
+                plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vrm.lookAt.expression",
+                    "The avatar aims its eyes with its look up, down, left and right expressions "
+                    + "rather than with eye bones. Basis rotates the eye bones, so gaze does not "
+                    + "move these eyes.");
+            }
+
             if (settings.ThirdPersonOnlyRenderers > 0 || settings.FirstPersonOnlyRenderers > 0)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vrm.firstPerson",
@@ -1014,7 +1022,7 @@ namespace yuna0x0.Basis.Convert.Pipeline
             Dictionary<SkinnedMeshRenderer, Dictionary<int, string>> byRenderer =
                 new Dictionary<SkinnedMeshRenderer, Dictionary<int, string>>();
 
-            VrmMorphBinding blink = null;
+            List<VrmMorphBinding> blink = null;
             int compound = 0;
 
             foreach (VrmExpressionData expression in plan.VrmExpressions)
@@ -1025,16 +1033,19 @@ namespace yuna0x0.Basis.Convert.Pipeline
                     continue;
                 }
 
+                // Basis blinks with any number of shapes on one mesh, so blink keeps all of
+                // its bindings. A viseme slot holds one shape.
+                if (!viseme)
+                {
+                    blink ??= expression.Bindings.FindAll(
+                        candidate => !string.IsNullOrEmpty(candidate.ShapeName));
+                    continue;
+                }
+
                 VrmMorphBinding binding = VrmExpressionToVisemeMapper.SingleBinding(expression);
                 if (binding == null)
                 {
                     compound++;
-                    continue;
-                }
-
-                if (!viseme)
-                {
-                    blink ??= binding;
                     continue;
                 }
 
@@ -1059,12 +1070,12 @@ namespace yuna0x0.Basis.Convert.Pipeline
             if (compound > 0)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "vrm.visemeCompound",
-                    $"{compound} of the avatar's mouth or blink expressions move more than one "
+                    $"{compound} of the avatar's vowel expressions move more than one "
                     + "blendshape at once. A Basis viseme names a single shape, so these were "
                     + "left unset rather than reduced to one of the shapes they move.");
             }
 
-            if (filled == 0 && descriptor.BlinkBlendShapeIndex < 0)
+            if (filled == 0 && descriptor.BlinkBlendShapeIndices.Count == 0)
             {
                 plan.Diagnostics.Add(DiagnosticSeverity.Warning, "descriptor.visemesUnset",
                     "Nothing named this avatar's visemes or blink, so they are unset on the "
@@ -1123,21 +1134,46 @@ namespace yuna0x0.Basis.Convert.Pipeline
             return bestCount;
         }
 
+        /// <summary>
+        /// Every shape the blink expression moves, on the renderer the first one names. Basis
+        /// reads all of its blink shapes from one mesh, so shapes on another renderer are left.
+        /// </summary>
         private static void ApplyBlink(AvatarConversionPlan plan, BasisAvatarPlan descriptor,
-            VrmMorphBinding blink)
+            List<VrmMorphBinding> blink)
         {
-            SkinnedMeshRenderer renderer = blink == null ? null : RendererFor(plan, blink);
+            if (blink == null || blink.Count == 0)
+            {
+                return;
+            }
+
+            SkinnedMeshRenderer renderer = RendererFor(plan, blink[0]);
             if (renderer == null)
             {
                 return;
             }
 
-            descriptor.BlinkBlendShapeIndex = blink.Index;
+            List<string> names = new List<string>();
+            int elsewhere = 0;
+            foreach (VrmMorphBinding binding in blink)
+            {
+                if (RendererFor(plan, binding) != renderer)
+                {
+                    elsewhere++;
+                    continue;
+                }
+
+                descriptor.BlinkBlendShapeIndices.Add(binding.Index);
+                names.Add(binding.ShapeName);
+            }
+
             plan.Descriptor.SourceBlinkMesh = renderer;
 
             plan.Diagnostics.Add(DiagnosticSeverity.Mapped, "vrm.blink",
-                $"Blink was taken from the avatar's own blink expression, {blink.ShapeName} on "
-                + $"{renderer.name}.");
+                "Blink was taken from the avatar's own blink expression: "
+                + $"{string.Join(", ", names)} on {renderer.name}."
+                + (elsewhere > 0
+                    ? $" {elsewhere} more shapes sit on another renderer, which Basis cannot blink."
+                    : string.Empty));
         }
 
         /// <summary>The renderer a binding names, relative to the prefab it was read from.</summary>
@@ -1264,6 +1300,16 @@ namespace yuna0x0.Basis.Convert.Pipeline
                 if (VrmExpressionToVixxyMapper.IsMenuWorthy(expression))
                 {
                     choices.Add(expression);
+                }
+                else if ((expression.Role == VrmExpressionRole.Custom
+                          || expression.Role == VrmExpressionRole.Emotion)
+                         && expression.MaterialBindingCount > 0)
+                {
+                    plan.ToggleDiagnostics.Add(DiagnosticSeverity.Dropped,
+                        "vrm.expression.materials",
+                        $"'{expression.Name}' changes only material values, so nothing was "
+                        + "written for it. VRM names the material to change, while Vixxy acts on "
+                        + "a renderer's properties.");
                 }
                 else if (expression.Role == VrmExpressionRole.Neutral)
                 {

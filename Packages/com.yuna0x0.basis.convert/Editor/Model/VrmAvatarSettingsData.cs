@@ -23,6 +23,12 @@ namespace yuna0x0.Basis.Convert.Model
         public long HeadBoneFileId;
 
         /// <summary>Renderers the avatar hides from the wearer's own view.</summary>
+        /// <summary>
+        /// The eyes are aimed with the look up, down, left and right expressions rather than
+        /// with eye bones. Basis rotates eye bones, so such eyes do not follow gaze.
+        /// </summary>
+        public bool LookAtByExpression;
+
         public int ThirdPersonOnlyRenderers;
 
         /// <summary>Renderers the avatar shows only to the wearer.</summary>

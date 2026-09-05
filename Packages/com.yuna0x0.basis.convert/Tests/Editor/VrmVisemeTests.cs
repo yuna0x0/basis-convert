@@ -170,11 +170,36 @@ namespace yuna0x0.Basis.Convert.Tests
             Assert.That(plan.Descriptor.SourceBlinkMesh, Is.Not.Null, "blink mesh");
 
             Mesh mesh = plan.Descriptor.SourceBlinkMesh.sharedMesh;
-            Assert.That(plan.Descriptor.Plan.BlinkBlendShapeIndex, Is.GreaterThanOrEqualTo(0));
-            Assert.That(mesh.GetBlendShapeName(plan.Descriptor.Plan.BlinkBlendShapeIndex),
+            Assert.That(plan.Descriptor.Plan.BlinkBlendShapeIndices, Is.Not.Empty);
+            Assert.That(mesh.GetBlendShapeName(plan.Descriptor.Plan.BlinkBlendShapeIndices[0]),
                 Is.EqualTo("EyeClose"));
 
             Assert.That(plan.AllDiagnostics().HasCode("vrm.blink"), Is.True);
+        }
+
+        [Test]
+        public void ABlinkThatMovesTwoShapesKeepsBoth()
+        {
+            // Basis blinks with every index in its blink array, so a blink that also lowers the
+            // brows is carried whole rather than left unset.
+            AvatarConversionPlan plan = PlanWithDescriptor(Vrm10Path);
+
+            Mesh mesh = plan.Descriptor.SourceBlinkMesh.sharedMesh;
+            List<string> names = plan.Descriptor.Plan.BlinkBlendShapeIndices
+                .ConvertAll(index => mesh.GetBlendShapeName(index));
+
+            Assert.That(names, Is.EqualTo(new[] { "EyeClose", "BrowUp" }));
+        }
+
+        [Test]
+        public void OverridesAndContinuousExpressionsAreReported()
+        {
+            // The fixture's Happy blocks blink while worn and can be worn at any strength. Basis
+            // keeps blinking and a choice is all or nothing, so both are said.
+            AvatarConversionPlan plan = PlanWithDescriptor(Vrm10Path);
+
+            Assert.That(plan.AllDiagnostics().HasCode("vrm.expression.override"), Is.True);
+            Assert.That(plan.AllDiagnostics().HasCode("vrm.expression.continuous"), Is.True);
         }
 
         /// <summary>
