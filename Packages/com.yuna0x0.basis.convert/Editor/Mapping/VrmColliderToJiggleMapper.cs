@@ -11,9 +11,17 @@ namespace yuna0x0.Basis.Convert.Mapping
     /// nothing that does that, so those are reported and written as their outside equivalent,
     /// which is the closest shape in the wrong direction.
     /// </para>
+    /// <para>
+    /// A VRM capsule is its two cap centres, which is also how jiggle measures height, so the
+    /// length carries over as it is. A VRM plane states its normal; a jiggle plane faces its
+    /// transform's Y, so a normal pointing elsewhere is reported.
+    /// </para>
     /// </summary>
     public static class VrmColliderToJiggleMapper
     {
+        /// <summary>Angle past which a plane normal off the Y axis is worth reporting.</summary>
+        private const float PlaneNormalToleranceDegrees = 5f;
+
         public static JiggleColliderPlan Map(VrmColliderData source)
         {
             JiggleColliderPlan plan = new JiggleColliderPlan
@@ -49,9 +57,24 @@ namespace yuna0x0.Basis.Convert.Mapping
                 }
 
                 case VrmColliderType.Plane:
+                {
                     plan.Shape = JiggleColliderShape.Plane;
                     plan.Radius = 0f;
+
+                    float turned = Vector3.Angle(source.Normal, Vector3.up);
+                    if (source.Normal != Vector3.zero && turned > PlaneNormalToleranceDegrees)
+                    {
+                        plan.Diagnostics.Add(DiagnosticSeverity.Dropped,
+                            "vrm.collider.planeNormal",
+                            $"The plane's normal pointed {turned:0.#} degrees away from its "
+                            + "transform's Y axis. A jiggle plane always faces that axis, so "
+                            + "the normal was dropped and the plane faces the transform's Y. "
+                            + "Turn the transform, or parent the collider to one that faces "
+                            + "the right way.");
+                    }
+
                     break;
+                }
 
                 default:
                     plan.Shape = JiggleColliderShape.Sphere;

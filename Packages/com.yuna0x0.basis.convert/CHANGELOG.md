@@ -6,6 +6,19 @@ Notable changes to this package. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- A plane collider facing anything but its transform's Y axis is reported, since a Basis plane
+  always faces that axis: `collider.planeRotation.dropped`, `collider.planeAxis.dropped`,
+  `vrm.collider.planeNormal`.
+
+### Fixed
+
+- VRChat and Dynamic Bone capsule colliders were written one diameter too long. Both give a
+  capsule's height end to end; Basis measures between the cap centres.
+- A VRChat or Dynamic Bone capsule no taller than its diameter is written as a sphere, which is
+  how both sources collide it.
+
 ## [0.4.0] - 2026-09-04
 
 ### Added

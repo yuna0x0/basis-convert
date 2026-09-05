@@ -53,6 +53,20 @@ is a silent no-op. The emitter must always set `advancedToggle`.
 Colliders map shape for shape, sphere, capsule and plane, since jiggle supports all three
 despite what the Basis docs say. `insideBounds` and `bonesAsSpheres` have no equivalent.
 
+Two measurements differ, both verified 2026-09-05 by decompiling `VRC.Dynamics.dll` (SDK base
+3.8.0) and reading `JiggleJobSimulate`:
+
+- **Capsule height.** VRChat's `CollisionScene` puts the cap centres at
+  `center ± axis * max(0, height / 2 - radius)`, so `height` runs end to end and a capsule no
+  taller than its diameter is a sphere (`VRCPhysBoneColliderBase` says so outright). Jiggle puts
+  them at `± height / 2`, so its height is centre to centre. Convert by subtracting a diameter.
+  Dynamic Bone measures the same way as VRChat (`DynamicBoneCollider.Prepare`,
+  `h = height / 2 - radius`). VRM states the two centres directly.
+- **Plane orientation.** VRChat's `axis` is `rotation * Vector3.up` for capsules and planes
+  alike. Jiggle snaps a capsule to one of three axes and a plane to local Y only
+  (`localToWorldMatrix.c1`), with no axis field for planes. A rotated plane cannot be written
+  and is reported. In the reference project, 8 of 23 PhysBone planes are rotated.
+
 ## The two heuristic rows
 
 Collected in `JiggleMappingProfile` so they are data, not constants buried in code.

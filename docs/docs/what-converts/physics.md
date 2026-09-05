@@ -23,7 +23,9 @@ rig of its own with the component's settings.
 - Per-bone falloff curves. Both VRChat and jiggle physics evaluate them over the normalised
   distance from the root, so a curve maps onto a curve rather than being flattened to a number.
 - Gravity, radius, stretch, and how immobile the root is.
-- Colliders: sphere, capsule and plane, with the same three shapes on both sides.
+- Colliders: sphere, capsule and plane, with the same three shapes on both sides. A capsule's
+  height is measured end to end on the source side and between the cap centres on the Basis
+  side, and is converted between the two.
 
 ## What is fitted
 
@@ -47,6 +49,8 @@ be changed in the window.
 - Gravity falloff, max squish, endpoint positions, and per-axis limit rotations.
 - `Is Animated`, and anything driven by a PhysBone parameter.
 - A collider inverted to keep bones inside it.
+- Which way a plane collider faces, when that is not its transform's Y axis. Basis planes face
+  that axis: `collider.planeRotation.dropped`, `collider.planeAxis.dropped`.
 
 ## Checking the result
 

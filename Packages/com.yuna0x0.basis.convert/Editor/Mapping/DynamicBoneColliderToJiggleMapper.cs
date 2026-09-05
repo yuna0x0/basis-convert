@@ -6,9 +6,15 @@ namespace yuna0x0.Basis.Convert.Mapping
     /// <summary>
     /// Turns a Dynamic Bone collider into a jiggle collider.
     /// <para>
-    /// Dynamic Bone picks the shape from its height rather than from a shape field: zero height
-    /// is a sphere, anything more is a capsule along the chosen axis. Plane colliders are their
-    /// own component type.
+    /// Dynamic Bone picks the shape from its height rather than from a shape field: a capsule no
+    /// taller than its diameter is a sphere, anything taller is a capsule along the chosen axis
+    /// (`DynamicBoneCollider.Prepare`: half length is `height / 2 - radius`). That height runs
+    /// end to end, caps included, while jiggle measures between the two cap centres, so it is
+    /// shortened by a diameter on the way across.
+    /// </para>
+    /// <para>
+    /// Plane colliders are their own component type and face the chosen axis. A jiggle plane
+    /// faces its transform's Y only, so a plane along X or Z is written facing Y and reported.
     /// </para>
     /// </summary>
     public static class DynamicBoneColliderToJiggleMapper
@@ -28,14 +34,25 @@ namespace yuna0x0.Basis.Convert.Mapping
             if (source.IsPlane)
             {
                 plan.Shape = JiggleColliderShape.Plane;
+                plan.Height = 0f;
+
+                if (source.Direction != DynamicBoneColliderDirection.Y)
+                {
+                    plan.Diagnostics.Add(DiagnosticSeverity.Dropped, "collider.planeAxis.dropped",
+                        $"The plane faced its transform's {source.Direction} axis. A jiggle plane "
+                        + "always faces the Y axis, so it was written facing Y. Turn the "
+                        + "transform, or parent the collider to one that faces the right way.");
+                }
             }
-            else if (source.Height > 0f)
+            else if (plan.Height > plan.Radius * 2f)
             {
                 plan.Shape = JiggleColliderShape.Capsule;
+                plan.Height -= plan.Radius * 2f;
             }
             else
             {
                 plan.Shape = JiggleColliderShape.Sphere;
+                plan.Height = 0f;
             }
 
             if (source.Bound == DynamicBoneColliderBound.Inside)

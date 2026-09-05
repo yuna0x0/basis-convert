@@ -26,6 +26,8 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `physbone.limitType.tooWide` | The angle limit was wider than jiggle physics can express, so no limit was written rather than a tighter one. |
 | `physbone.isAnimated` | The PhysBone was marked as animated. Nothing reads that on Basis. |
 | `collider.limit` | More colliders were referenced than a jiggle rig can hold. The extras were dropped. |
+| `collider.planeRotation.dropped` | A VRChat plane collider was rotated away from its transform's Y axis. Basis planes face that axis, so it now faces the transform's Y. |
+| `collider.planeAxis.dropped` | A Dynamic Bone plane collider faced its X or Z axis. Basis planes face Y, so it now faces the transform's Y. |
 | `constraint.solveInLocalSpace.dropped` | A VRChat constraint solved in local space. Basis constraints solve in world space, so the setting was dropped. |
 | `vixxy.notSimple` | A menu toggle that animates over time or drives something a Vixxy control cannot hold. |
 | `vixxy.puppetEnds` | A radial puppet blended through motions between its ends. A slider interpolates between its ends in a straight line. |
@@ -51,6 +53,7 @@ produces sixty identical notes, which is unreadable one by one and useful as a c
 | `vrm.stiffness` | A VRM chain's stiffness force was fitted onto jiggle stiffness, which is a narrower scale. |
 | `vrm.branchesExcluded` | Bones hanging off a VRM chain that the spring never named were excluded, so they stay as still as VRM left them. |
 | `vrm.collider.inside` | A VRM collider held bones inside its shape. Basis only pushes out, so it now pushes the opposite way. |
+| `vrm.collider.planeNormal` | A VRM plane collider's normal pointed away from its transform's Y axis. Basis planes face that axis, so it now faces the transform's Y. |
 | `contacts.dropped` | VRChat contacts were found. Basis has no contact system. |
 | `modularAvatar.menus` | Modular Avatar menu and animator components were found. See [Modular Avatar](what-converts/modular-avatar.md). |
 | `source.notUnpacked` | Nothing was found, and the prefab was saved from an imported model without unpacking. Its components are still in that file. |

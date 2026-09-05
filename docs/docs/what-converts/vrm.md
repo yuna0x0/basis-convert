@@ -125,6 +125,8 @@ camera, add a Basis Head Chop naming it.
 - **The centre transform.** VRM simulates relative to it so hair does not lag behind a moving
   avatar. Basis has no equivalent, though its own root motion handling covers some of the same
   ground.
+- **A plane collider's normal**, when it is not its transform's Y axis. Basis planes face that
+  axis, so the plane is written facing Y and reported as `vrm.collider.planeNormal`.
 - **Inside colliders**, which hold bones within a shape rather than pushing them out. Basis only
   pushes out, so those are written as ordinary colliders and reported: they now push the opposite
   way, and are worth removing if the result looks wrong.

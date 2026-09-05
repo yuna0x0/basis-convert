@@ -6,10 +6,20 @@ namespace yuna0x0.Basis.Convert.Mapping
     /// <summary>
     /// Turns a VRCPhysBoneCollider into a jiggle collider.
     /// <para>
-    /// The shapes line up: both systems offer sphere, capsule and plane. The difference is
-    /// orientation. VRChat places a collider with an arbitrary rotation quaternion, while jiggle
-    /// orients a capsule along one of the three local axes, so a rotated capsule is snapped to
-    /// the axis it points closest to and the residual is reported.
+    /// The shapes line up: both systems offer sphere, capsule and plane. Two things differ.
+    /// </para>
+    /// <para>
+    /// Orientation. VRChat places a collider with an arbitrary rotation quaternion and runs both
+    /// a capsule and a plane's normal along the rotated Y (`VRCPhysBoneColliderBase.axis`).
+    /// Jiggle orients a capsule along one of the three local axes and a plane along local Y
+    /// only, so a rotated capsule is snapped to the nearest axis and a rotated plane keeps its
+    /// transform's Y. Both are reported.
+    /// </para>
+    /// <para>
+    /// Capsule height. VRChat measures it end to end, caps included, and treats a capsule no
+    /// taller than its diameter as a sphere (`CollisionScene`: half length is
+    /// `height / 2 - radius`). Jiggle measures the distance between the two cap centres, so the
+    /// height is shortened by a diameter on the way across.
     /// </para>
     /// </summary>
     public static class PhysBoneColliderToJiggleMapper
@@ -41,12 +51,21 @@ namespace yuna0x0.Basis.Convert.Mapping
                     break;
 
                 case PhysBoneColliderShape.Capsule:
+                    if (plan.Height <= plan.Radius * 2f)
+                    {
+                        plan.Shape = JiggleColliderShape.Sphere;
+                        plan.Height = 0f;
+                        break;
+                    }
+
                     plan.Shape = JiggleColliderShape.Capsule;
+                    plan.Height -= plan.Radius * 2f;
                     plan.CapsuleAxis = NearestAxis(source.Rotation, plan.Diagnostics);
                     break;
 
                 case PhysBoneColliderShape.Plane:
                     plan.Shape = JiggleColliderShape.Plane;
+                    ReportPlaneRotation(source.Rotation, plan.Diagnostics);
                     break;
             }
 
@@ -109,6 +128,24 @@ namespace yuna0x0.Basis.Convert.Mapping
             }
 
             return axis;
+        }
+
+        /// <summary>
+        /// A jiggle plane faces its transform's Y and has no rotation of its own, so a VRChat
+        /// plane turned away from that axis cannot be written as it was.
+        /// </summary>
+        private static void ReportPlaneRotation(
+            Quaternion rotation, System.Collections.Generic.List<ConversionDiagnostic> log)
+        {
+            float turned = Vector3.Angle(rotation * Vector3.up, Vector3.up);
+            if (turned > AxisSnapToleranceDegrees)
+            {
+                log.Add(DiagnosticSeverity.Dropped, "collider.planeRotation.dropped",
+                    $"The plane was rotated {turned:0.#} degrees away from its transform's Y "
+                    + "axis. A jiggle plane always faces that axis, so the rotation was dropped "
+                    + "and the plane faces the transform's Y. Turn the transform, or parent the "
+                    + "collider to one that faces the right way.");
+            }
         }
     }
 }
